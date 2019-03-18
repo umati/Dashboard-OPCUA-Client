@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <type_traits>
+#include "ExampleModels.hpp"
 
 std::string toString(ModelOpcUa::NodeClass_t nodeClass)
 {
@@ -48,49 +49,7 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::StructureNode> &pSt
 
 TEST(BasicUsage, Simple)
 {
-	const std::string hasComponent("hasComponent");
-	const std::string BaseDataVariable("BaseDataVariable");
-	auto a = std::make_shared<ModelOpcUa::StructureNode>(
-		ModelOpcUa::NodeClass_t::Variable,
-		ModelOpcUa::ModellingRule_t::Mandatory,
-		hasComponent,
-		BaseDataVariable,
-		"a"
-		);
-
-	auto b = std::make_shared<ModelOpcUa::StructureNode>(
-		ModelOpcUa::NodeClass_t::Variable,
-		ModelOpcUa::ModellingRule_t::Mandatory,
-		hasComponent,
-		BaseDataVariable,
-		"b"
-		);
-
-	auto c = std::make_shared<ModelOpcUa::StructureNode>(
-		ModelOpcUa::NodeClass_t::Variable,
-		ModelOpcUa::ModellingRule_t::Mandatory,
-		hasComponent,
-		BaseDataVariable,
-		"c"
-		);
-
-	/*std::initializer_list<std::shared_ptr<ModelOpcUa::SimpleNode>> childs = {
-		std::static_pointer_cast<ModelOpcUa::SimpleNode>(a),
-		std::static_pointer_cast<ModelOpcUa::SimpleNode>(b),
-		std::static_pointer_cast<ModelOpcUa::SimpleNode>(c)
-	};*/
-
-	std::initializer_list<std::shared_ptr<ModelOpcUa::StructureNode>> childs = { a,b,c };
-
-	std::shared_ptr<ModelOpcUa::StructureNode> obj(new ModelOpcUa::StructureNode(
-		ModelOpcUa::NodeClass_t::Object,
-		ModelOpcUa::ModellingRule_t::Mandatory,
-		"",
-		"MyObjectType",
-		"",
-		{ a,b,c }
-	));
-
+	auto obj = ExampleModels::getSimpleObject();
 	std::cout << toString(obj) << std::endl;
 
 	EXPECT_TRUE(true);
