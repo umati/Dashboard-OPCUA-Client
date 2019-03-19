@@ -23,7 +23,49 @@ std::string toString(ModelOpcUa::NodeClass_t nodeClass)
 	}
 }
 
-std::string toString(const std::shared_ptr<const ModelOpcUa::StructureNode> &pStrucNode, int depth = 0)
+std::string toString(const std::shared_ptr<const ModelOpcUa::StructureNode> &pStrucNode, int depth = 0);
+
+///\todo avoid code duplicant
+std::string toString(const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pPlaceholderStrucNode, int depth = 0)
+{
+	if (!pPlaceholderStrucNode)
+	{
+		return "NULL";
+	}
+	std::string preLine1(depth * 2, ' ');
+	std::string preLine(depth * 2 + 2, ' ');
+	std::stringstream ss;
+	ss << preLine1 << typeid(ModelOpcUa::StructurePlaceholderNode).name() << std::endl;
+	ss << preLine << "NodeClass: " << toString(pPlaceholderStrucNode->NodeClass) << std::endl;
+	ss << preLine << "SpecifiedBrowseName: " << pPlaceholderStrucNode->SpecifiedBrowseName << std::endl;
+	ss << preLine << "ReferenceType: " << pPlaceholderStrucNode->ReferenceType << std::endl;
+
+	ss << preLine << "possibleTypes(" << pPlaceholderStrucNode->PossibleTypes.size() << "): [" << std::endl;
+	for (auto &pPossibleTypes : pPlaceholderStrucNode->PossibleTypes)
+	{
+		ss << toString(pPossibleTypes, depth + 1);
+	}
+	ss << preLine << "]" << std::endl;
+
+	ss << preLine << "childs(" << pPlaceholderStrucNode->SpecifiedChildNodes.size() << "): [" << std::endl;
+	for (auto & pChild : pPlaceholderStrucNode->SpecifiedChildNodes)
+	{
+		///\TODO use Visitor
+		if (auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::StructurePlaceholderNode>(pChild))
+		{
+			ss << toString(pPlaceholderChild, depth + 1);
+		}
+		else
+		{
+			ss << toString(pChild, depth + 1);
+		}
+	}
+	ss << preLine << "]" << std::endl;
+
+	return ss.str();
+}
+
+std::string toString(const std::shared_ptr<const ModelOpcUa::StructureNode> &pStrucNode, int depth)
 {
 	if (!pStrucNode)
 	{
@@ -40,7 +82,15 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::StructureNode> &pSt
 
 	for (auto & pChild : pStrucNode->SpecifiedChildNodes)
 	{
-		ss << toString(pChild, depth + 1);
+		///\TODO use Visitor
+		if (auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::StructurePlaceholderNode>(pChild))
+		{
+			ss << toString(pPlaceholderChild, depth + 1);
+		}
+		else
+		{
+			ss << toString(pChild, depth + 1);
+		}
 	}
 	ss << preLine << "]" << std::endl;
 
@@ -148,6 +198,14 @@ TEST(BasicUsage, SimpleTranslateToNodeId)
 	auto node = transformToNodeIds(ExampleModels::getSimpleObject(), "ns=1;s=Example");
 
 	std::cout << toString(node) << std::endl;
+
+	EXPECT_TRUE(true);
+}
+
+TEST(BasicUsage, SimplePlaceholder)
+{
+	auto obj = ExampleModels::getSimpleObjectWithPlaceholder();
+	std::cout << toString(obj) << std::endl;
 
 	EXPECT_TRUE(true);
 }
