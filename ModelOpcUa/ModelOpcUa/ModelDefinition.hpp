@@ -63,7 +63,7 @@ namespace ModelOpcUa {
 				std::list<std::shared_ptr<const StructureNode>>()
 		);
 		/// All child elements
-		const std::list<std::shared_ptr<const StructureNode>> ChildNodes;
+		const std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
 	};
 
 	class StructurePlaceholderNode : public StructureNode {

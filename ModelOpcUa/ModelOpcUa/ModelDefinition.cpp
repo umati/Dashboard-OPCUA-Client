@@ -34,7 +34,7 @@ namespace ModelOpcUa {
 			specifiedTypeNodeId,
 			specifiedBrowseName
 		),
-		ChildNodes(childNodes)
+		SpecifiedChildNodes(childNodes)
 	{
 	}
 

@@ -10,7 +10,12 @@ namespace ModelOpcUa {
 	class Node : public NodeDefinition
 	{
 	public:
-		virtual ~Node() = 0;
+		using NodeDefinition::NodeDefinition;
+		Node(const NodeDefinition&, const std::list<std::shared_ptr<const Node>> &childNodes);
+		virtual ~Node() = 0 {}
+
+		/// All child elements
+		const std::list<std::shared_ptr<const Node>> ChildNodes;
 	protected:
 	};
 
@@ -18,6 +23,17 @@ namespace ModelOpcUa {
 	class SimpleNode : public Node {
 	public:
 		virtual ~SimpleNode() = default;
+
+		// Node available
+		SimpleNode(
+			NodeId_t nodeId,
+			NodeId_t typeNodeId,
+			NodeDefinition nodeDefinition,
+			const std::list<std::shared_ptr<const Node>> &childNodes
+		);
+
+		// Node not available
+		SimpleNode(NodeDefinition nodeDefinition);
 
 		bool isAvaliable();
 		NodeId_t NodeId;
