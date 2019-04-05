@@ -4,4 +4,5 @@ project(Dashboard_OpcUaClient)
 enable_testing()
 
 add_subdirectory(ModelOpcUa)
+add_subdirectory(OpcUaClient)
 

@@ -37,7 +37,7 @@ namespace ModelOpcUa {
 
 	bool SimpleNode::isAvaliable()
 	{
-		return !NodeId.empty();
+		return !NodeId.isNull();
 	}
 
 }

@@ -9,7 +9,7 @@ namespace ModelOpcUa {
 		ModellingRule_t modellingRule,
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
-		std::string specifiedBrowseName)
+		QualifiedName_t specifiedBrowseName)
 		: NodeClass(nodeClass),
 		ModellingRule(modellingRule),
 		ReferenceType(referenceType), 
@@ -24,7 +24,7 @@ namespace ModelOpcUa {
 		ModellingRule_t modellingRule,
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
-		std::string specifiedBrowseName,
+		QualifiedName_t specifiedBrowseName,
 		std::list<std::shared_ptr<const StructureNode>> childNodes
 	)
 		:
@@ -44,7 +44,7 @@ namespace ModelOpcUa {
 		ModellingRule_t modellingRule,
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
-		std::string specifiedBrowseName,
+		QualifiedName_t specifiedBrowseName,
 		std::list<std::shared_ptr<const StructureNode>> childNodes,
 		std::list<std::shared_ptr<const StructureNode>> possibleTypes
 	)

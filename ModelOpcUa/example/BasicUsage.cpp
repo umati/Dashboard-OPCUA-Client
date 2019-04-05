@@ -37,8 +37,8 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::StructurePlaceholde
 	std::stringstream ss;
 	ss << preLine1 << typeid(ModelOpcUa::StructurePlaceholderNode).name() << std::endl;
 	ss << preLine << "NodeClass: " << toString(pPlaceholderStrucNode->NodeClass) << std::endl;
-	ss << preLine << "SpecifiedBrowseName: " << pPlaceholderStrucNode->SpecifiedBrowseName << std::endl;
-	ss << preLine << "ReferenceType: " << pPlaceholderStrucNode->ReferenceType << std::endl;
+	ss << preLine << "SpecifiedBrowseName: " << static_cast<std::string>(pPlaceholderStrucNode->SpecifiedBrowseName) << std::endl;
+	ss << preLine << "ReferenceType: " << static_cast<std::string>(pPlaceholderStrucNode->ReferenceType) << std::endl;
 
 	ss << preLine << "possibleTypes(" << pPlaceholderStrucNode->PossibleTypes.size() << "): [" << std::endl;
 	for (auto &pPossibleTypes : pPlaceholderStrucNode->PossibleTypes)
@@ -76,8 +76,8 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::StructureNode> &pSt
 	std::stringstream ss;
 	ss << preLine1 << typeid(ModelOpcUa::StructureNode).name() << std::endl;
 	ss << preLine << "NodeClass: " << toString(pStrucNode->NodeClass) << std::endl;
-	ss << preLine << "SpecifiedBrowseName: " << pStrucNode->SpecifiedBrowseName << std::endl;
-	ss << preLine << "ReferenceType: " << pStrucNode->ReferenceType << std::endl;
+	ss << preLine << "SpecifiedBrowseName: " << static_cast<std::string>(pStrucNode->SpecifiedBrowseName) << std::endl;
+	ss << preLine << "ReferenceType: " << static_cast<std::string>(pStrucNode->ReferenceType) << std::endl;
 	ss << preLine << "childs(" << pStrucNode->SpecifiedChildNodes.size() << "): [" << std::endl;
 
 	for (auto & pChild : pStrucNode->SpecifiedChildNodes)
@@ -108,12 +108,12 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::Node> &pNode, int d
 	std::stringstream ss;
 	ss << preLine1 << typeid(ModelOpcUa::Node).name() << std::endl;
 	ss << preLine << "NodeClass: " << toString(pNode->NodeClass) << std::endl;
-	ss << preLine << "SpecifiedBrowseName: " << pNode->SpecifiedBrowseName << std::endl;
+	ss << preLine << "SpecifiedBrowseName: " << static_cast<std::string>(pNode->SpecifiedBrowseName) << std::endl;
 
 	if (auto pSimpleNode = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pNode))
 	{
 		ss << preLine << "C++ Type: Simple Node" << std::endl;
-		ss << preLine << "NodeId: " << pSimpleNode->NodeId << std::endl;
+		ss << preLine << "NodeId: " << static_cast<std::string>(pSimpleNode->NodeId) << std::endl;
 	}
 	else if (auto pSimpleNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pNode))
 	{
@@ -132,14 +132,16 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::Node> &pNode, int d
 	return ss.str();
 }
 
-std::string translateBrowsePathToNodeIdMock(ModelOpcUa::NodeId_t startNode, std::string BrowseName)
+ModelOpcUa::NodeId_t translateBrowsePathToNodeIdMock(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t BrowseName)
 {
-	if (startNode.empty())
+	ModelOpcUa::NodeId_t ret;
+	if (!startNode.isNull())
 	{
-		return std::string();
+		ret.Uri = startNode.Uri;
+		ret.Id = startNode.Id + "." + BrowseName.Name;
 	}
 
-	return startNode + "." + BrowseName;
+	return ret;
 }
 
 struct BrowseResult_t
@@ -188,7 +190,7 @@ std::shared_ptr<const ModelOpcUa::SimpleNode> transformToNodeIds(
 		case ModelOpcUa::ModellingRule_t::Optional:
 		{
 			auto childNodeId = translateBrowsePathToNodeIdMock(startNode, pChild->SpecifiedBrowseName);
-			if (childNodeId.empty())
+			if (childNodeId.isNull())
 			{
 				continue;
 			}
@@ -217,7 +219,7 @@ std::shared_ptr<const ModelOpcUa::SimpleNode> transformToNodeIds(
 
 	auto pNode = std::make_shared<ModelOpcUa::SimpleNode>(
 		startNode,
-		"TODO Set Type",
+		ModelOpcUa::NodeId_t {"AnyNs", "TODO Set Type" },
 		*pStrucNode,
 		foundChildNodes
 	);
@@ -234,7 +236,7 @@ TEST(BasicUsage, Simple)
 
 TEST(BasicUsage, SimpleTranslateToNodeId)
 {
-	auto node = transformToNodeIds(ExampleModels::getSimpleObject(), "ns=1;s=Example");
+	auto node = transformToNodeIds(ExampleModels::getSimpleObject(), { "MyNS", "Example" });
 
 	std::cout << toString(node) << std::endl;
 
@@ -251,7 +253,7 @@ TEST(BasicUsage, SimplePlaceholder)
 
 TEST(BasicUsage, SimplePlaceholderTranslate)
 {
-	auto node = transformToNodeIds(ExampleModels::getSimpleObjectWithPlaceholder(), "ns=1;s=Example");
+	auto node = transformToNodeIds(ExampleModels::getSimpleObjectWithPlaceholder(), { "MyNS", "Example" });
 
 	std::cout << toString(node) << std::endl;
 

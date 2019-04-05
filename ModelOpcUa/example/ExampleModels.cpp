@@ -6,9 +6,10 @@
 
 namespace ExampleModels
 {
-	const std::string hasComponent("hasComponent");
-	const std::string BaseDataVariable("BaseDataVariable");
-	const std::string BaseObjectType("BaseObjectType");
+	const ModelOpcUa::NodeId_t hasComponent{ "", "hasComponent" };
+	const ModelOpcUa::NodeId_t BaseDataVariable {"", "BaseDataVariable" };
+	const ModelOpcUa::NodeId_t BaseObjectType {"", "BaseObjectType" };
+	const decltype(ModelOpcUa::NodeId_t::Uri) MyTypeNs("MyTypeNS");
 
 	static std::shared_ptr<ModelOpcUa::StructureNode> getSimpleVariable(
 		std::string name,
@@ -20,7 +21,7 @@ namespace ExampleModels
 			modellingRule,
 			hasComponent,
 			BaseDataVariable,
-			name
+			ModelOpcUa::QualifiedName_t{ MyTypeNs, name }
 			);
 	}
 
@@ -35,7 +36,7 @@ namespace ExampleModels
 			modellingRule,
 			hasComponent,
 			BaseDataVariable,
-			name,
+			{MyTypeNs, name },
 			{},
 			possibleTypes
 		));
@@ -58,10 +59,10 @@ namespace ExampleModels
 		auto obj = std::make_shared<ModelOpcUa::StructureNode>(
 			ModelOpcUa::NodeClass_t::Object,
 			ModelOpcUa::ModellingRule_t::Mandatory,
-			"",
-			"MyObjectType",
-			"",
-			ListOfNodes({ a,b,c })
+			ModelOpcUa::NodeId_t {},
+			ModelOpcUa::NodeId_t { MyTypeNs, "MyObjectType" },
+			ModelOpcUa::QualifiedName_t {},
+			ListOfNodes({ a, b, c })
 			);
 
 		return obj;
@@ -75,9 +76,9 @@ namespace ExampleModels
 		auto posObj = std::make_shared<ModelOpcUa::StructureNode>(
 			ModelOpcUa::NodeClass_t::Object,
 			ModelOpcUa::ModellingRule_t::Mandatory,
-			"NoReferenceType",
-			"PossibleObjectType",
-			"NoBrowseName"
+			ModelOpcUa::NodeId_t{},
+			ModelOpcUa::NodeId_t{ MyTypeNs, "MyObjectType" },
+			ModelOpcUa::QualifiedName_t{}
 		);
 
 		auto c = getSimplePlaceholder(
@@ -89,9 +90,9 @@ namespace ExampleModels
 		auto obj = std::make_shared<ModelOpcUa::StructureNode>(
 			ModelOpcUa::NodeClass_t::Object,
 			ModelOpcUa::ModellingRule_t::Mandatory,
-			"",
-			"MyObjectWithPlaceholderType",
-			"",
+			ModelOpcUa::NodeId_t{},
+			ModelOpcUa::NodeId_t{ MyTypeNs, "MyObjectWithPlaceholderType" },
+			ModelOpcUa::QualifiedName_t{},
 			ListOfNodes({ a,b,c })
 			);
 
