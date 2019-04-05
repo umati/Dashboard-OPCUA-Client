@@ -2,7 +2,35 @@ cmake_minimum_required(VERSION 3.9)
 
 project(Dashboard_OpcUaClient)
 enable_testing()
+set(CMAKE_CXX_STANDARD 14)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+
+add_custom_target(Dashboard_OpcUaClient)
+
+add_definitions(-DELPP_THREAD_SAFE -DELPP_USE_STD_THREADING -DELPP_NO_DEFAULT_LOG_FILE)
+find_package(easyloggingpp REQUIRED)
+
+add_subdirectory(Util)
 
 add_subdirectory(ModelOpcUa)
 add_subdirectory(OpcUaClient)
 
+add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
+target_link_libraries(DashboardOpcUaClient OpcUaClient)
+
+#Copy UA-SDK dlls to output directory
+add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+        libeay32.dll
+		libeay32d.dll
+		libxml2.dll
+		libxml2d.dll
+		ssleay32.dll
+		ssleay32d.dll
+		uastack.dll
+		uastackd.dll
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>
+	WORKING_DIRECTORY "${UASDK_BASE_DIR}/bin/"
+	COMMENT "Copy UA Dlls to bin"
+)
