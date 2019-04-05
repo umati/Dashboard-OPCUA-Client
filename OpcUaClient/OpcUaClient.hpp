@@ -1,0 +1,57 @@
+#pragma once
+
+#include <uabase.h>
+#include <uaclientsdk.h>
+#include <string>
+#include <memory>
+#include <vector>
+#include <string>
+#include <thread>
+#include <mutex>
+#include <atomic>
+
+//#include "Subscription.hpp"
+#include "IDashboardClient.hpp"
+
+namespace OpcUa {
+	class OpcUaClient : public UaClientSdk::UaSessionCallback, public IDashboardClient
+	{
+		UA_DISABLE_COPY(OpcUaClient);
+	public:
+		OpcUaClient(std::string serverURI);
+		~OpcUaClient();
+
+		bool disconnect();
+
+		void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
+
+		//Subscription Subscr;
+
+	protected:
+		bool connect(std::string serverURI);
+
+		// ------- Default call settings -----------
+		UaClientSdk::ServiceSettings m_defaultServiceSettings;
+		double m_maxAgeRead_ms = 100.0;
+		OpcUa_UInt32 m_nextTransactionid = 0x80000000;
+		// -----------------------------------------
+		
+		void updateNamespaceCache();
+
+		void threadConnectExecution();
+
+		std::shared_ptr<UaClientSdk::UaSession> m_pSession;
+		std::map<std::string, uint32_t> m_uriToIndexCache;
+		std::map<uint32_t, std::string> m_indexToUriCache;
+		std::string m_serverUri;
+		std::shared_ptr<std::thread> m_connectThread;
+		std::atomic_bool m_isConnected = false;
+		std::atomic_bool m_tryConnecting = false;
+	private:
+		static int PlattformLayerInitialized;
+
+		// Geerbt über IDashboardClient
+		virtual std::list<BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
+		virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
+	};
+}
