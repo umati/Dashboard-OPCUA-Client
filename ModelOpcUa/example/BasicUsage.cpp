@@ -199,7 +199,13 @@ std::shared_ptr<const ModelOpcUa::SimpleNode> transformToNodeIds(
 		case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
 		case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
 		{
-			auto childNodes = browsePlaceholder(startNode, pChild);
+			auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::StructurePlaceholderNode>(pChild);
+			if (!pPlaceholderChild)
+			{
+				std::cout << "Placeholder error." << std::endl;
+				break;
+			}
+			auto childNodes = browsePlaceholder(startNode, pPlaceholderChild);
 			std::cout << "Placeholder not supported." << std::endl;
 			break;
 		}

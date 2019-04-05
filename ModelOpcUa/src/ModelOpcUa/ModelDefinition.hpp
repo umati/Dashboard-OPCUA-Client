@@ -2,6 +2,7 @@
 
 #include <string>
 #include <list>
+#include <memory>
 /// \todo split into two files, one for the type/ structure information, one for the instances
 
 namespace ModelOpcUa {
