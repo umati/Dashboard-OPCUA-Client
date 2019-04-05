@@ -1,0 +1,96 @@
+{
+  "environments": [
+    {
+      "CMAKE_PREFIX_PATH": "D:\\Programmieren\\Cpp\\Libs\\install\\vs2017"
+    }
+  ],
+  // Informationen zu dieser Datei finden Sie unter https://go.microsoft.com//fwlink//?linkid=834763.
+  "configurations": [
+    {
+      "name": "x86-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "buildRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x86-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "buildRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "Linux-Debug",
+      "generator": "Unix Makefiles",
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "configurationType": "Debug",
+      "remoteCMakeListsRoot": "/var/tmp/src/ModelOpcUa/${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "buildRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\install\\${name}",
+      "remoteBuildRoot": "/var/tmp/build/ModelOpcUa/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/ModelOpcUa/install/${name}",
+      "remoteCopySources": true,
+      "remoteCopySourcesOutputVerbosity": "Normal",
+      "remoteCopySourcesConcurrentCopies": "10",
+      "remoteCopySourcesMethod": "rsync",
+      "remoteCopyBuildOutput": false,
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ]
+    },
+    {
+      "name": "Linux-Release",
+      "generator": "Unix Makefiles",
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "configurationType": "Release",
+      "remoteCMakeListsRoot": "/var/tmp/src/ModelOpcUa/${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "buildRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\build\\${name}",
+      "installRoot": "${workspaceRoot}\\..\\CMakeBuilds\\ModelOpcUa\\install\\${name}",
+      "remoteBuildRoot": "/var/tmp/build/ModelOpcUa/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/ModelOpcUa/install/${name}",
+      "remoteCopySources": true,
+      "remoteCopySourcesOutputVerbosity": "Normal",
+      "remoteCopySourcesConcurrentCopies": "10",
+      "remoteCopySourcesMethod": "rsync",
+      "remoteCopyBuildOutput": false,
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ]
+    }
+  ]
+}
