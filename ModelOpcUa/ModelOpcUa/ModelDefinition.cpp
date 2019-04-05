@@ -1,5 +1,6 @@
 
 #include "ModelDefinition.hpp"
+#include <cassert>
 
 namespace ModelOpcUa {
 
@@ -58,5 +59,7 @@ namespace ModelOpcUa {
 		),
 		PossibleTypes(possibleTypes)
 	{
+		assert(modellingRule == ModellingRule_t::MandatoryPlaceholder || 
+			modellingRule == ModellingRule_t::OptionalPlaceholder);
 	}
 }

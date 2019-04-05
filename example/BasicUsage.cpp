@@ -142,6 +142,38 @@ std::string translateBrowsePathToNodeIdMock(ModelOpcUa::NodeId_t startNode, std:
 	return startNode + "." + BrowseName;
 }
 
+struct BrowseResult_t
+{
+	ModelOpcUa::NodeId_t NodeId;
+	ModelOpcUa::NodeId_t TypeDefinitionId;
+	std::string BrowseName;
+	std::string NodeClass;
+};
+
+std::list<BrowseResult_t> browseNodes(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t nodeTypeId)
+{
+	return std::list<BrowseResult_t>();
+}
+
+std::shared_ptr<const ModelOpcUa::PlaceholderNode> browsePlaceholder(
+	ModelOpcUa::NodeId_t startNode,
+	std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStrucPlaceholder)
+{
+	if (pStrucPlaceholder)
+	{
+		return nullptr;
+	}
+	pStrucPlaceholder->ReferenceType;
+
+	auto browseResults = browseNodes(startNode, pStrucPlaceholder->ReferenceType, pStrucPlaceholder->SpecifiedTypeNodeId);
+	for (auto &browseResult : browseResults)
+	{
+		// Look for the correct type in possibleTypes based on the browseType
+		// Create appropriate instance node
+
+	}
+}
+
 std::shared_ptr<const ModelOpcUa::SimpleNode> transformToNodeIds(
 	const std::shared_ptr<const ModelOpcUa::StructureNode> &pStrucNode,
 	ModelOpcUa::NodeId_t startNode
@@ -167,6 +199,7 @@ std::shared_ptr<const ModelOpcUa::SimpleNode> transformToNodeIds(
 		case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
 		case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
 		{
+			auto childNodes = browsePlaceholder(startNode, pChild);
 			std::cout << "Placeholder not supported." << std::endl;
 			break;
 		}
@@ -206,6 +239,15 @@ TEST(BasicUsage, SimplePlaceholder)
 {
 	auto obj = ExampleModels::getSimpleObjectWithPlaceholder();
 	std::cout << toString(obj) << std::endl;
+
+	EXPECT_TRUE(true);
+}
+
+TEST(BasicUsage, SimplePlaceholderTranslate)
+{
+	auto node = transformToNodeIds(ExampleModels::getSimpleObjectWithPlaceholder(), "ns=1;s=Example");
+
+	std::cout << toString(node) << std::endl;
 
 	EXPECT_TRUE(true);
 }

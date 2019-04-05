@@ -62,7 +62,9 @@ namespace ModelOpcUa {
 			std::list<std::shared_ptr<const StructureNode>> childNodes =
 				std::list<std::shared_ptr<const StructureNode>>()
 		);
+
 		/// All child elements
+		/// \TODO what is used in case of an Placeholder, use a different Type for non placeholder elements?
 		const std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
 	};
 

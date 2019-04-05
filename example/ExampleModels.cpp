@@ -27,7 +27,7 @@ namespace ExampleModels
 	static std::shared_ptr<ModelOpcUa::StructurePlaceholderNode> getSimplePlaceholder(
 		std::string name,
 		std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> possibleTypes,
-		ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Mandatory
+		ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::MandatoryPlaceholder
 	)
 	{
 		return std::shared_ptr<ModelOpcUa::StructurePlaceholderNode>(new ModelOpcUa::StructurePlaceholderNode(
