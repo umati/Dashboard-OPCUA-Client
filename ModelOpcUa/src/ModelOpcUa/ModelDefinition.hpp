@@ -68,6 +68,11 @@ namespace ModelOpcUa {
 
 			return ss.str();
 		}
+
+		bool operator ==(const QualifiedName_t &other) const
+		{
+			return this->Uri == other.Uri && this->Name == other.Name;
+		}
 	};
 
 	enum ModellingRule_t

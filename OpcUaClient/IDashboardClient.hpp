@@ -18,6 +18,7 @@ namespace Umati {
 				ModelOpcUa::NodeId_t NodeId;
 				ModelOpcUa::NodeId_t TypeDefinition;
 				ModelOpcUa::NodeId_t ReferenceTypeId;
+				ModelOpcUa::QualifiedName_t BrowseName;
 				//std::string DisplayName;
 			};
 

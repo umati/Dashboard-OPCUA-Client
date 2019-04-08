@@ -9,7 +9,9 @@ set(CLIENT_SRC
 	"Converter/ModelNodeIdToUaNodeId.cpp"
 	"Converter/ModelToUaConverter.cpp"
 	"Converter/UaToModelConverter.cpp"
+	"Converter/UaNodeClassToModelNodeClass.cpp"
 	"Converter/ModelQualifiedNameToUaQualifiedName.cpp"
+	"Converter/UaQualifiedNameToModelQualifiedName.cpp"
 	"Exceptions/OpcUaNonGoodStatusCodeException.cpp"
 )
 

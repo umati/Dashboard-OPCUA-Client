@@ -37,6 +37,12 @@ namespace Umati {
 
 			bool connect();
 
+			OpcUa_NodeClass readNodeClass(UaNodeId nodeId);
+
+			void checkConnection();
+
+			bool isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType);
+
 			// ------- Default call settings -----------
 			UaClientSdk::ServiceSettings m_defaultServiceSettings;
 			double m_maxAgeRead_ms = 100.0;

@@ -1,3 +1,6 @@
+#include "OpcUaClient.hpp"
+#include "OpcUaClient.hpp"
+#include "OpcUaClient.hpp"
 
 #include "OpcUaClient.hpp"
 #include <uasession.h>
@@ -19,6 +22,8 @@
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
 #include "Converter/UaNodeIdToModelNodeId.hpp"
 #include "Converter/ModelQualifiedNameToUaQualifiedName.hpp"
+#include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
+#include "Converter/UaNodeClassToModelNodeClass.hpp"
 
 namespace Umati {
 
@@ -123,6 +128,76 @@ namespace Umati {
 			//return Subscr.createSubscription(m_pSession);
 		}
 
+		OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
+		{
+			checkConnection();
+
+			UaReadValueIds readValueIds;
+			readValueIds.create(1);
+			nodeId.copyTo(&readValueIds[0].NodeId);
+			readValueIds[0].AttributeId = OpcUa_Attributes_NodeClass;
+
+			UaDataValues readResult;
+
+			UaDiagnosticInfos diagInfo;
+
+			auto uaResult = m_pSession->read(
+				m_defaultServiceSettings,
+				100.0,
+				OpcUa_TimestampsToReturn_Neither,
+				readValueIds,
+				readResult,
+				diagInfo
+			);
+
+			if (uaResult.isBad())
+			{
+				LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.toXmlString().toUtf8()
+					<< "' with " << uaResult.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+			}
+
+			if (readResult.length() != 1)
+			{
+				LOG(ERROR) << "readResult.length() expect 1  got:" << readResult.length();
+				throw Exceptions::UmatiException("Length mismatch");
+			}
+
+			UaStatusCode uaResultElement(readResult[0].StatusCode);
+			if (uaResultElement.isBad())
+			{
+				LOG(ERROR) << "Bad value status code failed for node: '" << nodeId.toXmlString().toUtf8()
+					<< "' with " << uaResultElement.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
+			}
+
+			UaVariant value(readResult[0].Value);
+			if (value.type() != OpcUaType_Int32)
+			{
+				LOG(ERROR) << "Expect Type Int32, got '" << value.type();
+				throw Exceptions::UmatiException("Type mismatch");
+			}
+
+			OpcUa_Int32 nodeClass;
+			value.toInt32(nodeClass);
+
+			return  static_cast<OpcUa_NodeClass>(nodeClass);
+		}
+
+		void OpcUaClient::checkConnection()
+		{
+			if (!this->m_isConnected || !m_pSession->isConnected())
+			{
+				throw Exceptions::ClientNotConnected("Need connected client.");
+			}
+		}
+
+		bool OpcUaClient::isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType)
+		{
+			///\TODO check subtypes
+			return expectedType == checkType;
+		}
+
 		void OpcUaClient::updateNamespaceCache()
 		{
 			///\TODO replace by subcription to ns0;i=2255 [Server_NamespaceArray]
@@ -207,17 +282,94 @@ namespace Umati {
 			}
 		}
 
-		std::list < IDashboardClient::BrowseResult_t > OpcUaClient::Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition)
+		std::list < IDashboardClient::BrowseResult_t > OpcUaClient::Browse(
+			ModelOpcUa::NodeId_t startNode,
+			ModelOpcUa::NodeId_t referenceTypeId,
+			ModelOpcUa::NodeId_t typeDefinition)
 		{
-			return std::list<IDashboardClient::BrowseResult_t>();
+			checkConnection();
+
+			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
+			auto referenceTypeUaNodeId = Converter::ModelNodeIdToUaNodeId(referenceTypeId, m_uriToIndexCache).getNodeId();
+			auto typeDefinitionUaNodeId = Converter::ModelNodeIdToUaNodeId(typeDefinition, m_uriToIndexCache).getNodeId();
+
+
+			UaClientSdk::BrowseContext browseContext;
+			browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
+			browseContext.includeSubtype = OpcUa_True;
+			browseContext.maxReferencesToReturn = 0;
+			browseContext.nodeClassMask = 0; // ALL
+			browseContext.referenceTypeId = referenceTypeUaNodeId;
+			browseContext.resultMask =
+				OpcUa_BrowseResultMask_BrowseName |
+				OpcUa_BrowseResultMask_TypeDefinition |
+				OpcUa_BrowseResultMask_NodeClass |
+				OpcUa_BrowseResultMask_ReferenceTypeId;
+
+
+			OpcUa_NodeClass nodeClass = readNodeClass(typeDefinitionUaNodeId);
+
+			switch (nodeClass)
+			{
+			case OpcUa_NodeClass_ObjectType:
+			{
+				browseContext.nodeClassMask = OpcUa_NodeClass_Object;
+				break;
+			}
+			case OpcUa_NodeClass_VariableType:
+			{
+				browseContext.nodeClassMask = OpcUa_NodeClass_Variable;
+				break;
+			}
+			default:
+				LOG(ERROR) << "Invalid NodeClass " << nodeClass;
+				throw Exceptions::UmatiException("Invalid NodeClass");
+			}
+
+			UaByteString continuationPoint;
+			UaReferenceDescriptions referenceDescriptions;
+			auto uaResult = m_pSession->browse(m_defaultServiceSettings, startUaNodeId, browseContext, continuationPoint, referenceDescriptions);
+
+			if (uaResult.isBad())
+			{
+				LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+			}
+
+			std::list < IDashboardClient::BrowseResult_t > browseResult;
+
+
+			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
+			{
+				auto browseTypeNodeId = UaNodeId(UaExpandedNodeId(referenceDescriptions[i].TypeDefinition).nodeId());
+				if (!isSameOrSubtype(typeDefinitionUaNodeId, browseTypeNodeId))
+				{
+					continue;
+				}
+
+				IDashboardClient::BrowseResult_t entry;
+				entry.NodeClass = Converter::UaNodeClassToModelNodeClass(referenceDescriptions[i].NodeClass).getNodeClass();
+				entry.TypeDefinition = Converter::UaNodeIdToModelNodeId(browseTypeNodeId, m_indexToUriCache).getNodeId();
+				entry.NodeId = Converter::UaNodeIdToModelNodeId(
+					UaNodeId(UaExpandedNodeId(referenceDescriptions[i].NodeId).nodeId()),
+					m_indexToUriCache).getNodeId();
+				entry.ReferenceTypeId = Converter::UaNodeIdToModelNodeId(
+					UaNodeId(referenceDescriptions[i].ReferenceTypeId),
+					m_indexToUriCache).getNodeId();
+				entry.BrowseName = Converter::UaQualifiedNameToModelQualifiedName(referenceDescriptions[i].BrowseName, m_indexToUriCache).getQualifiedName();
+
+				browseResult.push_back(entry);
+			}
+
+			/// \todo handle continuation point
+
+
+			return browseResult;
 		}
 
 		ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName)
 		{
-			if (!this->m_isConnected || !m_pSession->isConnected())
-			{
-				throw Exceptions::ClientNotConnected("TranslateBrowsePathToNodeId needs connected client.");
-			}
+			checkConnection();
 
 			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName, m_uriToIndexCache).getQualifiedName();
