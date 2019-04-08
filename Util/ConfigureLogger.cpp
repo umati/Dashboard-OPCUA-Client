@@ -5,17 +5,20 @@
 // Initiliaze Logger once
 INITIALIZE_EASYLOGGINGPP;
 //INITIALIZE_NULL_EASYLOGGINGPP;
-namespace Util
+
+namespace Umati
 {
-
-	void ConfigureLogger(std::string name)
+	namespace Util
 	{
-		//el::Helpers::setStorage(el::base::type::StoragePointer());
 
-		el::Configurations conf;
-		conf.setToDefault();
-		conf.parseFromText(
-R"LOG_CONFIG(
+		void ConfigureLogger(std::string name)
+		{
+			//el::Helpers::setStorage(el::base::type::StoragePointer());
+
+			el::Configurations conf;
+			conf.setToDefault();
+			conf.parseFromText(
+				R"LOG_CONFIG(
 * GLOBAL:
   FORMAT = "%datetime [%logger] %level %func:%line %msg"
   ENABLED = true
@@ -31,11 +34,11 @@ R"LOG_CONFIG(
 * VERBOSE:
   TO_STANDARD_OUTPUT = false
 )LOG_CONFIG");
-		conf.setGlobally(el::ConfigurationType::Filename, name + "-%datetime{%Y%M%d}.log");
+			conf.setGlobally(el::ConfigurationType::Filename, name + "-%datetime{%Y%M%d}.log");
 
-		el::Loggers::reconfigureLogger(ELPP_DEFAULT_LOGGER, conf);
-		LOG(INFO) << "Logger Configured: " << name;
+			el::Loggers::reconfigureLogger(ELPP_DEFAULT_LOGGER, conf);
+			LOG(INFO) << "Logger Configured: " << name;
+		}
+
 	}
-
 }
-

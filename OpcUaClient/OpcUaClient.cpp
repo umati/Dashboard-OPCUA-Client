@@ -13,8 +13,12 @@
 #include "uaplatformlayer.h"
 #include "OpcUaClient.hpp"
 
+#include "Exceptions/ClientNotConnected.hpp"
+#include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
+
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
 #include "Converter/UaNodeIdToModelNodeId.hpp"
+#include "Converter/ModelQualifiedNameToUaQualifiedName.hpp"
 
 namespace Umati {
 
@@ -34,13 +38,17 @@ namespace Umati {
 			}
 
 			m_tryConnecting = true;
+
+			// Try connecting at least once
+			this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() {this->threadConnectExecution(); });
 		}
 
-		bool OpcUaClient::connect(std::string serverURI)
+		bool OpcUaClient::connect()
 		{
 
-			UaString sURL(serverURI.c_str());
+			//UaString sURL(serverURI.c_str());
+			UaString sURL(m_serverUri.c_str());
 			UaStatus result;
 			UaClientSdk::SessionConnectInfo sessionConnectInfo;
 			sessionConnectInfo.sApplicationName = "KonI4.0 OPC UA Data Client";
@@ -190,7 +198,7 @@ namespace Umati {
 			{
 				if (!m_isConnected)
 				{
-					this->connect(m_serverUri);
+					this->connect();
 				}
 				else
 				{
@@ -206,7 +214,66 @@ namespace Umati {
 
 		ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName)
 		{
-			return ModelOpcUa::NodeId_t();
+			if (!this->m_isConnected || !m_pSession->isConnected())
+			{
+				throw Exceptions::ClientNotConnected("TranslateBrowsePathToNodeId needs connected client.");
+			}
+
+			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
+			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName, m_uriToIndexCache).getQualifiedName();
+
+			UaRelativePathElements uaBrowsePathElements;
+			uaBrowsePathElements.create(1);
+			uaBrowsePathElements[0].IncludeSubtypes = OpcUa_True;
+			uaBrowsePathElements[0].IsInverse = OpcUa_False;
+			uaBrowsePathElements[0].ReferenceTypeId.Identifier.Numeric = OpcUaId_HierarchicalReferences;
+			uaBrowseName.copyTo(&uaBrowsePathElements[0].TargetName);
+
+			UaBrowsePaths uaBrowsePaths;
+			uaBrowsePaths.create(1);
+			uaBrowsePaths[0].RelativePath.NoOfElements = uaBrowsePathElements.length();
+			uaBrowsePaths[0].RelativePath.Elements = uaBrowsePathElements.detach();
+			startUaNodeId.copyTo(&uaBrowsePaths[0].StartingNode);
+
+			UaBrowsePathResults uaBrowsePathResults;
+			UaDiagnosticInfos uaDiagnosticInfos;
+
+			auto uaResult = m_pSession->translateBrowsePathsToNodeIds(
+				m_defaultServiceSettings,
+				uaBrowsePaths,
+				uaBrowsePathResults,
+				uaDiagnosticInfos
+			);
+
+			if (uaResult.isBad())
+			{
+				LOG(ERROR) << "TranslateBrowsePathToNodeId failed for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+			}
+
+			if (uaBrowsePathResults.length() != 1)
+			{
+				LOG(ERROR) << "Expect 1 browseResult, got " << uaBrowsePathResults.length();
+				throw Exceptions::UmatiException("BrowseResult length mismatch.");
+			}
+
+			UaStatusCode uaResultElement(uaBrowsePathResults[0].StatusCode);
+			if (uaResultElement.isBad())
+			{
+				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
+			}
+
+			if (uaBrowsePathResults[0].NoOfTargets != 1)
+			{
+				LOG(ERROR) << "Expect 1 traget, got " << uaBrowsePathResults[0].NoOfTargets;
+				throw Exceptions::UmatiException("Number of targets mismatch.");
+			}
+
+			UaNodeId targetNodeId(UaExpandedNodeId(uaBrowsePathResults[0].Targets[0].TargetId).nodeId());
+
+			return Converter::UaNodeIdToModelNodeId(targetNodeId, m_indexToUriCache).getNodeId();
 		}
 
 	}

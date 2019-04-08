@@ -9,10 +9,15 @@ set(CLIENT_SRC
 	"Converter/ModelNodeIdToUaNodeId.cpp"
 	"Converter/ModelToUaConverter.cpp"
 	"Converter/UaToModelConverter.cpp"
+	"Converter/ModelQualifiedNameToUaQualifiedName.cpp"
 	"Exceptions/OpcUaNonGoodStatusCodeException.cpp"
 )
 
-add_library(OpcUaClient ${CLIENT_SRC})
-target_link_libraries(OpcUaClient Util)
-target_link_libraries(OpcUaClient UaSDKCpp::UaSDKCpp)
-target_link_libraries(OpcUaClient ModelOpcUaLib)
+add_library(OpcUaClientLib ${CLIENT_SRC})
+target_link_libraries(OpcUaClientLib Util)
+target_link_libraries(OpcUaClientLib UaSDKCpp::UaSDKCpp)
+target_link_libraries(OpcUaClientLib ModelOpcUaLib)
+target_include_directories(OpcUaClientLib PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+  )

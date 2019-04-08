@@ -2,8 +2,10 @@
 
 #include <string>
 
-namespace Util
+namespace Umati
 {
-	void ConfigureLogger(std::string name);
+	namespace Util
+	{
+		void ConfigureLogger(std::string name);
+	}
 }
-

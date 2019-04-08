@@ -18,7 +18,7 @@ static void stopHandler(int sig) {
 
 int main(int argc, char* argv[])
 {
-	Util::ConfigureLogger("DashboardOpcUaClient");
+	Umati::Util::ConfigureLogger("DashboardOpcUaClient");
 
 	signal(SIGINT, stopHandler);
 	signal(SIGTERM, stopHandler);

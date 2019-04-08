@@ -38,13 +38,19 @@ namespace ModelOpcUa {
 
 			return ss.str();
 		}
+
+		bool operator ==(const NodeId_t &other) const
+		{
+			return this->Uri == other.Uri
+				&& this->Id == other.Id;
+		}
 	};
 
 	struct QualifiedName_t {
-		std::string Name;
-
 		std::string Uri;
 
+		std::string Name;
+		
 		bool isNull() const
 		{
 			return Uri.empty() && Name.empty();

@@ -24,16 +24,18 @@ namespace Umati {
 
 			bool disconnect();
 
-			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
-
 			//Subscription Subscr;
 
 
 			// Inherit from IDashboardClient
 			virtual std::list<BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
 			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
+
+			bool isConnected() { return m_isConnected; }
 		protected:
-			bool connect(std::string serverURI);
+			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
+
+			bool connect();
 
 			// ------- Default call settings -----------
 			UaClientSdk::ServiceSettings m_defaultServiceSettings;

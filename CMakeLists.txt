@@ -5,6 +5,10 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 14)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# Set common directories for all executables in this project
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_custom_target(Dashboard_OpcUaClient)
 
@@ -15,9 +19,10 @@ add_subdirectory(Util)
 
 add_subdirectory(ModelOpcUa)
 add_subdirectory(OpcUaClient)
+add_subdirectory(Tests)
 
 add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
-target_link_libraries(DashboardOpcUaClient OpcUaClient)
+target_link_libraries(DashboardOpcUaClient OpcUaClientLib)
 
 #Copy UA-SDK dlls to output directory
 add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
