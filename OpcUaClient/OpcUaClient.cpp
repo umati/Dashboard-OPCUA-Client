@@ -13,7 +13,10 @@
 #include "uaplatformlayer.h"
 #include "OpcUaClient.hpp"
 
-namespace umati {
+#include "Converter/ModelNodeIdToUaNodeId.hpp"
+#include "Converter/UaNodeIdToModelNodeId.hpp"
+
+namespace Umati {
 
 	namespace OpcUa {
 

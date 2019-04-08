@@ -13,7 +13,7 @@
 //#include "Subscription.hpp"
 #include "IDashboardClient.hpp"
 
-namespace umati {
+namespace Umati {
 	namespace OpcUa {
 		class OpcUaClient : public UaClientSdk::UaSessionCallback, public IDashboardClient
 		{
@@ -47,8 +47,8 @@ namespace umati {
 			void threadConnectExecution();
 
 			std::shared_ptr<UaClientSdk::UaSession> m_pSession;
-			std::map<std::string, uint32_t> m_uriToIndexCache;
-			std::map<uint32_t, std::string> m_indexToUriCache;
+			std::map<std::string, uint16_t> m_uriToIndexCache;
+			std::map<uint16_t, std::string> m_indexToUriCache;
 			std::string m_serverUri;
 			std::shared_ptr<std::thread> m_connectThread;
 			std::atomic_bool m_isConnected = false;

@@ -1,7 +1,7 @@
 
 #include <ModelOpcUa/ModelDefinition.hpp>
 
-namespace umati {
+namespace Umati {
 
 	namespace OpcUa
 	{

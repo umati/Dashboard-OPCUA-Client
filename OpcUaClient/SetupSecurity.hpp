@@ -1,7 +1,7 @@
 #pragma once
 #include <uaclientsdk.h>
 
-namespace umati {
+namespace Umati {
 	namespace OpcUa {
 		class SetupSecurity
 		{

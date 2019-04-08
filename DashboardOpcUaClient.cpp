@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	umati::OpcUa::OpcUaClient client(argv[1]);
+	Umati::OpcUa::OpcUaClient client(argv[1]);
 	while (running)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));

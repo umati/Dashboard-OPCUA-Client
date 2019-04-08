@@ -10,7 +10,7 @@
 #include <iostream>
 #include <easylogging++.h>
 
-namespace umati {
+namespace Umati {
 	namespace OpcUa {
 		SetupSecurity::paths_t SetupSecurity::paths = {
 			"pki/server/trusted/",
