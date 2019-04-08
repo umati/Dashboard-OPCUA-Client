@@ -5,6 +5,8 @@ find_package(UASdkCpp REQUIRED)
 set(CLIENT_SRC
 	"OpcUaClient.cpp"
 	"SetupSecurity.cpp"
+	"Converter/NodeIdToModelNodeId.cpp"
+	"Converter/ModelNodeIdToNodeId.cpp"
 )
 
 add_library(OpcUaClient ${CLIENT_SRC})

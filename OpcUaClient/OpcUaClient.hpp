@@ -13,45 +13,49 @@
 //#include "Subscription.hpp"
 #include "IDashboardClient.hpp"
 
-namespace OpcUa {
-	class OpcUaClient : public UaClientSdk::UaSessionCallback, public IDashboardClient
-	{
-		UA_DISABLE_COPY(OpcUaClient);
-	public:
-		OpcUaClient(std::string serverURI);
-		~OpcUaClient();
+namespace umati {
+	namespace OpcUa {
+		class OpcUaClient : public UaClientSdk::UaSessionCallback, public IDashboardClient
+		{
+			UA_DISABLE_COPY(OpcUaClient);
+		public:
+			OpcUaClient(std::string serverURI);
+			~OpcUaClient();
 
-		bool disconnect();
+			bool disconnect();
 
-		void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
+			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
 
-		//Subscription Subscr;
+			//Subscription Subscr;
 
-	protected:
-		bool connect(std::string serverURI);
 
-		// ------- Default call settings -----------
-		UaClientSdk::ServiceSettings m_defaultServiceSettings;
-		double m_maxAgeRead_ms = 100.0;
-		OpcUa_UInt32 m_nextTransactionid = 0x80000000;
-		// -----------------------------------------
-		
-		void updateNamespaceCache();
+			// Inherit from IDashboardClient
+			virtual std::list<BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
+			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
+		protected:
+			bool connect(std::string serverURI);
 
-		void threadConnectExecution();
+			// ------- Default call settings -----------
+			UaClientSdk::ServiceSettings m_defaultServiceSettings;
+			double m_maxAgeRead_ms = 100.0;
+			OpcUa_UInt32 m_nextTransactionid = 0x80000000;
+			// -----------------------------------------
 
-		std::shared_ptr<UaClientSdk::UaSession> m_pSession;
-		std::map<std::string, uint32_t> m_uriToIndexCache;
-		std::map<uint32_t, std::string> m_indexToUriCache;
-		std::string m_serverUri;
-		std::shared_ptr<std::thread> m_connectThread;
-		std::atomic_bool m_isConnected = false;
-		std::atomic_bool m_tryConnecting = false;
-	private:
-		static int PlattformLayerInitialized;
+			///\TODO replace by subcription to ns0;i=2255 [Server_NamespaceArray]
+			void updateNamespaceCache();
 
-		// Geerbt über IDashboardClient
-		virtual std::list<BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
-		virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
-	};
+			void threadConnectExecution();
+
+			std::shared_ptr<UaClientSdk::UaSession> m_pSession;
+			std::map<std::string, uint32_t> m_uriToIndexCache;
+			std::map<uint32_t, std::string> m_indexToUriCache;
+			std::string m_serverUri;
+			std::shared_ptr<std::thread> m_connectThread;
+			std::atomic_bool m_isConnected = false;
+			std::atomic_bool m_tryConnecting = false;
+		private:
+			static int PlattformLayerInitialized;
+
+		};
+	}
 }

@@ -30,13 +30,12 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	OpcUa::OpcUaClient client(argv[1]);
-	
+	umati::OpcUa::OpcUaClient client(argv[1]);
 	while (running)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 
-	LOG(INFO) << "End Dashboard OPC UA Client normally";
+	LOG(INFO) << "End Dashboard OPC UA Client";
 	return 0;
 }
