@@ -9,6 +9,7 @@ set(CLIENT_SRC
 	"Converter/ModelNodeIdToUaNodeId.cpp"
 	"Converter/ModelToUaConverter.cpp"
 	"Converter/UaToModelConverter.cpp"
+	"Exceptions/OpcUaNonGoodStatusCodeException.cpp"
 )
 
 add_library(OpcUaClient ${CLIENT_SRC})
