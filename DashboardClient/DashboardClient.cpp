@@ -1,6 +1,7 @@
 #include "DashboardClient.hpp"
 
 #include <easylogging++.h>
+#include "Converter/ModelToJson.hpp"
 
 namespace Umati {
 
@@ -11,9 +12,30 @@ namespace Umati {
 		{
 		}
 
+		DashboardClient::~DashboardClient()
+		{
+			m_pDashboardDataClient->UnsubscribeAll();
+		}
+
 		void DashboardClient::UseDataFrom(ModelOpcUa::NodeId_t startNodeId, std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition)
 		{
-			TransformToNodeIds(pTypeDefinition, startNodeId);
+			m_node = TransformToNodeIds(pTypeDefinition, startNodeId);
+			subscribeValues(m_node);
+		}
+
+		std::string DashboardClient::getJson()
+		{
+			auto getValueCallback = [this](const std::shared_ptr<const ModelOpcUa::Node> pNode) -> nlohmann::json
+			{
+				auto it = this->m_values.find(pNode);
+				if (it == this->m_values.end())
+				{
+					return nullptr;
+				}
+				return it->second;
+			};
+
+			return Converter::ModelToJson(m_node, getValueCallback).getJson().dump(2);
 		}
 
 		std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeIds(
@@ -106,6 +128,64 @@ namespace Umati {
 			}
 
 			return pPlaceholderNode;
+		}
+
+		void DashboardClient::subscribeValues(const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode)
+		{
+			// Only Mandatory/Optional variables
+			if (pNode->NodeClass == ModelOpcUa::NodeClass_t::Variable
+				&& (pNode->ModellingRule == ModelOpcUa::ModellingRule_t::Mandatory
+					|| pNode->ModellingRule == ModelOpcUa::ModellingRule_t::Optional
+					)
+				)
+			{
+				auto callback = [pNode, this](nlohmann::json value) {
+					this->m_values[pNode] = value;
+				};
+
+				m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
+			}
+
+			for (auto & pChildNode : pNode->ChildNodes)
+			{
+				switch (pChildNode->ModellingRule)
+				{
+				case ModelOpcUa::ModellingRule_t::Mandatory:
+				case ModelOpcUa::ModellingRule_t::Optional:
+				{
+					auto pSimpleChild = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pChildNode);
+					if (!pSimpleChild)
+					{
+						LOG(ERROR) << "Simple node error, instance not a simple node." << std::endl;
+						continue;
+					}
+					subscribeValues(pSimpleChild);
+					break;
+				}
+				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
+				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
+				{
+					auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
+					if (!pPlaceholderChild)
+					{
+						LOG(ERROR) << "Placeholder error, instance not a placeholder." << std::endl;
+						break;
+					}
+
+					auto placeholderElements = pPlaceholderChild->getInstances();
+
+					for (const auto &pPlayholderElement : placeholderElements)
+					{
+						subscribeValues(pPlayholderElement.pNode);
+					}
+					break;
+				}
+				default:
+					LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
+					break;
+				}
+			}
+
 		}
 	}
 }

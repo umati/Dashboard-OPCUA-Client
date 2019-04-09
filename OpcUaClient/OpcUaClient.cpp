@@ -207,12 +207,12 @@ namespace Umati {
 			for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
 			{
 				std::string namespaceURI(UaString(uaNamespaces[i]).toUtf8());
-				m_uriToIndexCache[namespaceURI] = i;
-				m_indexToUriCache[i] = namespaceURI;
+				m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
+				m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
 			}
 		}
 
-		void OpcUaClient::connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus)
+		void OpcUaClient::connectionStatusChanged(OpcUa_UInt32 /*clientConnectionId*/, UaClientSdk::UaClient::ServerStatus serverStatus)
 		{
 			switch (serverStatus)
 			{

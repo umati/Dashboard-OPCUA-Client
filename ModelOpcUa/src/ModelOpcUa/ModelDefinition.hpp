@@ -44,6 +44,16 @@ namespace ModelOpcUa {
 			return this->Uri == other.Uri
 				&& this->Id == other.Id;
 		}
+
+		bool operator <(const NodeId_t &other) const
+		{
+			if (this->Uri != other.Uri)
+			{
+				return this->Uri < other.Uri;
+			}
+
+			return this->Id < other.Id;
+		}
 	};
 
 	struct QualifiedName_t {

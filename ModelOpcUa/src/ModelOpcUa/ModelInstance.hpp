@@ -54,7 +54,7 @@ namespace ModelOpcUa {
 		using Node::Node;
 		void addInstance(PlaceholderElement instance);
 		
-		std::list<PlaceholderElement> getInstances();
+		std::list<PlaceholderElement> getInstances() const;
 
 	protected:
 		/// The found instances according to the predefined Type

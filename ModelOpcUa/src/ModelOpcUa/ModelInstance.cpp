@@ -10,7 +10,7 @@ namespace ModelOpcUa {
 		this->Instances.push_back(instance);
 	}
 
-	std::list<PlaceholderElement> PlaceholderNode::getInstances()
+	std::list<PlaceholderElement> PlaceholderNode::getInstances() const
 	{
 		return this->Instances;
 	}

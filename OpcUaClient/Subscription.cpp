@@ -23,7 +23,7 @@ namespace Umati {
 			LOG(WARNING) << "SubscriptionStatus changed to " << status.toString().toUtf8();
 		}
 
-		void Subscription::dataChange(OpcUa_UInt32 /*clientSubscriptionHandle*/, const UaDataNotifications & dataNotifications, const UaDiagnosticInfos & diagnosticInfos)
+		void Subscription::dataChange(OpcUa_UInt32 /*clientSubscriptionHandle*/, const UaDataNotifications & dataNotifications, const UaDiagnosticInfos & /*diagnosticInfos*/)
 		{
 			for (OpcUa_UInt32 i = 0; i < dataNotifications.length(); ++i)
 			{

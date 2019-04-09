@@ -41,9 +41,16 @@ int main(int argc, char* argv[])
 		Umati::Dashboard::TypeDefinition::getIdentificationType()
 	);
 
+	int i = 0;
 	while (running)
 	{
+		++i;
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+		if ((i % 64) == 0)
+		{
+			std::cout << dashClient.getJson();
+		}
 	}
 
 	LOG(INFO) << "End Dashboard OPC UA Client";

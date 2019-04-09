@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 set(DASHBOARDCLIENT_SRC
 	"TypeDefinition/IdentificationType.cpp"
 	"DashboardClient.cpp"
+	"Converter/ModelToJson.cpp"
 )
 
 find_package(nlohmann_json 3.6.1 REQUIRED)
