@@ -7,8 +7,11 @@ namespace Umati {
 
 	namespace Dashboard {
 
-		DashboardClient::DashboardClient(std::shared_ptr<IDashboardDataClient> pDashboardDataClient)
-			: m_pDashboardDataClient(pDashboardDataClient)
+		DashboardClient::DashboardClient(
+			std::shared_ptr<IDashboardDataClient> pDashboardDataClient,
+			std::shared_ptr<IPublisher> pPublisher
+		)
+			: m_pDashboardDataClient(pDashboardDataClient), m_pPublisher(pPublisher)
 		{
 		}
 
@@ -21,6 +24,11 @@ namespace Umati {
 		{
 			m_node = TransformToNodeIds(pTypeDefinition, startNodeId);
 			subscribeValues(m_node);
+		}
+
+		void DashboardClient::Publish(std::string channel)
+		{
+			m_pPublisher->Publish(channel, getJson());
 		}
 
 		std::string DashboardClient::getJson()

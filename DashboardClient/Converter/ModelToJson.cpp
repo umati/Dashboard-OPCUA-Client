@@ -26,7 +26,7 @@ namespace Umati
 					}
 					
 					m_json["nodeId"] = static_cast<std::string> (pSimpleNode->NodeId);
-					m_json["typeNodeId"] = static_cast<std::string> (pSimpleNode->TypeNodeId);
+					m_json["specifiedTypeNodeId"] = static_cast<std::string> (pSimpleNode->SpecifiedTypeNodeId);
 
 					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
 					{

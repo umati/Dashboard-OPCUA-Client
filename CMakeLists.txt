@@ -20,10 +20,12 @@ add_subdirectory(Util)
 add_subdirectory(ModelOpcUa)
 add_subdirectory(DashboardClient)
 add_subdirectory(OpcUaClient)
+add_subdirectory(RedisPublisher)
 add_subdirectory(Tests)
 
 add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
-target_link_libraries(DashboardOpcUaClient OpcUaClientLib)
+target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)
+target_link_libraries(DashboardOpcUaClient PUBLIC RedisPublisher)
 
 #Copy UA-SDK dlls to output directory
 add_custom_command(TARGET DashboardOpcUaClient POST_BUILD

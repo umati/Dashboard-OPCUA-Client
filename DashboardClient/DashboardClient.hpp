@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDashboardDataClient.hpp"
+#include "IPublisher.hpp"
 #include <ModelOpcUa/ModelInstance.hpp>
 
 namespace Umati {
@@ -8,11 +9,13 @@ namespace Umati {
 	namespace Dashboard {
 		class DashboardClient {
 		public:
-			DashboardClient(std::shared_ptr<IDashboardDataClient> pDashboardDataClient);
+			DashboardClient(std::shared_ptr<IDashboardDataClient> pDashboardDataClient,
+				std::shared_ptr<IPublisher> pPublisher);
 			~DashboardClient();
 
 			/// \TODO rename
 			void UseDataFrom(ModelOpcUa::NodeId_t startNodeId, std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition);
+			void Publish(std::string channel);
 
 			std::string getJson();
 		protected:
@@ -28,6 +31,7 @@ namespace Umati {
 			void subscribeValues(const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode);
 
 			std::shared_ptr<IDashboardDataClient> m_pDashboardDataClient;
+			std::shared_ptr<IPublisher> m_pPublisher;
 
 			/// \todo rename
 			std::shared_ptr<const ModelOpcUa::SimpleNode> m_node;

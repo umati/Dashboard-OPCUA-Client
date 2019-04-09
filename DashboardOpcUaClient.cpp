@@ -1,5 +1,6 @@
 #include "OpcUaClient/OpcUaClient.hpp"
 #include <DashboardClient.hpp>
+#include <RedisPublisher.hpp>
 #include <TypeDefinition/IdentificationType.hpp>
 
 #include <signal.h>
@@ -34,7 +35,8 @@ int main(int argc, char* argv[])
 	}
 
 	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(argv[1]);
-	Umati::Dashboard::DashboardClient dashClient(pClient);
+	auto pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
+	Umati::Dashboard::DashboardClient dashClient(pClient, pPublisher);
 
 	dashClient.UseDataFrom(
 		{ "http://www.umati.info/example", "i=5001" },
@@ -50,6 +52,7 @@ int main(int argc, char* argv[])
 		if ((i % 64) == 0)
 		{
 			std::cout << dashClient.getJson();
+			dashClient.Publish("/umati/emo/ISW/ExampleMachine/Information");
 		}
 	}
 

@@ -13,7 +13,7 @@ namespace ModelOpcUa {
 		: NodeClass(nodeClass),
 		ModellingRule(modellingRule),
 		ReferenceType(referenceType), 
-		SpecifiedTypeNodeId(SpecifiedTypeNodeId),
+		SpecifiedTypeNodeId(specifiedTypeNodeId),
 		SpecifiedBrowseName(specifiedBrowseName)
 	{
 
