@@ -1,5 +1,8 @@
 #pragma once
+#include <nlohmann/json.hpp>
+
 #include <ModelOpcUa/ModelDefinition.hpp>
+#include <functional>
 
 namespace Umati {
 
@@ -8,6 +11,8 @@ namespace Umati {
 		class IDashboardDataClient
 		{
 		public:
+
+			typedef std::function<void(nlohmann::json value)> newValueCallbackFunction_t;
 
 			virtual ~IDashboardDataClient() = default;
 
@@ -32,7 +37,9 @@ namespace Umati {
 				ModelOpcUa::QualifiedName_t browseName
 			) = 0;
 
-			//Subscribe();
+			virtual void Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
+
+			virtual void UnsubscribeAll() = 0;
 
 		};
 	}

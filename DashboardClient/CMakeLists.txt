@@ -5,10 +5,13 @@ set(DASHBOARDCLIENT_SRC
 	"DashboardClient.cpp"
 )
 
+find_package(nlohmann_json 3.6.1 REQUIRED)
+
 add_library(DashboardClient ${DASHBOARDCLIENT_SRC})
 
 target_link_libraries(DashboardClient PUBLIC ModelOpcUaLib)
 target_link_libraries(DashboardClient PUBLIC Util)
+target_link_libraries(DashboardClient PUBLIC nlohmann_json::nlohmann_json)
 
 target_include_directories(DashboardClient PUBLIC 
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

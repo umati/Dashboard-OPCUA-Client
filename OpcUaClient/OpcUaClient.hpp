@@ -1,5 +1,7 @@
 #pragma once
 
+#include <IDashboardDataClient.hpp>
+
 #include <uabase.h>
 #include <uaclientsdk.h>
 #include <string>
@@ -10,8 +12,7 @@
 #include <mutex>
 #include <atomic>
 
-//#include "Subscription.hpp"
-#include <IDashboardDataClient.hpp>
+#include "Subscription.hpp"
 
 namespace Umati {
 	namespace OpcUa {
@@ -26,12 +27,14 @@ namespace Umati {
 
 			//Subscription Subscr;
 
+			bool isConnected() { return m_isConnected; }
 
 			// Inherit from IDashboardClient
 			virtual std::list<BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
 			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
+			virtual void Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
+			virtual void UnsubscribeAll() override;
 
-			bool isConnected() { return m_isConnected; }
 		protected:
 			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
 
@@ -61,9 +64,10 @@ namespace Umati {
 			std::shared_ptr<std::thread> m_connectThread;
 			std::atomic_bool m_isConnected = false;
 			std::atomic_bool m_tryConnecting = false;
+
+			Subscription m_subscr;
 		private:
 			static int PlattformLayerInitialized;
-
 		};
 	}
 }

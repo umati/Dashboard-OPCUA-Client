@@ -5,6 +5,7 @@ find_package(UASdkCpp REQUIRED)
 set(CLIENT_SRC
 	"OpcUaClient.cpp"
 	"SetupSecurity.cpp"
+	"Subscription.cpp"
 	"Converter/UaNodeIdToModelNodeId.cpp"
 	"Converter/ModelNodeIdToUaNodeId.cpp"
 	"Converter/ModelToUaConverter.cpp"
@@ -12,6 +13,7 @@ set(CLIENT_SRC
 	"Converter/UaNodeClassToModelNodeClass.cpp"
 	"Converter/ModelQualifiedNameToUaQualifiedName.cpp"
 	"Converter/UaQualifiedNameToModelQualifiedName.cpp"
+	"Converter/UaDataValueToJsonValue.cpp"
 	"Exceptions/OpcUaNonGoodStatusCodeException.cpp"
 )
 

@@ -1,6 +1,8 @@
 #include "OpcUaClient.hpp"
 #include "OpcUaClient.hpp"
 #include "OpcUaClient.hpp"
+#include "OpcUaClient.hpp"
+#include "OpcUaClient.hpp"
 
 #include "OpcUaClient.hpp"
 #include <uasession.h>
@@ -32,7 +34,7 @@ namespace Umati {
 		int OpcUaClient::PlattformLayerInitialized = 0;
 
 		OpcUaClient::OpcUaClient(std::string serverURI)
-			: m_serverUri(serverURI)
+			: m_serverUri(serverURI), m_subscr(m_uriToIndexCache, m_indexToUriCache)
 		{
 			m_defaultServiceSettings.callTimeout = 1000;
 
@@ -123,9 +125,8 @@ namespace Umati {
 			}
 
 			updateNamespaceCache();
-			//Subscr.setUriToIndexCache(m_uriToIndexCache);
+			m_subscr.createSubscription(m_pSession);
 			return true;
-			//return Subscr.createSubscription(m_pSession);
 		}
 
 		OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
@@ -440,5 +441,16 @@ namespace Umati {
 			return Converter::UaNodeIdToModelNodeId(targetNodeId, m_indexToUriCache).getNodeId();
 		}
 
+		void OpcUaClient::UnsubscribeAll()
+		{
+			m_subscr.UnsubscribeAll();
+		}
+
+		void OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
+		{
+			m_subscr.Subscribe(nodeId, callback);
+		}
+
 	}
+
 }
