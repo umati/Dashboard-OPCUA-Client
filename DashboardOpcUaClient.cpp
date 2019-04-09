@@ -38,9 +38,10 @@ int main(int argc, char* argv[])
 	auto pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
 	Umati::Dashboard::DashboardClient dashClient(pClient, pPublisher);
 
-	dashClient.UseDataFrom(
+	dashClient.addDataSet(
 		{ "http://www.umati.info/example", "i=5001" },
-		Umati::Dashboard::TypeDefinition::getIdentificationType()
+		Umati::Dashboard::TypeDefinition::getIdentificationType(),
+		"/umati/emo/ISW/ExampleMachine/Information"
 	);
 
 	int i = 0;
@@ -51,8 +52,7 @@ int main(int argc, char* argv[])
 
 		if ((i % 64) == 0)
 		{
-			std::cout << dashClient.getJson();
-			dashClient.Publish("/umati/emo/ISW/ExampleMachine/Information");
+			dashClient.Publish();
 		}
 	}
 

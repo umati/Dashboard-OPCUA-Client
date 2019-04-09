@@ -20,35 +20,47 @@ namespace Umati {
 			m_pDashboardDataClient->UnsubscribeAll();
 		}
 
-		void DashboardClient::UseDataFrom(ModelOpcUa::NodeId_t startNodeId, std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition)
+		void DashboardClient::addDataSet(
+			ModelOpcUa::NodeId_t startNodeId,
+			std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
+			std::string channel)
 		{
-			m_node = TransformToNodeIds(pTypeDefinition, startNodeId);
-			subscribeValues(m_node);
+			auto pDataSetStorage = std::make_shared<DataSetStorage_t>();
+			pDataSetStorage->startNodeId = startNodeId;
+			pDataSetStorage->channel = channel;
+			pDataSetStorage->pTypeDefinition = pTypeDefinition;
+			pDataSetStorage->node = TransformToNodeIds(startNodeId, pTypeDefinition);
+			subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
+			m_dataSets.push_back(pDataSetStorage);
+
 		}
 
-		void DashboardClient::Publish(std::string channel)
+		void DashboardClient::Publish()
 		{
-			m_pPublisher->Publish(channel, getJson());
-		}
-
-		std::string DashboardClient::getJson()
-		{
-			auto getValueCallback = [this](const std::shared_ptr<const ModelOpcUa::Node> pNode) -> nlohmann::json
+			for (auto &pDataSetStorage : m_dataSets)
 			{
-				auto it = this->m_values.find(pNode);
-				if (it == this->m_values.end())
+				m_pPublisher->Publish(pDataSetStorage->channel, getJson(pDataSetStorage));
+			}
+		}
+
+		std::string DashboardClient::getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage)
+		{
+			auto getValueCallback = [pDataSetStorage](const std::shared_ptr<const ModelOpcUa::Node> pNode) -> nlohmann::json
+			{
+				auto it = pDataSetStorage->values.find(pNode);
+				if (it == pDataSetStorage->values.end())
 				{
 					return nullptr;
 				}
 				return it->second;
 			};
 
-			return Converter::ModelToJson(m_node, getValueCallback).getJson().dump(2);
+			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback).getJson().dump(2);
 		}
 
 		std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeIds(
-			const std::shared_ptr<const ModelOpcUa::StructureNode> &pTypeDefinition,
-			ModelOpcUa::NodeId_t startNode
+			ModelOpcUa::NodeId_t startNode,
+			const std::shared_ptr<const ModelOpcUa::StructureNode> &pTypeDefinition
 		)
 		{
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
@@ -64,7 +76,7 @@ namespace Umati {
 					{
 						continue;
 					}
-					foundChildNodes.push_back(TransformToNodeIds(pChild, childNodeId));
+					foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
 
 					break;
 				}
@@ -130,7 +142,7 @@ namespace Umati {
 
 				ModelOpcUa::PlaceholderElement plElement;
 				plElement.BrowseName = browseResult.BrowseName;
-				plElement.pNode = TransformToNodeIds(*itPosType, browseResult.NodeId);
+				plElement.pNode = TransformToNodeIds(browseResult.NodeId, *itPosType);
 
 				pPlaceholderNode->addInstance(plElement);
 			}
@@ -138,7 +150,10 @@ namespace Umati {
 			return pPlaceholderNode;
 		}
 
-		void DashboardClient::subscribeValues(const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode)
+		void DashboardClient::subscribeValues(
+			const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
+			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
+		)
 		{
 			// Only Mandatory/Optional variables
 			if (pNode->NodeClass == ModelOpcUa::NodeClass_t::Variable
@@ -147,8 +162,8 @@ namespace Umati {
 					)
 				)
 			{
-				auto callback = [pNode, this](nlohmann::json value) {
-					this->m_values[pNode] = value;
+				auto callback = [pNode, &valueMap](nlohmann::json value) {
+					valueMap[pNode] = value;
 				};
 
 				m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
@@ -167,7 +182,7 @@ namespace Umati {
 						LOG(ERROR) << "Simple node error, instance not a simple node." << std::endl;
 						continue;
 					}
-					subscribeValues(pSimpleChild);
+					subscribeValues(pSimpleChild, valueMap);
 					break;
 				}
 				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
@@ -184,7 +199,7 @@ namespace Umati {
 
 					for (const auto &pPlayholderElement : placeholderElements)
 					{
-						subscribeValues(pPlayholderElement.pNode);
+						subscribeValues(pPlayholderElement.pNode, valueMap);
 					}
 					break;
 				}
