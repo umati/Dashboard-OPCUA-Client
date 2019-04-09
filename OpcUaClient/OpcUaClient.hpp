@@ -11,11 +11,11 @@
 #include <atomic>
 
 //#include "Subscription.hpp"
-#include "IDashboardClient.hpp"
+#include <IDashboardDataClient.hpp>
 
 namespace Umati {
 	namespace OpcUa {
-		class OpcUaClient : public UaClientSdk::UaSessionCallback, public IDashboardClient
+		class OpcUaClient : public UaClientSdk::UaSessionCallback, public Dashboard::IDashboardDataClient
 		{
 			UA_DISABLE_COPY(OpcUaClient);
 		public:

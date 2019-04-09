@@ -1,0 +1,18 @@
+
+#include <ModelOpcUa/ModelDefinition.hpp>
+
+namespace Umati
+{
+	namespace Dashboard
+	{
+		namespace TypeDefinition
+		{
+			const std::string UmatiNamespaceUri("http://www.umati.info");
+			
+			namespace NodeIds
+			{
+$nodeIdDefinitions
+			}
+		}
+	}
+}

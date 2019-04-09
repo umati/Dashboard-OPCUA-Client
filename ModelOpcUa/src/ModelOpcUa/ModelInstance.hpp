@@ -44,13 +44,14 @@ namespace ModelOpcUa {
 
 	struct PlaceholderElement
 	{
-		std::shared_ptr<SimpleNode> pNode;
+		std::shared_ptr<const SimpleNode> pNode;
 		QualifiedName_t BrowseName;
 	};
 
 	// ModellingRule is one of {OptionalPlaceholder, MandatoryPlaceholder}
 	class PlaceholderNode : public Node {
 	public:
+		using Node::Node;
 		void addInstance(PlaceholderElement instance);
 		
 		std::list<PlaceholderElement> getInstances();

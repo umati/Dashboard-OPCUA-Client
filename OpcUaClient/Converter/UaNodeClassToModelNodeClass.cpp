@@ -1,7 +1,7 @@
 #include "UaNodeClassToModelNodeClass.hpp"
 
 #include <easylogging++.h>
-#include "../Exceptions/UmatiException.hpp"
+#include <Exceptions/UmatiException.hpp>
 
 namespace Umati
 {

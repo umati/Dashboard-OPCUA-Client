@@ -6,9 +6,9 @@
 
 namespace ExampleModels
 {
-	const ModelOpcUa::NodeId_t hasComponent{ "", "hasComponent" };
-	const ModelOpcUa::NodeId_t BaseDataVariable {"", "BaseDataVariable" };
-	const ModelOpcUa::NodeId_t BaseObjectType {"", "BaseObjectType" };
+	const ModelOpcUa::NodeId_t HasComponentTypeNodeId{ "", "hasComponent" };
+	const ModelOpcUa::NodeId_t BaseDataVariableTypeNodeId {"", "BaseDataVariable" };
+	const ModelOpcUa::NodeId_t BaseObjectTypeNodeId {"", "BaseObjectType" };
 	const decltype(ModelOpcUa::NodeId_t::Uri) MyTypeNs("MyTypeNS");
 
 	static std::shared_ptr<ModelOpcUa::StructureNode> getSimpleVariable(
@@ -19,8 +19,8 @@ namespace ExampleModels
 		return std::make_shared<ModelOpcUa::StructureNode>(
 			ModelOpcUa::NodeClass_t::Variable,
 			modellingRule,
-			hasComponent,
-			BaseDataVariable,
+			HasComponentTypeNodeId,
+			BaseDataVariableTypeNodeId,
 			ModelOpcUa::QualifiedName_t{ MyTypeNs, name }
 			);
 	}
@@ -34,8 +34,8 @@ namespace ExampleModels
 		return std::shared_ptr<ModelOpcUa::StructurePlaceholderNode>(new ModelOpcUa::StructurePlaceholderNode(
 			ModelOpcUa::NodeClass_t::Variable,
 			modellingRule,
-			hasComponent,
-			BaseDataVariable,
+			HasComponentTypeNodeId,
+			BaseDataVariableTypeNodeId,
 			{MyTypeNs, name },
 			{},
 			possibleTypes

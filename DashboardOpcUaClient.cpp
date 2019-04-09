@@ -1,4 +1,7 @@
 #include "OpcUaClient/OpcUaClient.hpp"
+#include <DashboardClient.hpp>
+#include <TypeDefinition/IdentificationType.hpp>
+
 #include <signal.h>
 
 #include <easylogging++.h>
@@ -23,14 +26,21 @@ int main(int argc, char* argv[])
 	signal(SIGINT, stopHandler);
 	signal(SIGTERM, stopHandler);
 	LOG(INFO) << "Start Dashboard OPC UA Client";
-	
+
 	if (argc < 2)
 	{
 		LOG(ERROR) << "No Server URL provided.";
 		return 1;
 	}
 
-	Umati::OpcUa::OpcUaClient client(argv[1]);
+	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(argv[1]);
+	Umati::Dashboard::DashboardClient dashClient(pClient);
+
+	dashClient.UseDataFrom(
+		{ "http://www.umati.info/example", "i=5001" },
+		Umati::Dashboard::TypeDefinition::getIdentificationType()
+	);
+
 	while (running)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));

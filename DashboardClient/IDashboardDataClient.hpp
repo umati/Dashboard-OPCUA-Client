@@ -1,16 +1,15 @@
-
+#pragma once
 #include <ModelOpcUa/ModelDefinition.hpp>
 
 namespace Umati {
 
-	namespace OpcUa
+	namespace Dashboard
 	{
-
-		class IDashboardClient
+		class IDashboardDataClient
 		{
 		public:
 
-			virtual ~IDashboardClient() = default;
+			virtual ~IDashboardDataClient() = default;
 
 			struct BrowseResult_t
 			{

@@ -16,7 +16,7 @@
 #include "uaplatformlayer.h"
 #include "OpcUaClient.hpp"
 
-#include "Exceptions/ClientNotConnected.hpp"
+#include <Exceptions/ClientNotConnected.hpp>
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
@@ -282,7 +282,7 @@ namespace Umati {
 			}
 		}
 
-		std::list < IDashboardClient::BrowseResult_t > OpcUaClient::Browse(
+		std::list < Umati::Dashboard::IDashboardDataClient::BrowseResult_t > OpcUaClient::Browse(
 			ModelOpcUa::NodeId_t startNode,
 			ModelOpcUa::NodeId_t referenceTypeId,
 			ModelOpcUa::NodeId_t typeDefinition)
@@ -336,7 +336,7 @@ namespace Umati {
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 
-			std::list < IDashboardClient::BrowseResult_t > browseResult;
+			std::list < IDashboardDataClient::BrowseResult_t > browseResult;
 
 
 			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
@@ -347,7 +347,7 @@ namespace Umati {
 					continue;
 				}
 
-				IDashboardClient::BrowseResult_t entry;
+				IDashboardDataClient::BrowseResult_t entry;
 				entry.NodeClass = Converter::UaNodeClassToModelNodeClass(referenceDescriptions[i].NodeClass).getNodeClass();
 				entry.TypeDefinition = Converter::UaNodeIdToModelNodeId(browseTypeNodeId, m_indexToUriCache).getNodeId();
 				entry.NodeId = Converter::UaNodeIdToModelNodeId(
@@ -370,6 +370,18 @@ namespace Umati {
 		ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName)
 		{
 			checkConnection();
+
+			if (browseName.isNull())
+			{
+				LOG(ERROR) << "browseName is NULL";
+				throw std::invalid_argument("browseName is NULL");
+			}
+
+			if (startNode.isNull())
+			{
+				LOG(ERROR) << "startNode is NULL";
+				throw std::invalid_argument("startNode is NULL");
+			}
 
 			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName, m_uriToIndexCache).getQualifiedName();

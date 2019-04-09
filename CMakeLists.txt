@@ -18,6 +18,7 @@ find_package(easyloggingpp REQUIRED)
 add_subdirectory(Util)
 
 add_subdirectory(ModelOpcUa)
+add_subdirectory(DashboardClient)
 add_subdirectory(OpcUaClient)
 add_subdirectory(Tests)
 

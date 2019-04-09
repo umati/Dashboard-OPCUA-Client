@@ -1,8 +1,8 @@
 #pragma once
 
 #include <stdexcept>
-#include "OpcUaException.hpp"
-
+#include <Exceptions/OpcUaException.hpp>
+#include <statuscode.h>
 
 namespace Umati
 {

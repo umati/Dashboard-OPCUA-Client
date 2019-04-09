@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 #include "UmatiException.hpp"
-#include <statuscode.h>
 
 namespace Umati
 {

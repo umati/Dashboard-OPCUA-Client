@@ -19,6 +19,7 @@ add_library(OpcUaClientLib ${CLIENT_SRC})
 target_link_libraries(OpcUaClientLib Util)
 target_link_libraries(OpcUaClientLib UaSDKCpp::UaSDKCpp)
 target_link_libraries(OpcUaClientLib ModelOpcUaLib)
+target_link_libraries(OpcUaClientLib DashboardClient)
 target_include_directories(OpcUaClientLib PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
