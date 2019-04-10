@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 
 set(DASHBOARDCLIENT_SRC
 	"TypeDefinition/IdentificationType.cpp"
+	"TypeDefinition/StacklightType.cpp"
 	"DashboardClient.cpp"
 	"Converter/ModelToJson.cpp"
 )

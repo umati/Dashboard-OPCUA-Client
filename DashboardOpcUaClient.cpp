@@ -2,6 +2,7 @@
 #include <DashboardClient.hpp>
 #include <RedisPublisher.hpp>
 #include <TypeDefinition/IdentificationType.hpp>
+#include <TypeDefinition/StacklightType.hpp>
 
 #include <signal.h>
 
@@ -42,6 +43,12 @@ int main(int argc, char* argv[])
 		{ "http://www.umati.info/example", "i=5001" },
 		Umati::Dashboard::TypeDefinition::getIdentificationType(),
 		"/umati/emo/ISW/ExampleMachine/Information"
+	);
+
+	dashClient.addDataSet(
+		{ "http://www.umati.info/example", "i=5005" },
+		Umati::Dashboard::TypeDefinition::getStacklightType(),
+		"/umati/emo/ISW/ExampleMachine/Monitoring/Stacklight"
 	);
 
 	int i = 0;

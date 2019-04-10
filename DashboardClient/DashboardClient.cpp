@@ -2,6 +2,7 @@
 
 #include <easylogging++.h>
 #include "Converter/ModelToJson.hpp"
+#include "Exceptions/UmatiException.hpp"
 
 namespace Umati {
 
@@ -89,8 +90,8 @@ namespace Umati {
 						LOG(ERROR) << "Placeholder error, instance not a placeholder." << std::endl;
 						break;
 					}
-					auto childNodes = BrowsePlaceholder(startNode, pPlaceholderChild);
-					std::cout << "Placeholder not supported." << std::endl;
+					auto placeholderNode = BrowsePlaceholder(startNode, pPlaceholderChild);
+					foundChildNodes.push_back(placeholderNode);
 					break;
 				}
 				default:
@@ -111,9 +112,10 @@ namespace Umati {
 		std::shared_ptr<const ModelOpcUa::PlaceholderNode> DashboardClient::BrowsePlaceholder(ModelOpcUa::NodeId_t startNode, std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStrucPlaceholder)
 		{
 
-			if (pStrucPlaceholder)
+			if (!pStrucPlaceholder)
 			{
-				return nullptr;
+				LOG(ERROR) << "Invalid Argument, pStrucPlaceholder is nullptr";
+				throw std::invalid_argument("pStrucPlaceholder is nullptr.");
 			}
 
 			//pStrucPlaceholder->PossibleTypes

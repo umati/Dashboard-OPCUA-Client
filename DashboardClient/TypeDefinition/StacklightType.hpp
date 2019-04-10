@@ -7,7 +7,7 @@ namespace Umati
 	{
 		namespace TypeDefinition
 		{
-			std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationType(
+			std::shared_ptr<ModelOpcUa::StructureNode> getStacklightType(
 				ModelOpcUa::QualifiedName_t qualifiedName = {}
 			);
 		}
