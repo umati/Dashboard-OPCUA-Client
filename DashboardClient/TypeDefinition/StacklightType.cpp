@@ -25,7 +25,7 @@ namespace Umati
 					NodeIds::StacklightType,
 					qualifiedName,
 					std::list<std::shared_ptr<const ModelOpcUa::StructureNode>>{
-					getPlaceholderLampType()
+					getPlaceholderLampType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Lamps"})
 				}
 				);
 

@@ -58,6 +58,7 @@ namespace Umati
 				const ModelOpcUa::NodeId_t BaseToolType {UmatiNamespaceUri, "i=1055" };
 				const ModelOpcUa::NodeId_t MultiToolType {UmatiNamespaceUri, "i=1057" };
 				const ModelOpcUa::NodeId_t ToolType {UmatiNamespaceUri, "i=1056" };
+				const ModelOpcUa::NodeId_t EMONotificationType {UmatiNamespaceUri, "i=1046" };
 				const ModelOpcUa::NodeId_t MachineToolsFolderType {UmatiNamespaceUri, "i=1012" };
 				const ModelOpcUa::NodeId_t IdentificationType {UmatiNamespaceUri, "i=1021" };
 				const ModelOpcUa::NodeId_t LampType {UmatiNamespaceUri, "i=1041" };
