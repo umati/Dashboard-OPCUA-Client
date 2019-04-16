@@ -44,7 +44,10 @@ namespace Umati {
 
 			void checkConnection();
 
-			bool isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType);
+			UaNodeId browseSuperType(UaNodeId typeNodeId);
+
+			// Max search depth
+			bool isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType, std::size_t maxDepth = 100);
 
 			// ------- Default call settings -----------
 			UaClientSdk::ServiceSettings m_defaultServiceSettings;
@@ -66,6 +69,19 @@ namespace Umati {
 			std::atomic_bool m_tryConnecting = false;
 
 			Subscription m_subscr;
+
+			struct UaNodeId_Compare
+			{
+				bool operator()(const UaNodeId & left, const UaNodeId &right) const
+				{
+					return
+						std::string(left.toXmlString().toUtf8()) <
+						std::string(right.toXmlString().toUtf8());
+				}
+			};
+
+			/// Map for chaching super types. Key = Type, Value = Supertype
+			std::map<UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
 		private:
 			static int PlattformLayerInitialized;
 		};

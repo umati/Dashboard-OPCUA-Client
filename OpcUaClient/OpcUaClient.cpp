@@ -3,6 +3,7 @@
 #include "OpcUaClient.hpp"
 #include "OpcUaClient.hpp"
 #include "OpcUaClient.hpp"
+#include "OpcUaClient.hpp"
 
 #include "OpcUaClient.hpp"
 #include <uasession.h>
@@ -49,6 +50,7 @@ namespace Umati {
 			// Try connecting at least once
 			this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() {this->threadConnectExecution(); });
+
 		}
 
 		bool OpcUaClient::connect()
@@ -193,10 +195,85 @@ namespace Umati {
 			}
 		}
 
-		bool OpcUaClient::isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType)
+		UaNodeId OpcUaClient::browseSuperType(UaNodeId typeNodeId)
 		{
-			///\TODO check subtypes
-			return expectedType == checkType;
+			checkConnection();
+
+			auto referenceTypeUaNodeId = UaNodeId(OpcUaId_HasSubtype);
+
+
+			UaClientSdk::BrowseContext browseContext;
+			browseContext.browseDirection = OpcUa_BrowseDirection_Inverse;
+			browseContext.includeSubtype = OpcUa_True;
+			browseContext.maxReferencesToReturn = 0;
+			browseContext.nodeClassMask = 0; // ALL
+			browseContext.referenceTypeId = referenceTypeUaNodeId;
+			browseContext.resultMask = OpcUa_BrowseResultMask_None;
+
+			OpcUa_NodeClass nodeClass = readNodeClass(typeNodeId);
+
+			switch (nodeClass)
+			{
+			case OpcUa_NodeClass_ObjectType:
+			case OpcUa_NodeClass_VariableType:
+			{
+				browseContext.nodeClassMask = nodeClass;
+				break;
+			}
+			default:
+				LOG(ERROR) << "Invalid NodeClass " << nodeClass;
+				throw Exceptions::UmatiException("Invalid NodeClass");
+			}
+
+			UaByteString continuationPoint;
+			UaReferenceDescriptions referenceDescriptions;
+			auto uaResult = m_pSession->browse(m_defaultServiceSettings, typeNodeId, browseContext, continuationPoint, referenceDescriptions);
+
+			if (uaResult.isBad())
+			{
+				LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+			}
+
+			std::list < IDashboardDataClient::BrowseResult_t > browseResult;
+
+
+			if (referenceDescriptions.length() == 0)
+			{
+				return UaNodeId();
+			}
+
+			if (referenceDescriptions.length() > 1)
+			{
+				LOG(ERROR) << "Found multiple superTypes for " << typeNodeId.toXmlString().toUtf8();
+				return UaNodeId();
+			}
+
+			return UaNodeId(UaExpandedNodeId(referenceDescriptions[0].NodeId).nodeId());
+		}
+
+		bool OpcUaClient::isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType, std::size_t maxDepth)
+		{
+			if (checkType.isNull())
+			{
+				return false;
+			}
+
+			if (expectedType == checkType)
+			{
+				return true;
+			}
+
+			auto it = m_superTypes.find(checkType);
+
+			if (it != m_superTypes.end())
+			{
+				return isSameOrSubtype(expectedType, it->second, --maxDepth);
+			}
+
+			auto superType = browseSuperType(checkType);
+			m_superTypes[checkType] = superType;
+			return isSameOrSubtype(expectedType, superType, --maxDepth);
 		}
 
 		void OpcUaClient::updateNamespaceCache()
@@ -419,20 +496,23 @@ namespace Umati {
 
 			if (uaBrowsePathResults.length() != 1)
 			{
-				LOG(ERROR) << "Expect 1 browseResult, got " << uaBrowsePathResults.length();
+				LOG(ERROR) << "Expect 1 browseResult, got " << uaBrowsePathResults.length() << "for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8();
 				throw Exceptions::UmatiException("BrowseResult length mismatch.");
 			}
 
 			UaStatusCode uaResultElement(uaBrowsePathResults[0].StatusCode);
 			if (uaResultElement.isBad())
 			{
-				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8();
+				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8() << "for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8();
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
 			}
 
 			if (uaBrowsePathResults[0].NoOfTargets != 1)
 			{
-				LOG(ERROR) << "Expect 1 traget, got " << uaBrowsePathResults[0].NoOfTargets;
+				LOG(ERROR) << "Expect 1 traget, got " << uaBrowsePathResults[0].NoOfTargets << "for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8();
 				throw Exceptions::UmatiException("Number of targets mismatch.");
 			}
 

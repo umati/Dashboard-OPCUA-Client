@@ -75,6 +75,11 @@ namespace Umati {
 					auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
 					if (childNodeId.isNull())
 					{
+						LOG(INFO) << "Could not find '"
+							<< static_cast<std::string>(startNode)
+							<< "'->'"
+							<< static_cast<std::string>(pChild->SpecifiedBrowseName)
+							<< "'";
 						continue;
 					}
 					foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
@@ -109,7 +114,10 @@ namespace Umati {
 			return pNode;
 		}
 
-		std::shared_ptr<const ModelOpcUa::PlaceholderNode> DashboardClient::BrowsePlaceholder(ModelOpcUa::NodeId_t startNode, std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStrucPlaceholder)
+		std::shared_ptr<const ModelOpcUa::PlaceholderNode> DashboardClient::BrowsePlaceholder(
+			ModelOpcUa::NodeId_t startNode,
+			std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStrucPlaceholder
+		)
 		{
 
 			if (!pStrucPlaceholder)
@@ -117,8 +125,6 @@ namespace Umati {
 				LOG(ERROR) << "Invalid Argument, pStrucPlaceholder is nullptr";
 				throw std::invalid_argument("pStrucPlaceholder is nullptr.");
 			}
-
-			//pStrucPlaceholder->PossibleTypes
 
 			auto pPlaceholderNode = std::make_shared<ModelOpcUa::PlaceholderNode>(
 				*pStrucPlaceholder,
