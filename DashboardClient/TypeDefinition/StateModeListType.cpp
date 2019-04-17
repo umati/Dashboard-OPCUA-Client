@@ -57,9 +57,9 @@ namespace Umati
 					qualifiedName,
 					std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> {},
 					std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> {
-					getChannelStateModeType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Channel" }),
-						getControllerStateModeType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Controller" }),
-						getSpindleStateModeType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Spindle" })
+					getChannelStateModeType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Channels" }),
+						getControllerStateModeType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Controllers" }),
+						getSpindleStateModeType(ModelOpcUa::QualifiedName_t{ UmatiNamespaceUri, "Spindles" })
 				}
 				);
 				return PlaceholderStateModeType;

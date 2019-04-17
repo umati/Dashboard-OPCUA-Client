@@ -1,6 +1,11 @@
 #include "OpcUaClient/OpcUaClient.hpp"
 #include <DashboardClient.hpp>
+#if defined(PUBLISHER_REDIS)
 #include <RedisPublisher.hpp>
+#endif
+#if defined(PUBLISHER_MQTT)
+#include <MqttPublisher.hpp>
+#endif
 #include <TypeDefinition/IdentificationType.hpp>
 #include <TypeDefinition/StacklightType.hpp>
 #include <TypeDefinition/ToolListType.hpp>
@@ -40,7 +45,18 @@ int main(int argc, char* argv[])
 	}
 
 	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(argv[1]);
-	auto pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
+
+	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
+
+#if defined(PUBLISHER_MQTT)
+	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>("prj-umati01", 1883,
+		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online");
+#elif defined(PUBLISHER_REDIS)
+	pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
+#else
+#error "No publisher defined"
+#endif
+
 	Umati::Dashboard::DashboardClient dashClient(pClient, pPublisher);
 
 	LOG(INFO) << "Begin read model";

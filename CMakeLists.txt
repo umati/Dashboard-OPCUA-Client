@@ -20,12 +20,28 @@ add_subdirectory(Util)
 add_subdirectory(ModelOpcUa)
 add_subdirectory(DashboardClient)
 add_subdirectory(OpcUaClient)
-add_subdirectory(RedisPublisher)
+
+
 add_subdirectory(Tests)
 
 add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
 target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)
-target_link_libraries(DashboardOpcUaClient PUBLIC RedisPublisher)
+
+set(DASHBOARD_PUBLISHER "MQTT" CACHE STRING "Publisher Backend")
+set_property(CACHE DASHBOARD_PUBLISHER PROPERTY STRINGS MQTT REDIS)
+
+
+if(DASHBOARD_PUBLISHER STREQUAL "MQTT")
+	add_subdirectory(MqttPublisher)
+	target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_MQTT=1)
+	target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher)
+endif()
+
+if(DASHBOARD_PUBLISHER STREQUAL "REDIS")
+	add_subdirectory(RedisPublisher)
+	target_link_libraries(DashboardOpcUaClient PUBLIC RedisPublisher)
+	target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_REDIS=1)
+endif()
 
 #Copy UA-SDK dlls to output directory
 add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
@@ -41,4 +57,15 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 		$<TARGET_FILE_DIR:DashboardOpcUaClient>
 	WORKING_DIRECTORY "${UASDK_BASE_DIR}/bin/"
 	COMMENT "Copy UA Dlls to bin"
+)
+
+add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+        libcrypto-1_1.dll
+		libssl-1_1.dll
+		mosquitto.dll
+		mosquittopp.dll
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>
+	WORKING_DIRECTORY "${CPP_MOSQUITTO_DIR}/bin/"
+	COMMENT "Copy Mosquitto Dlls to bin"
 )
