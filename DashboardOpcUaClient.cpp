@@ -38,9 +38,9 @@ int main(int argc, char* argv[])
 	signal(SIGTERM, stopHandler);
 	LOG(INFO) << "Start Dashboard OPC UA Client";
 
-	if (argc < 2)
+	if (argc < 5)
 	{
-		LOG(ERROR) << "No Server URL provided.";
+		LOG(ERROR) << "No enought parameters provided: <>.exe <opcua URL> <mqttHost> <mqttuser> <mqttpasswd>";
 		return 1;
 	}
 
@@ -49,8 +49,8 @@ int main(int argc, char* argv[])
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
 
 #if defined(PUBLISHER_MQTT)
-	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>("prj-umati01", 1883,
-		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online");
+	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(argv[2], 1883,
+		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online", argv[3], argv[4]);
 #elif defined(PUBLISHER_REDIS)
 	pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
 #else
