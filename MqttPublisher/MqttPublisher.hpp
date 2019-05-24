@@ -22,7 +22,9 @@ namespace Umati {
 
 			const std::string OnlineTopic;
 		protected:
-			virtual void on_disconnect(int rc) override;
+			void on_disconnect(int rc) override;
+			void on_log(int level, const char * str) override;
+			void on_error() override;
 		};
 	}
 }

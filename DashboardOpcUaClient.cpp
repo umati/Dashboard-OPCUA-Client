@@ -3,9 +3,14 @@
 #if defined(PUBLISHER_REDIS)
 #include <RedisPublisher.hpp>
 #endif
-#if defined(PUBLISHER_MQTT)
+#if defined(PUBLISHER_MQTT_MOSQUITTO)
 #include <MqttPublisher.hpp>
 #endif
+
+#if defined(PUBLISHER_MQTT_PAHO)
+#include <MqttPublisher_Paho.hpp>
+#endif
+
 #include <TypeDefinition/IdentificationType.hpp>
 #include <TypeDefinition/StacklightType.hpp>
 #include <TypeDefinition/ToolListType.hpp>
@@ -48,11 +53,14 @@ int main(int argc, char* argv[])
 
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
 
-#if defined(PUBLISHER_MQTT)
+#if defined(PUBLISHER_MQTT_MOSQUITTO)
 	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(argv[2], 1883,
 		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online", argv[3], argv[4]);
 #elif defined(PUBLISHER_REDIS)
 	pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
+#elif defined(PUBLISHER_MQTT_PAHO)
+	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(argv[2], 1883,
+		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online", argv[3], argv[4]);
 #else
 #error "No publisher defined"
 #endif

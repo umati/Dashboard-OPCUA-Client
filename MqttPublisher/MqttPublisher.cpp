@@ -29,7 +29,7 @@ namespace Umati {
 		)
 			: mosqpp::mosquittopp("Dashboard Client"), OnlineTopic(onlineTopic)
 		{
-			reconnect_delay_set(1, 10, true);
+			//reconnect_delay_set(1, 10, true);
 
 			std::string zero("0");
 			auto ret = will_set(onlineTopic.c_str(), zero.length(), zero.c_str(), 0, true);
@@ -74,7 +74,41 @@ namespace Umati {
 			auto ret = publish(&mid, channel.c_str(), message.size(), message.c_str(), 0, true);
 			if (ret != MOSQ_ERR_SUCCESS)
 			{
-				LOG(ERROR) << "MQTT-Publish error: " << ret << std::endl;
+				LOG(ERROR) << "MQTT-Publish error: ("<< ret  <<")" << mosquitto_strerror(ret);
+
+				switch (ret) {
+				case MOSQ_ERR_ERRNO:
+				{
+					auto err = errno;
+					char* errorText = NULL;
+
+					FormatMessageA(
+						// use system message tables to retrieve error text
+						FORMAT_MESSAGE_FROM_SYSTEM
+						// allocate buffer on local heap for error text
+						| FORMAT_MESSAGE_ALLOCATE_BUFFER
+						// Important! will fail otherwise, since we're not
+						// (and CANNOT) pass insertion parameters
+						| FORMAT_MESSAGE_IGNORE_INSERTS,
+						NULL,    // unused with FORMAT_MESSAGE_FROM_SYSTEM
+						err,
+						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+						(LPTSTR)&errorText,  // output
+						0, // minimum size for output buffer
+						NULL);
+					LOG(ERROR) << "Windows Error("<< errno <<"):" << errorText;
+
+					if (NULL != errorText)
+					{
+						// ... do something with the string `errorText` - log it, display it to the user, etc.
+						// release memory allocated by FormatMessage()
+						LocalFree(errorText);
+						errorText = NULL;
+					}
+					break;
+				}
+
+				}
 			}
 		}
 
@@ -82,6 +116,47 @@ namespace Umati {
 		{
 			LOG(WARNING) << "Mqtt disconnected, try reconnecting";
 			reconnect();
+		}
+
+		void MqttPublisher::on_log(int level, const char * str)
+		{
+			switch (level)
+			{
+			case MOSQ_LOG_DEBUG:
+			{
+				LOG(DEBUG) << "Mosquitto log DEBUG: "<< str;
+				break;
+			}
+			case MOSQ_LOG_INFO:
+			{
+				LOG(INFO) << "Mosquitto log INFO: " << str;
+				break;
+			}
+			case MOSQ_LOG_NOTICE:
+			{
+				LOG(WARNING) << "Mosquitto log NOTICE: " << str;
+				break;
+			}
+			case MOSQ_LOG_WARNING:
+			{
+				LOG(WARNING) << "Mosquitto log WARNING: " << str;
+				break;
+			}
+			case MOSQ_LOG_ERR:
+			{
+				LOG(ERROR) << "Mosquitto log ERROR: " << str;
+				break;
+			}
+			default:
+			{
+				LOG(WARNING) << "Mosquitto log UNKNOWN: " << level << ":" << str;
+			}
+			}
+		}
+
+		void MqttPublisher::on_error()
+		{
+			LOG(ERROR) << "Mosquitto error";
 		}
 	}
 }

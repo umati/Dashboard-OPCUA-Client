@@ -27,14 +27,22 @@ add_subdirectory(Tests)
 add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
 target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)
 
-set(DASHBOARD_PUBLISHER "MQTT" CACHE STRING "Publisher Backend")
-set_property(CACHE DASHBOARD_PUBLISHER PROPERTY STRINGS MQTT REDIS)
+set(DASHBOARD_PUBLISHER "MQTT_PAHO" CACHE STRING "Publisher Backend")
+set_property(CACHE DASHBOARD_PUBLISHER PROPERTY STRINGS MQTT_MOSQUITTO MQTT_PAHO REDIS)
 
 
-if(DASHBOARD_PUBLISHER STREQUAL "MQTT")
+if(DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
 	add_subdirectory(MqttPublisher)
-	target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_MQTT=1)
+	target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_MQTT_MOSQUITTO=1)
 	target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher)
+endif()
+
+if(DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
+	# Promote target PahoMqttC::PahoMqttC for dll copy
+	find_package(PahoMqttCpp REQUIRED)
+	add_subdirectory(MqttPublisher_Paho)
+	target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_MQTT_PAHO=1)
+	target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher_Paho)
 endif()
 
 if(DASHBOARD_PUBLISHER STREQUAL "REDIS")
@@ -59,13 +67,25 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 	COMMENT "Copy UA Dlls to bin"
 )
 
-add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-        libcrypto-1_1.dll
-		libssl-1_1.dll
-		mosquitto.dll
-		mosquittopp.dll
+if(DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
+
+	add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy
+			libcrypto-1_1.dll
+			libssl-1_1.dll
+			mosquitto.dll
+			mosquittopp.dll
+			$<TARGET_FILE_DIR:DashboardOpcUaClient>
+		WORKING_DIRECTORY "${CPP_MOSQUITTO_DIR}/bin/"
+		COMMENT "Copy Mosquitto Dlls to bin"
+	)
+endif()
+
+if(DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
+	add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		$<TARGET_FILE_DIR:PahoMqttC::PahoMqttC>/../bin/paho-mqtt3a.dll
 		$<TARGET_FILE_DIR:DashboardOpcUaClient>
-	WORKING_DIRECTORY "${CPP_MOSQUITTO_DIR}/bin/"
-	COMMENT "Copy Mosquitto Dlls to bin"
-)
+		COMMENT "Copy PahoMqttC::PahoMqttC shared library to bin"
+	)
+endif()
