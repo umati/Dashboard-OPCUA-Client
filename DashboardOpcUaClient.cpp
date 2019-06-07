@@ -15,7 +15,6 @@
 #include <TypeDefinition/StacklightType.hpp>
 #include <TypeDefinition/ToolListType.hpp>
 #include <TypeDefinition/ProductionJobListType.hpp>
-#include <TypeDefinition/NotificationFolderType.hpp>
 #include <TypeDefinition/StateModeListType.hpp>
 
 #include <signal.h>
@@ -91,12 +90,6 @@ int main(int argc, char* argv[])
 		{ "http://www.umati.info/example", "i=5012" },
 		Umati::Dashboard::TypeDefinition::getProductionJobListType(),
 		"/umati/emo/ISW/ExampleMachine/ProductionPlan"
-	);
-
-	dashClient.addDataSet(
-		{ "http://www.umati.info/example", "i=5030" },
-		Umati::Dashboard::TypeDefinition::getNotificationFolderType(),
-		"/umati/emo/ISW/ExampleMachine/Notification"
 	);
 
 	dashClient.addDataSet(

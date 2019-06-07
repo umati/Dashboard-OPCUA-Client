@@ -5,7 +5,6 @@ set(DASHBOARDCLIENT_SRC
 	"TypeDefinition/StacklightType.cpp"
 	"TypeDefinition/ToolListType.cpp"
 	"TypeDefinition/ProductionJobListType.cpp"
-	"TypeDefinition/NotificationFolderType.cpp"
 	"TypeDefinition/StateModeListType.cpp"
 	"DashboardClient.cpp"
 	"Converter/ModelToJson.cpp"
