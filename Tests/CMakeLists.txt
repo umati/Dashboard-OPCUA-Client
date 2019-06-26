@@ -19,3 +19,19 @@ add_test(
 	COMMAND TestConverter
 	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestConverter>
 )
+
+add_executable(TestConfigurationJsonFile testConfigurationJsonFile.cpp)
+target_link_libraries(TestConfigurationJsonFile Util GTest::gtest_main)
+add_test(
+	NAME TestConfigurationJsonFile
+	COMMAND TestConfigurationJsonFile
+	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestConfigurationJsonFile>
+)
+
+add_custom_command(TARGET TestConfigurationJsonFile POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+        data/Configuration.json
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>
+	COMMENT "Copy Test Configuration"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
