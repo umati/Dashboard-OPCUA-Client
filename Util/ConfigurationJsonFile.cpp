@@ -14,6 +14,12 @@ namespace Umati
 		ConfigurationJsonFile::ConfigurationJsonFile(std::string filename)
 		{
 			std::ifstream i(filename);
+			if (!i)
+			{
+				std::stringstream ss;
+				ss << "File '" << filename << "' not found.";
+				throw Exception::ConfigurationException(ss.str().c_str());
+			}
 			nlohmann::json j;
 			i >> j;
 			parseConfigurationFile(j);

@@ -1,0 +1,11 @@
+{
+  "OpcUaEndpoint": "opc.tcp://localhost:4840",
+  "InstanceNamespaceURI": "http://www.umati.info/example",
+  "Mqtt": {
+    "Hostname": "localhost",
+    "Port": 1883,
+    "Username": "MyUser",
+    "Password": "MyPassword",
+    "TopicPrefix":  "/MyUser/MyMachine"
+  }
+}

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <ConfigurationJsonFile.hpp>
+#include <Exceptions/ConfigurationException.hpp>
 
 TEST(ConfigurationJsonFile, NormalConfiguration)
 {
@@ -12,4 +13,12 @@ TEST(ConfigurationJsonFile, NormalConfiguration)
 	EXPECT_EQ(conf.Mqtt().Password, "MyPassword");
 	EXPECT_EQ(conf.Mqtt().TopicPrefix, "/MyUser/MyMachine");
 
+}
+
+TEST(ConfigurationJsonFile, FileNotFound)
+{
+	EXPECT_THROW(
+		Umati::Util::ConfigurationJsonFile conf("ConfigurationNotThere.json"),
+		Umati::Util::Exception::ConfigurationException
+		);
 }

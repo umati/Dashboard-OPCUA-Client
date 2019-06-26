@@ -26,6 +26,8 @@
 #include <atomic>
 
 #include <ConfigureLogger.hpp>
+#include <ConfigurationJsonFile.hpp>
+#include <Exceptions/ConfigurationException.hpp>
 
 std::atomic_bool running = true;
 
@@ -42,24 +44,48 @@ int main(int argc, char* argv[])
 	signal(SIGTERM, stopHandler);
 	LOG(INFO) << "Start Dashboard OPC UA Client";
 
-	if (argc < 5)
+	std::string configFilename("configuration.json");
+
+	if (argc >= 2)
 	{
-		LOG(ERROR) << "No enought parameters provided: <>.exe <opcua URL> <mqttHost> <mqttuser> <mqttpasswd>";
+		configFilename = argv[1];
+	}
+
+	std::shared_ptr<Umati::Util::Configuration> config;
+	try {
+		config = std::make_shared<Umati::Util::ConfigurationJsonFile>(configFilename);
+	}
+	catch (Umati::Util::Exception::ConfigurationException &ex)
+	{
+		LOG(ERROR) << "Configuration could not be loaded: " << ex.what();
+		std::cout << "Usage <>.exe [ConfigurationFileName]";
 		return 1;
 	}
 
-	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(argv[1]);
+	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(config->OpcUaEndpoint());
 
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
+	config->Mqtt().Hostname;
+	config->Mqtt().Port;
+	config->Mqtt().Username;
+	config->Mqtt().Password;
 
 #if defined(PUBLISHER_MQTT_MOSQUITTO)
-	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(argv[2], 1883,
-		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online", argv[3], argv[4]);
+	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(
+		config->Mqtt().Hostname,
+		config->Mqtt().Port,
+		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
+		config->Mqtt().Username,
+		config->Mqtt().Password);
 #elif defined(PUBLISHER_REDIS)
 	pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
 #elif defined(PUBLISHER_MQTT_PAHO)
-	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(argv[2], 1883,
-		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online", argv[3], argv[4]);
+	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
+		config->Mqtt().Hostname,
+		config->Mqtt().Port,
+		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
+		config->Mqtt().Username,
+		config->Mqtt().Password);
 #else
 #error "No publisher defined"
 #endif

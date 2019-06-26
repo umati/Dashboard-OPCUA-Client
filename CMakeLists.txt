@@ -89,3 +89,11 @@ if(DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
 		COMMENT "Copy PahoMqttC::PahoMqttC shared library to bin"
 	)
 endif()
+
+add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+        Configuration.json.example
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>
+	COMMENT "Copy Example Configuration"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)

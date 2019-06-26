@@ -31,7 +31,7 @@ add_test(
 add_custom_command(TARGET TestConfigurationJsonFile POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy
         data/Configuration.json
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>
+		$<TARGET_FILE_DIR:TestConfigurationJsonFile>
 	COMMENT "Copy Test Configuration"
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
