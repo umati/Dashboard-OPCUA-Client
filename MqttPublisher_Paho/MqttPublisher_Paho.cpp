@@ -6,7 +6,7 @@ namespace Umati {
 	namespace MqttPublisher_Paho {
 
 		MqttPublisher_Paho::MqttPublisher_Paho(std::string host, std::uint16_t port, std::string onlineTopic, std::string username, std::string password)
-			: m_cli(host, "Dashboad Paho Client", 100, nullptr), OnlineTopic(onlineTopic), m_callbacks(this)
+			: m_cli(host, getClientId(), 100, nullptr), OnlineTopic(onlineTopic), m_callbacks(this)
 		{
 			m_cli.set_callback(m_callbacks);
 			mqtt::connect_options opts_conn;
@@ -54,6 +54,21 @@ namespace Umati {
 				LOG(ERROR) << "Paho Exception:" << ex.what();
 			}
 			
+		}
+
+		std::string MqttPublisher_Paho::getClientId()
+		{
+			std::stringstream ss;
+			ss << "Dashboad Paho Client ";
+
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::uniform_int_distribution<> dis('a', 'z');
+			for (int i = 0; i < 12; ++i)
+			{
+				ss << static_cast<char>(dis(gen));
+			}
+			return ss.str();
 		}
 
 		MqttPublisher_Paho::~MqttPublisher_Paho()

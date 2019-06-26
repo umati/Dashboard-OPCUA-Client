@@ -32,6 +32,9 @@ namespace Umati {
 			const std::string OnlineTopic;
 
 		private:
+
+			std::string getClientId();
+
 			class MqttCallbacks : public mqtt::callback
 			{
 				friend class MqttPublisher_Paho;
