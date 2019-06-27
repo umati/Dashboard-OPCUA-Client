@@ -5,6 +5,7 @@ find_package(nlohmann_json 3.6.1 REQUIRED)
 set(UTIL_SRC
 	ConfigurationJsonFile.cpp
 	ConfigureLogger.cpp
+	PublishTopics.cpp
 	)
 
 add_library(Util ${UTIL_SRC})

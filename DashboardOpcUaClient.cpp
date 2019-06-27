@@ -27,6 +27,7 @@
 
 #include <ConfigureLogger.hpp>
 #include <ConfigurationJsonFile.hpp>
+#include <PublishTopics.hpp>
 #include <Exceptions/ConfigurationException.hpp>
 
 std::atomic_bool running = true;
@@ -70,11 +71,13 @@ int main(int argc, char* argv[])
 	config->Mqtt().Username;
 	config->Mqtt().Password;
 
+	Umati::Util::PublishTopics pubTopics(config->Mqtt().TopicPrefix);
+
 #if defined(PUBLISHER_MQTT_MOSQUITTO)
 	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(
 		config->Mqtt().Hostname,
 		config->Mqtt().Port,
-		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
+		pubTopics.ClientOnline,
 		config->Mqtt().Username,
 		config->Mqtt().Password);
 #elif defined(PUBLISHER_REDIS)
@@ -83,7 +86,7 @@ int main(int argc, char* argv[])
 	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
 		config->Mqtt().Hostname,
 		config->Mqtt().Port,
-		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
+		pubTopics.ClientOnline,
 		config->Mqtt().Username,
 		config->Mqtt().Password);
 #else
@@ -94,34 +97,39 @@ int main(int argc, char* argv[])
 
 	LOG(INFO) << "Begin read model";
 
+	const std::string NodeIdIdentifier_Identification("i=5001");
 	dashClient.addDataSet(
-		{ "http://www.umati.info/example", "i=5001" },
+		{ config->InstanceNamespaceURI(), NodeIdIdentifier_Identification },
 		Umati::Dashboard::TypeDefinition::getIdentificationType(),
-		"/umati/emo/ISW/ExampleMachine/Information"
+		pubTopics.Information
 	);
 
+	const std::string NodeIdIdentifier_Stacklight("i=5005");
 	dashClient.addDataSet(
-		{ "http://www.umati.info/example", "i=5005" },
+		{ config->InstanceNamespaceURI(), NodeIdIdentifier_Stacklight },
 		Umati::Dashboard::TypeDefinition::getStacklightType(),
-		"/umati/emo/ISW/ExampleMachine/Monitoring/Stacklight"
+		pubTopics.Stacklight
 	);
 
+	const std::string NodeIdIdentifier_Tools("i=5024");
 	dashClient.addDataSet(
-		{ "http://www.umati.info/example", "i=5024" },
+		{ config->InstanceNamespaceURI(), NodeIdIdentifier_Tools },
 		Umati::Dashboard::TypeDefinition::getToolListType(),
-		"/umati/emo/ISW/ExampleMachine/ToolManagement/Tools"
+		pubTopics.Tools
 	);
 
+	const std::string NodeIdIdentifier_ProductionPlan("i=5012");
 	dashClient.addDataSet(
-		{ "http://www.umati.info/example", "i=5012" },
+		{ config->InstanceNamespaceURI(), NodeIdIdentifier_ProductionPlan },
 		Umati::Dashboard::TypeDefinition::getProductionJobListType(),
-		"/umati/emo/ISW/ExampleMachine/ProductionPlan"
+		pubTopics.ProductionPlan
 	);
 
+	const std::string NodeIdIdentifier_StateMode("i=5007");
 	dashClient.addDataSet(
-		{ "http://www.umati.info/example", "i=5007" },
+		{ config->InstanceNamespaceURI(), NodeIdIdentifier_StateMode },
 		Umati::Dashboard::TypeDefinition::getStateModeListType(),
-		"/umati/emo/ISW/ExampleMachine/StateMode"
+		pubTopics.StateMode
 	);
 
 	LOG(INFO) << "Read model finished, start publishing";
