@@ -97,3 +97,28 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 	COMMENT "Copy Example Configuration"
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+
+install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
+
+if(DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
+	install(PROGRAMS
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>/libcrypto-1_1.dll
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>/libssl-1_1.dll
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>/mosquitto.dll
+		$<TARGET_FILE_DIR:DashboardOpcUaClient>/mosquittopp.dll
+		DESTINATION bin)
+endif()
+
+install(PROGRAMS
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/libeay32.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/libeay32d.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/libxml2.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/libxml2d.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/ssleay32.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/ssleay32d.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/uastack.dll
+	$<TARGET_FILE_DIR:DashboardOpcUaClient>/uastackd.dll
+	DESTINATION bin)
+
+install(EXPORT DashboardOpcUaClient DESTINATION lib/DashboardOpcUaClient/cmake NAMESPACE DashboardOpcUaClient:: EXPORT_LINK_INTERFACE_LIBRARIES)
