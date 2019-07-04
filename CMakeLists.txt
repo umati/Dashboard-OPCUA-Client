@@ -20,12 +20,14 @@ add_subdirectory(Util)
 add_subdirectory(ModelOpcUa)
 add_subdirectory(DashboardClient)
 add_subdirectory(OpcUaClient)
+add_subdirectory(MachineObserver)
 
 
 add_subdirectory(Tests)
 
 add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
 target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)
+target_link_libraries(DashboardOpcUaClient PUBLIC MachineObserver)
 
 set(DASHBOARD_PUBLISHER "MQTT_PAHO" CACHE STRING "Publisher Backend")
 set_property(CACHE DASHBOARD_PUBLISHER PROPERTY STRINGS MQTT_MOSQUITTO MQTT_PAHO REDIS)

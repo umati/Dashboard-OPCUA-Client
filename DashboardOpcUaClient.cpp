@@ -29,6 +29,7 @@
 #include <ConfigurationJsonFile.hpp>
 #include <PublishTopics.hpp>
 #include <Exceptions/ConfigurationException.hpp>
+#include <DashboardMachineObserver.hpp>
 
 std::atomic_bool running = true;
 
@@ -66,10 +67,6 @@ int main(int argc, char* argv[])
 	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(config->OpcUaEndpoint());
 
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
-	config->Mqtt().Hostname;
-	config->Mqtt().Port;
-	config->Mqtt().Username;
-	config->Mqtt().Password;
 
 	Umati::Util::PublishTopics pubTopics(config->Mqtt().TopicPrefix);
 
@@ -93,46 +90,7 @@ int main(int argc, char* argv[])
 #error "No publisher defined"
 #endif
 
-	Umati::Dashboard::DashboardClient dashClient(pClient, pPublisher);
-
-	LOG(INFO) << "Begin read model";
-
-	const std::string NodeIdIdentifier_Identification("i=5001");
-	dashClient.addDataSet(
-		{ config->InstanceNamespaceURI(), NodeIdIdentifier_Identification },
-		Umati::Dashboard::TypeDefinition::getIdentificationType(),
-		pubTopics.Information
-	);
-
-	const std::string NodeIdIdentifier_Stacklight("i=5005");
-	dashClient.addDataSet(
-		{ config->InstanceNamespaceURI(), NodeIdIdentifier_Stacklight },
-		Umati::Dashboard::TypeDefinition::getStacklightType(),
-		pubTopics.Stacklight
-	);
-
-	const std::string NodeIdIdentifier_Tools("i=5024");
-	dashClient.addDataSet(
-		{ config->InstanceNamespaceURI(), NodeIdIdentifier_Tools },
-		Umati::Dashboard::TypeDefinition::getToolListType(),
-		pubTopics.Tools
-	);
-
-	const std::string NodeIdIdentifier_ProductionPlan("i=5012");
-	dashClient.addDataSet(
-		{ config->InstanceNamespaceURI(), NodeIdIdentifier_ProductionPlan },
-		Umati::Dashboard::TypeDefinition::getProductionJobListType(),
-		pubTopics.ProductionPlan
-	);
-
-	const std::string NodeIdIdentifier_StateMode("i=5007");
-	dashClient.addDataSet(
-		{ config->InstanceNamespaceURI(), NodeIdIdentifier_StateMode },
-		Umati::Dashboard::TypeDefinition::getStateModeListType(),
-		pubTopics.StateMode
-	);
-
-	LOG(INFO) << "Read model finished, start publishing";
+	Umati::MachineObserver::DashboardMachineObserver dashboardMachineObserv(pClient, pPublisher);
 
 	int i = 0;
 	while (running)
@@ -142,7 +100,8 @@ int main(int argc, char* argv[])
 
 		if ((i % 10) == 0)
 		{
-			dashClient.Publish();
+			//dashClient.Publish();
+			dashboardMachineObserv.PublishAll();
 		}
 	}
 

@@ -4,6 +4,7 @@
 #include "OpcUaClient.hpp"
 #include "OpcUaClient.hpp"
 #include "OpcUaClient.hpp"
+#include "OpcUaClient.hpp"
 
 #include "OpcUaClient.hpp"
 #include <uasession.h>
@@ -27,6 +28,7 @@
 #include "Converter/ModelQualifiedNameToUaQualifiedName.hpp"
 #include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
+#include "Converter/UaDataValueToJsonValue.hpp"
 
 namespace Umati {
 
@@ -529,6 +531,59 @@ namespace Umati {
 		void OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
 			m_subscr.Subscribe(nodeId, callback);
+		}
+
+		std::list<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
+		{
+			UaStatus uaStatus;
+			//std::list <UaNodeId> readNodeIds;
+			UaReadValueIds readValueIds;
+			readValueIds.resize(modelNodeIds.size());
+			unsigned int i = 0;
+			for (const auto &modelNodeId : modelNodeIds)
+			{
+				UaNodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
+				nodeId.copyTo(&(readValueIds[i].NodeId));
+				readValueIds[i].AttributeId = OpcUa_Attributes_Value;
+				++i;
+			}
+
+			UaDataValues readValues;
+			UaDiagnosticInfos diagnosticInfos;
+
+			uaStatus = m_pSession->read(
+				m_defaultServiceSettings,
+				0,
+				OpcUa_TimestampsToReturn::OpcUa_TimestampsToReturn_Neither,
+				readValueIds,
+				readValues,
+				diagnosticInfos);
+
+			if (uaStatus.isNotGood())
+			{
+				LOG(ERROR) << "Received non good status for read: " << uaStatus.toString().toUtf8();
+				std::stringstream ss;
+				ss << "Received non good status  for read: " << uaStatus.toString().toUtf8();
+				throw Exceptions::OpcUaException(ss.str());
+			}
+
+			std::list<nlohmann::json> ret;
+
+			for (i = 0; i < readValues.length(); ++i)
+			{
+				auto value = readValues[i];
+				if (!UaStatus(value.StatusCode).isGood())
+				{
+					ret.push_back(nlohmann::json());
+				}
+				else
+				{
+					UaDataValue dataValue(readValues[i]);
+					ret.push_back(Converter::UaDataValueToJsonValue(dataValue).getValue());
+				}
+			}
+
+			return ret;
 		}
 
 	}
