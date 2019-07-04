@@ -6,7 +6,9 @@
 namespace Umati {
 	namespace MachineObserver {
 
-		MachineObserver::MachineObserver(std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient)
+		MachineObserver::MachineObserver(
+			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient
+		)
 			: m_pDataClient(pDataClient)
 		{
 		}

@@ -88,7 +88,10 @@ int main(int argc, char* argv[])
 #error "No publisher defined"
 #endif
 
-	Umati::MachineObserver::DashboardMachineObserver dashboardMachineObserv(pClient, pPublisher);
+	Umati::MachineObserver::DashboardMachineObserver dashboardMachineObserv(
+		pClient,
+		pPublisher,
+		config->MachineCacheFile());
 
 	int i = 0;
 	while (running)

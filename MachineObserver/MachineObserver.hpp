@@ -2,12 +2,15 @@
 
 #include <IDashboardDataClient.hpp>
 #include <map>
+#include "IMachineCache.hpp"
 
 namespace Umati {
 	namespace MachineObserver {
 		class MachineObserver {
 		public:
-			MachineObserver(std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient);
+			MachineObserver(
+				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient
+				);
 
 			std::shared_ptr<ModelOpcUa::StructureNode> getMachinesModel(
 				ModelOpcUa::QualifiedName_t qualifiedName = {}

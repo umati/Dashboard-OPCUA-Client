@@ -6,6 +6,7 @@ set(CLIENT_SRC
 	"MachineObserver.cpp"
 	"DashboardMachineObserver.cpp"
 	"PublishTopicFactory.cpp"
+	"MachineCacheJsonFile.cpp"
 )
 
 add_library(MachineObserver ${CLIENT_SRC})

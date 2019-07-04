@@ -10,13 +10,18 @@
 #include <TypeDefinition/ProductionJobListType.hpp>
 #include <TypeDefinition/StateModeListType.hpp>
 
+#include "MachineCacheJsonFile.hpp"
+
 namespace Umati {
 	namespace MachineObserver {
 
 		DashboardMachineObserver::DashboardMachineObserver(
 			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
-			std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher
-		) : MachineObserver(pDataClient), m_pPublisher(pPublisher)
+			std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
+			std::string machineCacheFilename
+		) : MachineObserver(pDataClient),
+			m_pPublisher(pPublisher),
+			m_pubTopicFactory(std::make_shared<MachineCacheJsonFile>(machineCacheFilename))
 		{
 			startUpdateMachineThread();
 		}

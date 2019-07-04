@@ -13,7 +13,8 @@ namespace Umati {
 		public:
 			DashboardMachineObserver(
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
-				std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher
+				std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
+				std::string machineCacheFilename
 			);
 			~DashboardMachineObserver();
 

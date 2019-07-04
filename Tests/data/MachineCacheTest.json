@@ -1,0 +1,10 @@
+[
+  {
+    "Uri": "http://umati.info",
+    "TopicPrefix": "UmatiTopic"
+  },
+  {
+    "Uri": "http://umati.info/Machine2",
+    "TopicPrefix": "Machine2"
+  }
+]

@@ -35,3 +35,19 @@ add_custom_command(TARGET TestConfigurationJsonFile POST_BUILD
 	COMMENT "Copy Test Configuration"
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+add_executable(TestMachineCache TestMachineCache.cpp)
+target_link_libraries(TestMachineCache MachineObserver GTest::gtest_main)
+add_test(
+	NAME TestMachineCache
+	COMMAND TestMachineCache
+	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestMachineCache>
+)
+
+add_custom_command(TARGET TestMachineCache POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+        data/MachineCacheTest.json
+		$<TARGET_FILE_DIR:TestMachineCache>
+	COMMENT "Copy Test MachineCache"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
