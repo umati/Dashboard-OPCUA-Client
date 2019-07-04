@@ -24,13 +24,11 @@ namespace Umati
 				
 				/// Might be empty if no authentification required
 				std::string Password;
-
-				/// format /[User]/[MachineId], e.g. /ISW/ExampleMachine
-				std::string TopicPrefix;
 			};
 
 			inline virtual std::string OpcUaEndpoint() = 0;
-			inline virtual std::string InstanceNamespaceURI() = 0;
+
+			inline virtual std::string MachineCacheFile() = 0;
 			
 			inline virtual MqttConfig Mqtt() = 0;
 

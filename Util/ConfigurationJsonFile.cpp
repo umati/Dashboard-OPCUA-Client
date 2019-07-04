@@ -1,3 +1,4 @@
+#include "ConfigurationJsonFile.hpp"
 
 #include "ConfigurationJsonFile.hpp"
 #include <fstream>
@@ -26,10 +27,6 @@ namespace Umati
 		std::string ConfigurationJsonFile::OpcUaEndpoint()
 		{
 			return m_opcUaEndpoint;
-		}
-		std::string ConfigurationJsonFile::InstanceNamespaceURI()
-		{
-			return m_instanceNamespaceURI;
 		}
 
 		Configuration::MqttConfig ConfigurationJsonFile::Mqtt()
@@ -60,14 +57,14 @@ namespace Umati
 			}
 			m_opcUaEndpoint = jsonOpcUaEndpoint.get<std::string>();
 
-			auto jsonInstanceNamespaceURI = getValueOrException(json, JsonKey_InstanceNamespaceURI);
-			if (!jsonInstanceNamespaceURI.is_string())
+			auto jsonMachineCacheFile = getValueOrException(json, JsonKey_MachineCacheFile);
+			if (!jsonMachineCacheFile.is_string())
 			{
 				std::stringstream ss;
-				ss << "Key '" << JsonKey_InstanceNamespaceURI << "' is not of type " << "string" << std::endl;
+				ss << "Key '" << JsonKey_MachineCacheFile << "' is not of type " << "string" << std::endl;
 				throw Exception::ConfigurationException(ss.str().c_str());
 			}
-			m_instanceNamespaceURI = jsonInstanceNamespaceURI.get<std::string>();
+			m_machineCacheFile = jsonMachineCacheFile.get<std::string>();
 
 			auto jsonMqtt = getValueOrException(json, JsonKey_Mqtt);
 			if (!jsonMqtt.is_object())
@@ -121,16 +118,10 @@ namespace Umati
 
 			m_mqtt.Password = jsonPassword.get<std::string>();
 
-			auto jsonTopicPrefix = getValueOrException(json, JsonKey_Mqtt_TopicPrefix);
-			if (!jsonTopicPrefix.is_string())
-			{
-				std::stringstream ss;
-				ss << "Key '" << JsonKey_Mqtt_TopicPrefix << "' is not of type " << "string" << std::endl;
-				throw Exception::ConfigurationException(ss.str().c_str());
-			}
-
-			m_mqtt.TopicPrefix = jsonTopicPrefix.get<std::string>();
-
+		}
+		std::string ConfigurationJsonFile::MachineCacheFile()
+		{
+			return m_machineCacheFile;
 		}
 	}
 }

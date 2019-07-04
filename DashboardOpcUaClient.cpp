@@ -68,8 +68,6 @@ int main(int argc, char* argv[])
 
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
 
-	Umati::Util::PublishTopics pubTopics(config->Mqtt().TopicPrefix);
-
 #if defined(PUBLISHER_MQTT_MOSQUITTO)
 	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(
 		config->Mqtt().Hostname,
@@ -83,7 +81,7 @@ int main(int argc, char* argv[])
 	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
 		config->Mqtt().Hostname,
 		config->Mqtt().Port,
-		pubTopics.ClientOnline,
+		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
 		config->Mqtt().Username,
 		config->Mqtt().Password);
 #else

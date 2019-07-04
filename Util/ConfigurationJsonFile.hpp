@@ -15,11 +15,11 @@ namespace Umati
 
 			// Inherit from Configuration
 			std::string OpcUaEndpoint() override;
-			std::string InstanceNamespaceURI() override;
+			virtual std::string MachineCacheFile() override;
 			MqttConfig Mqtt() override;
 
 			const std::string JsonKey_OpcUaEndpoint = std::string("OpcUaEndpoint");
-			const std::string JsonKey_InstanceNamespaceURI = std::string("InstanceNamespaceURI");
+			const std::string JsonKey_MachineCacheFile = std::string("MachineCacheFile");
 			
 			const std::string JsonKey_Mqtt = std::string("Mqtt");
 			const std::string JsonKey_Mqtt_Hostname = std::string("Hostname");
@@ -35,8 +35,9 @@ namespace Umati
 			virtual void parseConfigurationMqtt(nlohmann::json json);
 
 			std::string m_opcUaEndpoint;
-			std::string m_instanceNamespaceURI;
+			std::string m_machineCacheFile;
 			MqttConfig m_mqtt;
+
 		};
 	}
 }
