@@ -402,7 +402,8 @@ namespace Umati {
 				break;
 			}
 			default:
-				LOG(ERROR) << "Invalid NodeClass " << nodeClass;
+				LOG(ERROR) << "Invalid NodeClass " << nodeClass
+					<< " expect object or variable type for node " << static_cast<std::string>(typeDefinition);
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
 
