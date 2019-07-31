@@ -1,5 +1,7 @@
 #include "UaDataValueToJsonValue.hpp"
 
+#include <uadatetime.h>
+#include <uarange.h>
 #include <easylogging++.h>
 
 namespace Umati
@@ -24,7 +26,7 @@ namespace Umati
 				{
 					return;
 				}
-				
+
 				if (variant.arrayType() != OpcUa_VariantArrayType_Scalar)
 				{
 					LOG(ERROR) << "Only scalar values are supported.";
@@ -134,7 +136,10 @@ namespace Umati
 
 				case OpcUaType_DateTime:
 				{
-					LOG(ERROR) << "Not implemented conversion to OpcUaType_DateTime. ";
+					UaDateTime dateTime;
+					variant.toDateTime(dateTime);
+					jsonValue = dateTime.toString().toUtf8();
+
 					break;
 				}
 
@@ -182,13 +187,41 @@ namespace Umati
 
 				case OpcUaType_LocalizedText:
 				{
-					LOG(ERROR) << "Not implemented conversion to OpcUaType_LocalizedText. ";
+					UaLocalizedText localText;
+					variant.toLocalizedText(localText);
+					jsonValue = {};
+					jsonValue["locale"] = UaString(localText.locale()).toUtf8();
+					jsonValue["text"] = UaString(localText.text()).toUtf8();
 					break;
 				}
 
 				case OpcUaType_ExtensionObject:
 				{
-					LOG(ERROR) << "Not implemented conversion to OpcUaType_ExtensionObject. ";
+					UaExtensionObject exObj;
+					variant.toExtensionObject(exObj);
+					jsonValue = {};
+
+					if (exObj.dataTypeId().namespaceIndex() != 0)
+					{
+						LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
+						break;
+					}
+
+					switch (exObj.dataTypeId().identifierNumeric())
+					{
+					case OpcUaId_Range:
+					{
+						UaRange range(exObj);
+						jsonValue["low"] = range.getLow();
+						jsonValue["high"] = range.getHigh();
+						break;
+					}
+
+					default:
+					{
+						LOG(ERROR) << "Not implemented conversion from type: " << exObj.dataTypeId().toFullString().toUtf8();
+					}
+					}
 					break;
 				}
 
