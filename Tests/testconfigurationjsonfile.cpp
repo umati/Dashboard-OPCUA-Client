@@ -5,7 +5,10 @@
 TEST(ConfigurationJsonFile, NormalConfiguration)
 {
 	Umati::Util::ConfigurationJsonFile conf("Configuration.json");
-	EXPECT_EQ(conf.OpcUaEndpoint(), "opc.tcp://localhost:4840");
+	EXPECT_EQ(conf.OpcUa().Endpoint, "opc.tcp://localhost:4840");
+	EXPECT_EQ(conf.OpcUa().Username, "User");
+	EXPECT_EQ(conf.OpcUa().Password, "Password");
+	EXPECT_EQ(conf.OpcUa().Security, 1);
 	EXPECT_EQ(conf.MachineCacheFile(), "MachineCache.json");
 	EXPECT_EQ(conf.Mqtt().Hostname, "localhost");
 	EXPECT_EQ(conf.Mqtt().Port, 1883);

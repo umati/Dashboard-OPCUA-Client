@@ -14,11 +14,15 @@ namespace Umati
 			ConfigurationJsonFile(std::string filename);
 
 			// Inherit from Configuration
-			std::string OpcUaEndpoint() override;
-			virtual std::string MachineCacheFile() override;
+			OpcUaConfig OpcUa() override;
+			std::string MachineCacheFile() override;
 			MqttConfig Mqtt() override;
 
-			const std::string JsonKey_OpcUaEndpoint = std::string("OpcUaEndpoint");
+			const std::string JsonKey_OpcUa = std::string("OpcUa");
+			const std::string JsonKey_OpcUa_Endpoint = std::string("Endpoint");
+			const std::string JsonKey_OpcUa_User = std::string("User");
+			const std::string JsonKey_OpcUa_Password = std::string("Password");
+			const std::string JsonKey_OpcUa_Security = std::string("Security");
 			const std::string JsonKey_MachineCacheFile = std::string("MachineCacheFile");
 			
 			const std::string JsonKey_Mqtt = std::string("Mqtt");
@@ -33,8 +37,9 @@ namespace Umati
 			ConfigurationJsonFile() = default;
 			virtual void parseConfigurationFile(nlohmann::json json);
 			virtual void parseConfigurationMqtt(nlohmann::json json);
+			virtual void parseConfigurationOpcUa(nlohmann::json json);
 
-			std::string m_opcUaEndpoint;
+			OpcUaConfig m_opcUa;
 			std::string m_machineCacheFile;
 			MqttConfig m_mqtt;
 

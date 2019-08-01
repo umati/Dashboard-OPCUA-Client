@@ -20,7 +20,7 @@ namespace Umati {
 		{
 			UA_DISABLE_COPY(OpcUaClient);
 		public:
-			OpcUaClient(std::string serverURI);
+			OpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1);
 			~OpcUaClient();
 
 			bool disconnect();
@@ -65,6 +65,10 @@ namespace Umati {
 			std::map<std::string, uint16_t> m_uriToIndexCache;
 			std::map<uint16_t, std::string> m_indexToUriCache;
 			std::string m_serverUri;
+			std::string m_username;
+			std::string m_password;
+			OpcUa_MessageSecurityMode m_security = OpcUa_MessageSecurityMode::OpcUa_MessageSecurityMode_None;
+
 			std::shared_ptr<std::thread> m_connectThread;
 			std::atomic_bool m_isConnected = false;
 			std::atomic_bool m_tryConnecting = false;

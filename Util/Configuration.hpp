@@ -26,12 +26,23 @@ namespace Umati
 				std::string Password;
 			};
 
-			inline virtual std::string OpcUaEndpoint() = 0;
+			struct OpcUaConfig
+			{
+				/// OPC UA Endpoint
+				std::string Endpoint;
+
+				std::string Username;
+				std::string Password;
+
+				/// 1 = None, 2 Sign, 3 = Sign&Encrypt
+				std::uint8_t Security = 1;
+			};
 
 			inline virtual std::string MachineCacheFile() = 0;
 			
 			inline virtual MqttConfig Mqtt() = 0;
 
+			inline virtual OpcUaConfig OpcUa() = 0;
 		};
 	}
 }

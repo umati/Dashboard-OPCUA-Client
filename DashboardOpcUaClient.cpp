@@ -64,7 +64,12 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(config->OpcUaEndpoint());
+	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(
+		config->OpcUa().Endpoint,
+		config->OpcUa().Username,
+		config->OpcUa().Password,
+		config->OpcUa().Security
+		);
 
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
 

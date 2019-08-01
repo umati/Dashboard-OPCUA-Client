@@ -1,4 +1,6 @@
 #include "ConfigurationJsonFile.hpp"
+#include "ConfigurationJsonFile.hpp"
+#include "ConfigurationJsonFile.hpp"
 
 #include "ConfigurationJsonFile.hpp"
 #include <fstream>
@@ -24,14 +26,14 @@ namespace Umati
 			parseConfigurationFile(j);
 		}
 
-		std::string ConfigurationJsonFile::OpcUaEndpoint()
-		{
-			return m_opcUaEndpoint;
-		}
-
 		Configuration::MqttConfig ConfigurationJsonFile::Mqtt()
 		{
 			return m_mqtt;
+		}
+
+		Configuration::OpcUaConfig ConfigurationJsonFile::OpcUa()
+		{
+			return m_opcUa;
 		}
 
 		nlohmann::json ConfigurationJsonFile::getValueOrException(nlohmann::json json, std::string key)
@@ -48,14 +50,14 @@ namespace Umati
 
 		void ConfigurationJsonFile::parseConfigurationFile(nlohmann::json json)
 		{
-			auto jsonOpcUaEndpoint = getValueOrException(json, JsonKey_OpcUaEndpoint);
-			if (!jsonOpcUaEndpoint.is_string())
+			auto jsonOpcUa = getValueOrException(json, JsonKey_OpcUa);
+			if (!jsonOpcUa.is_object())
 			{
 				std::stringstream ss;
-				ss << "Key '" << JsonKey_OpcUaEndpoint << "' is not of type " << "string" << std::endl;
+				ss << "Key '" << JsonKey_OpcUa << "' is not of type " << "object" << std::endl;
 				throw Exception::ConfigurationException(ss.str().c_str());
 			}
-			m_opcUaEndpoint = jsonOpcUaEndpoint.get<std::string>();
+			parseConfigurationOpcUa(jsonOpcUa);
 
 			auto jsonMachineCacheFile = getValueOrException(json, JsonKey_MachineCacheFile);
 			if (!jsonMachineCacheFile.is_string())
@@ -119,6 +121,49 @@ namespace Umati
 			m_mqtt.Password = jsonPassword.get<std::string>();
 
 		}
+		void ConfigurationJsonFile::parseConfigurationOpcUa(nlohmann::json json)
+		{
+			auto jsonEndpoint = getValueOrException(json, JsonKey_OpcUa_Endpoint);
+			if (!jsonEndpoint.is_string())
+			{
+				std::stringstream ss;
+				ss << "Key '" << JsonKey_OpcUa_Endpoint << "' is not of type " << "string" << std::endl;
+				throw Exception::ConfigurationException(ss.str().c_str());
+			}
+
+			m_opcUa.Endpoint = jsonEndpoint.get<std::string>();
+
+			auto jsonUsername = getValueOrException(json, JsonKey_OpcUa_User);
+			if (!jsonUsername.is_string())
+			{
+				std::stringstream ss;
+				ss << "Key '" << JsonKey_OpcUa_User << "' is not of type " << "string" << std::endl;
+				throw Exception::ConfigurationException(ss.str().c_str());
+			}
+
+			m_opcUa.Username = jsonUsername.get<std::string>();
+
+			auto jsonPasswort = getValueOrException(json, JsonKey_OpcUa_Password);
+			if (!jsonPasswort.is_string())
+			{
+				std::stringstream ss;
+				ss << "Key '" << JsonKey_OpcUa_Password << "' is not of type " << "string" << std::endl;
+				throw Exception::ConfigurationException(ss.str().c_str());
+			}
+
+			m_opcUa.Password = jsonPasswort.get<std::string>();
+
+			auto jsonSecurity = getValueOrException(json, JsonKey_OpcUa_Security);
+			if (!jsonSecurity.is_number())
+			{
+				std::stringstream ss;
+				ss << "Key '" << JsonKey_OpcUa_Security << "' is not of type " << "number, uint8" << std::endl;
+				throw Exception::ConfigurationException(ss.str().c_str());
+			}
+
+			m_opcUa.Security = jsonSecurity.get<std::uint8_t>();
+		}
+
 		std::string ConfigurationJsonFile::MachineCacheFile()
 		{
 			return m_machineCacheFile;

@@ -36,8 +36,8 @@ namespace Umati {
 
 		int OpcUaClient::PlattformLayerInitialized = 0;
 
-		OpcUaClient::OpcUaClient(std::string serverURI)
-			: m_serverUri(serverURI), m_subscr(m_uriToIndexCache, m_indexToUriCache)
+		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security)
+			: m_serverUri(serverURI), m_subscr(m_uriToIndexCache, m_indexToUriCache), m_username(Username), m_password(Password), m_security(static_cast<OpcUa_MessageSecurityMode>(security))
 		{
 			m_defaultServiceSettings.callTimeout = 1000;
 
@@ -92,7 +92,8 @@ namespace Umati {
 
 			/// \todo
 			//auto desiredSecurity = OpcUa_MessageSecurityMode_None;
-			auto desiredSecurity = OpcUa_MessageSecurityMode_SignAndEncrypt;
+			//auto desiredSecurity = OpcUa_MessageSecurityMode_SignAndEncrypt;
+			auto desiredSecurity = m_security;
 
 			/// \todo select endpoint dependent on the desired authentification (Anonymous, UserPassword/Cert)
 			for (OpcUa_UInt32 iEndpoint = 0; iEndpoint < endpointDescriptions.length(); iEndpoint++)
@@ -122,6 +123,11 @@ namespace Umati {
 			sessionSecurityInfo.doServerCertificateVerify = OpcUa_False;
 			sessionSecurityInfo.disableErrorCertificateHostNameInvalid = OpcUa_True;
 			sessionSecurityInfo.disableApplicationUriCheck = OpcUa_True;
+
+			if (!m_username.empty() && !m_password.empty())
+			{
+				sessionSecurityInfo.setUserPasswordUserIdentity(m_username.c_str(), m_password.c_str());
+			}
 
 			m_pSession.reset(new UaClientSdk::UaSession());
 			result = m_pSession->connect(sURL, sessionConnectInfo, sessionSecurityInfo, this);
