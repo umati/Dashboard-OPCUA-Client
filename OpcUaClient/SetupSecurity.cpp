@@ -10,17 +10,81 @@
 #include <iostream>
 #include <easylogging++.h>
 
+#include <direct.h> // _mkdir
+
 namespace Umati {
 	namespace OpcUa {
 		SetupSecurity::paths_t SetupSecurity::paths = {
-			"pki/server/trusted/",
-			"pki/server/revoked/",
-			"pki/clientPub.der",
-			"pki/clientpriv.pem",
-			"pki/issuer/trusted/",
-			"pki/issuer/revoked/"
+			"./pki/server/trusted/",
+			"./pki/server/revoked/",
+			"./pki/clientPub.der",
+			"./pki/clientpriv.pem",
+			"./pki/issuer/trusted/",
+			"./pki/issuer/revoked/"
 		};
 
+		static bool createDirs(std::string directory)
+		{
+			if (directory.empty())
+			{
+				return true;
+			}
+
+			std::vector<std::string> parts;
+
+			std::string part = "";
+			int i = 0;
+
+			// Directory must end with a '/', otherwise last part is ignored (expected file)
+			while (i < directory.size())
+			{
+				if (directory[i] != '/')
+				{
+					part += directory[i];
+				}
+				else
+				{
+					parts.push_back(part);
+					part = "";
+				}
+				++i;
+			}
+
+			std::stringstream ss;
+			bool first = true;
+			for (const auto & part : parts)
+			{
+				if (part.empty())
+				{
+					continue;
+				}
+
+				if (!first)
+				{
+					ss << "/";
+				}
+				else
+				{
+					first = false;
+				}
+				ss << part;
+
+				if (part == "." || part == "..") {
+					continue;
+				}
+
+				if (_mkdir(ss.str().c_str()) != 0)
+				{
+					if (errno != EEXIST)
+					{
+						return false;
+					}
+				}
+
+			}
+
+			return true;
+		}
 
 		bool SetupSecurity::setupSecurity(UaClientSdk::SessionSecurityInfo * sessionSecurityInfo)
 		{
@@ -28,6 +92,11 @@ namespace Umati {
 				std::ifstream f(paths.ClientPrivCert.c_str());
 				if (!f.good())
 				{
+					createDirs(paths.ServerRevokedCerts);
+					createDirs(paths.ServerTrustedCerts);
+					createDirs(paths.IssuerRevokedCerts);
+					createDirs(paths.IssuerTrustedCerts);
+
 					// File could not be opend, create it
 					if (!createNewClientCert())
 					{
@@ -71,7 +140,7 @@ namespace Umati {
 			UaPkiRsaKeyPair keyPair(2048);
 			UaPkiIdentity   identity;
 
-			identity.commonName = "OPC UA DatenClient";
+			identity.commonName = "OPCUA-DatenClient";
 			identity.organization = "Created by ISW";
 			identity.organizationUnit = "ISW";
 			identity.locality = "LocationName";
@@ -80,7 +149,7 @@ namespace Umati {
 			identity.domainComponent = "MyComputer";
 
 			UaPkiCertificateInfo info;
-			info.URI = "http://koni.vdw.de/OPCUA_DataClient";
+			info.URI = "http://dashboard.umati.app/OPCUA_DataClient";
 			info.DNSNames.create(1);
 			UaString("example.com").copyTo(&info.DNSNames[0]);
 			info.validTime = 3600 * 24 * 365 * 5; // seconds
@@ -95,15 +164,17 @@ namespace Umati {
 			///\todo check return types
 
 			// encoded to DER format
-			if (cert.toDERFile(paths.ClientPubCert.c_str()))
+			auto retCreateDer = cert.toDERFile(paths.ClientPubCert.c_str());
+
+			if (!std::ifstream(paths.ClientPubCert.c_str()).good())
 			{
-				LOG(ERROR) << "der-File creation failed" << std::endl;
+				LOG(ERROR) << "der-File creation failed: " << retCreateDer << std::endl;
 				return false;
 			}
-
-			if (keyPair.toPEMFile(paths.ClientPrivCert.c_str(), 0))
+			auto retCreatePEM = keyPair.toPEMFile(paths.ClientPrivCert.c_str(), 0);
+			if (!std::ifstream(paths.ClientPubCert.c_str()).good())
 			{
-				LOG(ERROR) << "pem-File creation failed" << std::endl;
+				LOG(ERROR) << "pem-File creation failed: " << retCreatePEM << std::endl;
 				return false;
 			}
 

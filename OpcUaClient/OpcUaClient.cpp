@@ -63,7 +63,8 @@ namespace Umati {
 			UaStatus result;
 			UaClientSdk::SessionConnectInfo sessionConnectInfo;
 			sessionConnectInfo.sApplicationName = "KonI4.0 OPC UA Data Client";
-			sessionConnectInfo.sApplicationUri = "KonI40OpcUaClient";
+			//sessionConnectInfo.sApplicationUri = "KonI40OpcUaClient";
+			sessionConnectInfo.sApplicationUri = "http://dashboard.umati.app/OPCUA_DataClient";
 			sessionConnectInfo.sProductUri = "KonI40OpcUaClient_Product";
 			sessionConnectInfo.sSessionName = "DefaultSession";
 
@@ -90,7 +91,8 @@ namespace Umati {
 			} desiredEnpoint;
 
 			/// \todo
-			auto desiredSecurity = OpcUa_MessageSecurityMode_None;
+			//auto desiredSecurity = OpcUa_MessageSecurityMode_None;
+			auto desiredSecurity = OpcUa_MessageSecurityMode_SignAndEncrypt;
 
 			/// \todo select endpoint dependent on the desired authentification (Anonymous, UserPassword/Cert)
 			for (OpcUa_UInt32 iEndpoint = 0; iEndpoint < endpointDescriptions.length(); iEndpoint++)
@@ -118,6 +120,8 @@ namespace Umati {
 
 			///\todo handle security
 			sessionSecurityInfo.doServerCertificateVerify = OpcUa_False;
+			sessionSecurityInfo.disableErrorCertificateHostNameInvalid = OpcUa_True;
+			sessionSecurityInfo.disableApplicationUriCheck = OpcUa_True;
 
 			m_pSession.reset(new UaClientSdk::UaSession());
 			result = m_pSession->connect(sURL, sessionConnectInfo, sessionSecurityInfo, this);
