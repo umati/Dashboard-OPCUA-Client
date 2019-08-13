@@ -39,7 +39,7 @@ namespace Umati {
 
 			virtual void Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
-			virtual std::list<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
+			virtual std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
 			virtual void UnsubscribeAll() = 0;
 

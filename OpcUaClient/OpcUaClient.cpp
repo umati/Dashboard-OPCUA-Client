@@ -544,7 +544,7 @@ namespace Umati {
 			m_subscr.Subscribe(nodeId, callback);
 		}
 
-		std::list<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
+		std::vector<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
 		{
 			UaStatus uaStatus;
 			//std::list <UaNodeId> readNodeIds;
@@ -578,7 +578,7 @@ namespace Umati {
 				throw Exceptions::OpcUaException(ss.str());
 			}
 
-			std::list<nlohmann::json> ret;
+			std::vector<nlohmann::json> ret;
 
 			for (i = 0; i < readValues.length(); ++i)
 			{

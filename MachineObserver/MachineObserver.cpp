@@ -3,6 +3,9 @@
 #include <TypeDefinition/UmatiTypeNodeIds.hpp>
 #include <easylogging++.h>
 
+#include "Exceptions/MachineInvalidException.hpp"
+#include "Exceptions/MachineOfflineException.hpp"
+
 namespace Umati {
 	namespace MachineObserver {
 
@@ -69,10 +72,37 @@ namespace Umati {
 
 			for (auto &newMachine : newMachines)
 			{
-				addMachine(newMachine.second);
+				auto it = m_invalidMachines.find(newMachine.second.NodeId);
+				if (it != m_invalidMachines.end())
+				{
+					--(it->second);
+					if (it->second <= 0)
+					{
+						m_invalidMachines.erase(it);
+					}
+					else
+					{
+						continue;
+					}
+				}
+
+				try
+				{
+					addMachine(newMachine.second);
+					m_knownMachines.insert(newMachine);
+				}
+				catch (const Exceptions::MachineInvalidException &)
+				{
+					LOG(INFO) << "Machine invalid: " << static_cast<std::string>(newMachine.second.NodeId);
+					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
+				}
+				catch (const Exceptions::MachineOfflineException &)
+				{
+					LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.second.NodeId);
+					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterOffline));
+				}
 			}
 
-			m_knownMachines.insert(newMachines.begin(), newMachines.end());
 		}
 	}
 }

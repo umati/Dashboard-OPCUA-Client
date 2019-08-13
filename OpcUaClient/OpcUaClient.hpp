@@ -33,7 +33,7 @@ namespace Umati {
 			virtual std::list<BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
 			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
 			virtual void Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
-			std::list<nlohmann::json> readValues(std::list< ModelOpcUa::NodeId_t> nodeIds) override;
+			std::vector<nlohmann::json> readValues(std::list< ModelOpcUa::NodeId_t> nodeIds) override;
 			virtual void UnsubscribeAll() override;
 
 		protected:
