@@ -1,4 +1,5 @@
 #include "DashboardMachineObserver.hpp"
+#include "DashboardMachineObserver.hpp"
 
 #include <easylogging++.h>
 
@@ -42,6 +43,13 @@ namespace Umati {
 			{
 				pDashClient.second->Publish();
 			}
+
+			if ((--m_publishMachinesOnline) <= 0)
+			{
+				m_publishMachinesOnline = PublishMachinesOnlineResetValue;
+
+				this->publishMachinesOnline();
+			}
 		}
 
 		void DashboardMachineObserver::startUpdateMachineThread()
@@ -80,19 +88,33 @@ namespace Umati {
 			}
 		}
 
+		void DashboardMachineObserver::publishMachinesOnline()
+		{
+			nlohmann::json publishData;
+			for (const auto machineOnline : m_onlineMachines)
+			{
+				publishData.push_back(
+					static_cast<nlohmann::json>(machineOnline.second)
+				);
+			}
+
+			m_pPublisher->Publish(MachinesListTopic, publishData.dump(2));
+		}
+
 		void DashboardMachineObserver::addMachine(
 			Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine
 		)
 		{
 			try {
-
-
 				LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:" << static_cast<std::string>(machine.NodeId);
 
 				auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher);
 				auto pubTopics = m_pubTopicFactory.getPubTopics(machine);
 
 				auto nsUri = machine.NodeId.Uri;
+
+				MachineInformation_t machineInformation;
+				machineInformation.TopicPrefix = pubTopics.TopicPrefix;
 
 				LOG(INFO) << "Read machine data";
 
@@ -116,8 +138,8 @@ namespace Umati {
 					LOG(ERROR) << ss.str();
 					throw Exceptions::MachineInvalidException(ss.str());
 				}
-				std::string LocationPlant(valuesList.at(0)["value"].get<std::string>());
-				LOG(INFO) << "LocationPlant: " << LocationPlant;
+				machineInformation.LocationPlant = valuesList.at(0)["value"].get<std::string>();
+				LOG(INFO) << "LocationPlant: " << machineInformation.LocationPlant;
 
 				if (!valuesList.at(1)["value"].is_string())
 				{
@@ -127,8 +149,8 @@ namespace Umati {
 					LOG(ERROR) << ss.str();
 					throw Exceptions::MachineInvalidException(ss.str());
 				}
-				std::string Manufacturer(valuesList.at(1)["value"].get<std::string>());
-				LOG(INFO) << "Manufacturer: " << Manufacturer;
+				machineInformation.DisplayManufacturer = valuesList.at(1)["value"].get<std::string>();
+				LOG(INFO) << "Manufacturer: " << machineInformation.DisplayManufacturer;
 
 				if (!valuesList.at(2)["value"].is_string())
 				{
@@ -138,8 +160,8 @@ namespace Umati {
 					LOG(ERROR) << ss.str();
 					throw Exceptions::MachineInvalidException(ss.str());
 				}
-				std::string NameCatalog(valuesList.at(2)["value"].get<std::string>());
-				LOG(INFO) << "NameCatalog: " << NameCatalog;
+				machineInformation.DisplayName = valuesList.at(2)["value"].get<std::string>();
+				LOG(INFO) << "NameCatalog: " << machineInformation.DisplayName;
 
 				LOG(INFO) << "Begin read model";
 
@@ -183,6 +205,7 @@ namespace Umati {
 				{
 					std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
 					m_dashboardClients.insert(std::make_pair(machine.NodeId, pDashClient));
+					m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
 				}
 
 			}
@@ -210,6 +233,16 @@ namespace Umati {
 			else
 			{
 				LOG(INFO) << "Machine not known: '" << static_cast<std::string>(machine.NodeId) << "'";
+			}
+
+			auto itOnlineMachines = m_onlineMachines.find(machine.NodeId);
+			if (itOnlineMachines != m_onlineMachines.end())
+			{
+				m_onlineMachines.erase(itOnlineMachines);
+			}
+			else
+			{
+				LOG(INFO) << "Machine was not online: '" << static_cast<std::string>(machine.NodeId) << "'";
 			}
 		}
 	}
