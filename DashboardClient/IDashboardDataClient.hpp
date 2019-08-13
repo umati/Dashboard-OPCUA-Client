@@ -37,11 +37,24 @@ namespace Umati {
 				ModelOpcUa::QualifiedName_t browseName
 			) = 0;
 
-			virtual void Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
+			class ValueSubscriptionHandle {
+			public:
+				virtual ~ValueSubscriptionHandle() = 0 {}
+				virtual void unsubscribe() = 0;
+
+				bool isUnsubscribed() { return m_unsubscribed; }
+			protected:
+				void setUnsubscribed() {
+					m_unsubscribed = true;
+				}
+
+			private:
+				bool m_unsubscribed = false;
+			};
+
+			virtual std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
 			virtual std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
-
-			virtual void UnsubscribeAll() = 0;
 
 		};
 	}

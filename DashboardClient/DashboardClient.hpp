@@ -48,6 +48,7 @@ namespace Umati {
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 			);
 
+			std::vector<std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>> m_subscribedValues;
 			std::shared_ptr<IDashboardDataClient> m_pDashboardDataClient;
 			std::shared_ptr<IPublisher> m_pPublisher;
 

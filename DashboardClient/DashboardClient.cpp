@@ -18,7 +18,7 @@ namespace Umati {
 
 		DashboardClient::~DashboardClient()
 		{
-			m_pDashboardDataClient->UnsubscribeAll();
+			// Cleanup is done automatically as is 'm_subscribedValues' cleaned up
 		}
 
 		void DashboardClient::addDataSet(
@@ -174,7 +174,7 @@ namespace Umati {
 					valueMap[pNode] = value;
 				};
 
-				m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
+				m_subscribedValues.push_back(m_pDashboardDataClient->Subscribe(pNode->NodeId, callback));
 			}
 
 			for (auto & pChildNode : pNode->ChildNodes)

@@ -7,6 +7,46 @@
 
 namespace Umati {
 	namespace OpcUa {
+
+		class ValueSubscriptionHandle : public Dashboard::IDashboardDataClient::ValueSubscriptionHandle {
+		public:
+			/// \todo reduce to one parameter
+			ValueSubscriptionHandle(Subscription *pSubscription, OpcUa_UInt32 monItemId, OpcUa_UInt32 clientHandle)
+			: m_monitoredItemId(monItemId), m_clientHandle(clientHandle), m_pClientSubscription(pSubscription)
+			{
+
+			}
+
+			virtual ~ValueSubscriptionHandle()
+			{
+				unsubscribeInternal();
+			}
+
+			// Inherit from ValueSubscriptionHandle
+			void unsubscribe() override
+			{
+				this->unsubscribeInternal();
+			}
+
+		protected:
+			/// Ubsubscribe the value, non virtual function, so it's safe to call it in the destructor.
+			void unsubscribeInternal()
+			{
+				if (isUnsubscribed())
+				{
+					return;
+				}
+
+				m_pClientSubscription->Unsubscribe(m_monitoredItemId, m_clientHandle);
+				this->setUnsubscribed();
+			}
+
+			const OpcUa_UInt32 m_monitoredItemId;
+			const OpcUa_UInt32 m_clientHandle;
+
+			Subscription *m_pClientSubscription;
+		};
+
 		std::atomic_uint Subscription::nextId = 100;
 
 		Subscription::Subscription(
@@ -67,7 +107,42 @@ namespace Umati {
 			}
 		}
 
-		void Subscription::Subscribe(
+		void Subscription::Unsubscribe(OpcUa_UInt32 monItemId, OpcUa_UInt32 clientHandle)
+		{
+			m_callbacks.erase(clientHandle);
+
+			UaStatusCodeArray results;
+			UaUInt32Array monItems;
+
+			monItems.resize(1);
+			monItems[0] = monItemId;
+			UaClientSdk::ServiceSettings servSettings;
+			auto ret = m_pSubscription->deleteMonitoredItems(
+				servSettings,
+				monItems,
+				results
+			);
+
+			if (ret.isNotGood())
+			{
+				LOG(WARNING) << "Removal of subscribed item failed: " << ret.toString().toUtf8();
+			}
+
+			if (results.length() == 1)
+			{
+				UaStatusCode resultCode(results[0]);
+				if (resultCode.isNotGood())
+				{
+					LOG(WARNING) << "Removal of subscribed item failed : " << resultCode.toString().toUtf8();
+				}
+			}
+			else
+			{
+				LOG(ERROR) << "Length mismatch, unsubscribe might have failed.";
+			}
+		}
+
+		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
 			ModelOpcUa::NodeId_t nodeId,
 			Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback
 		)
@@ -115,11 +190,12 @@ namespace Umati {
 			}
 
 			m_callbacks.insert(std::make_pair(monItemCreateReq[0].RequestedParameters.ClientHandle, callback));
+
+			return std::make_shared<ValueSubscriptionHandle>(
+				this,
+				monItemCreateResult[0].MonitoredItemId, monItemCreateReq[0].RequestedParameters.ClientHandle
+			);
 		}
 
-		void Subscription::UnsubscribeAll()
-		{
-			LOG(ERROR) << "UnsubscribeAll not implemented.";
-		}
 	}
 }

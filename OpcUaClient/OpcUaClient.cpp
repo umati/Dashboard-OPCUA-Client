@@ -534,14 +534,9 @@ namespace Umati {
 			return Converter::UaNodeIdToModelNodeId(targetNodeId, m_indexToUriCache).getNodeId();
 		}
 
-		void OpcUaClient::UnsubscribeAll()
+		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
-			m_subscr.UnsubscribeAll();
-		}
-
-		void OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
-		{
-			m_subscr.Subscribe(nodeId, callback);
+			return m_subscr.Subscribe(nodeId, callback);
 		}
 
 		std::vector<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
