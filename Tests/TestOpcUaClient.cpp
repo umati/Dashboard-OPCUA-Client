@@ -53,3 +53,17 @@ TEST(OpcUaClient, Browse)
 
 }
 
+TEST(OpcUaClient, ReadValue)
+{
+	ModelOpcUa::NodeId_t scalarStringNodeId{ "http://www.unifiedautomation.com/DemoServer/", "s=Demo.Static.Scalar.String" };
+	Umati::Util::ConfigureLogger("OpcUaClient.Read");
+	Umati::OpcUa::OpcUaClient client(OPCUA_TEST_SERVER_URL);
+	ASSERT_TRUE(client.isConnected());
+
+	auto valueList = client.readValues(std::list<ModelOpcUa::NodeId_t>{scalarStringNodeId});
+
+	ASSERT_EQ(1, valueList.size());
+
+	EXPECT_EQ(valueList.front()["value"], "Hello world");
+}
+

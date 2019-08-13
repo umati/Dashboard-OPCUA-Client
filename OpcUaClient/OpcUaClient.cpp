@@ -503,29 +503,29 @@ namespace Umati {
 			if (uaResult.isBad())
 			{
 				LOG(ERROR) << "TranslateBrowsePathToNodeId failed for node: '" << static_cast<std::string>(startNode)
-					<< "' with " << uaResult.toString().toUtf8();
+					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 
 			if (uaBrowsePathResults.length() != 1)
 			{
-				LOG(ERROR) << "Expect 1 browseResult, got " << uaBrowsePathResults.length() << "for node: '" << static_cast<std::string>(startNode)
-					<< "' with " << uaResult.toString().toUtf8();
+				LOG(ERROR) << "Expect 1 browseResult, got " << uaBrowsePathResults.length() << " for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::UmatiException("BrowseResult length mismatch.");
 			}
 
 			UaStatusCode uaResultElement(uaBrowsePathResults[0].StatusCode);
 			if (uaResultElement.isBad())
 			{
-				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8() << "for node: '" << static_cast<std::string>(startNode)
-					<< "' with " << uaResult.toString().toUtf8();
+				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8() << " for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
 			}
 
 			if (uaBrowsePathResults[0].NoOfTargets != 1)
 			{
-				LOG(ERROR) << "Expect 1 traget, got " << uaBrowsePathResults[0].NoOfTargets << "for node: '" << static_cast<std::string>(startNode)
-					<< "' with " << uaResult.toString().toUtf8();
+				LOG(ERROR) << "Expect 1 traget, got " << uaBrowsePathResults[0].NoOfTargets << " for node: '" << static_cast<std::string>(startNode)
+					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::UmatiException("Number of targets mismatch.");
 			}
 

@@ -3,7 +3,7 @@
 
 TEST(MachineCache, ReadFile)
 {
-	Umati::MachineObserver::MachineCacheJsonFile machCache("MachineCache.json", false);
+	Umati::MachineObserver::MachineCacheJsonFile machCache("MachineCacheTest.json", false);
 
 	EXPECT_EQ(machCache.GetEntry("NotAvailable"), nullptr);
 
