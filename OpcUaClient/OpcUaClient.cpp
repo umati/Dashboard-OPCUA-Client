@@ -39,7 +39,7 @@ namespace Umati {
 		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security)
 			: m_serverUri(serverURI), m_subscr(m_uriToIndexCache, m_indexToUriCache), m_username(Username), m_password(Password), m_security(static_cast<OpcUa_MessageSecurityMode>(security))
 		{
-			m_defaultServiceSettings.callTimeout = 1000;
+			m_defaultServiceSettings.callTimeout = 10000;
 
 
 			if (++PlattformLayerInitialized == 1)
@@ -578,15 +578,7 @@ namespace Umati {
 			for (i = 0; i < readValues.length(); ++i)
 			{
 				auto value = readValues[i];
-				if (!UaStatus(value.StatusCode).isGood())
-				{
-					ret.push_back(nlohmann::json());
-				}
-				else
-				{
-					UaDataValue dataValue(readValues[i]);
-					ret.push_back(Converter::UaDataValueToJsonValue(dataValue).getValue());
-				}
+				ret.push_back(Converter::UaDataValueToJsonValue(value).getValue());
 			}
 
 			return ret;

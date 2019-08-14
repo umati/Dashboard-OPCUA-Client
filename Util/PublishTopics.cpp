@@ -12,6 +12,7 @@ namespace Umati
 		const std::string PublishTopics::Postfix_Tools = std::string("/ToolManagement/Tools");
 		const std::string PublishTopics::Postfix_ProductionPlan = std::string("/ProductionPlan");
 		const std::string PublishTopics::Postfix_StateMode = std::string("/StateMode");
+		const std::string PublishTopics::Postfix_Online = std::string("/Online");
 
 
 		PublishTopics::PublishTopics(std::string topicPrefix)
@@ -21,8 +22,14 @@ namespace Umati
 			Stacklight(Prefix_UmatiEmo + topicPrefix + Postfix_Stacklight),
 			Tools(Prefix_UmatiEmo + topicPrefix + Postfix_Tools),
 			ProductionPlan(Prefix_UmatiEmo + topicPrefix + Postfix_ProductionPlan),
-			StateMode(Prefix_UmatiEmo + topicPrefix + Postfix_StateMode)
+			StateMode(Prefix_UmatiEmo + topicPrefix + Postfix_StateMode),
+			Online(Prefix_UmatiEmo + topicPrefix + Postfix_Online)
 		{
+		}
+
+		bool PublishTopics::isValid()
+		{
+			return TopicPrefix.find('<') == std::string::npos;
 		}
 	}
 }

@@ -1,5 +1,7 @@
 #include "DashboardMachineObserver.hpp"
 #include "DashboardMachineObserver.hpp"
+#include "DashboardMachineObserver.hpp"
+#include "DashboardMachineObserver.hpp"
 
 #include <easylogging++.h>
 
@@ -13,6 +15,7 @@
 
 #include "Exceptions/MachineInvalidException.hpp"
 #include "Exceptions/MachineOfflineException.hpp"
+#include "Exceptions/NoPublishTopicSet.hpp"
 
 #include <Exceptions/OpcUaException.hpp>
 
@@ -46,9 +49,9 @@ namespace Umati {
 
 			if ((--m_publishMachinesOnline) <= 0)
 			{
-				m_publishMachinesOnline = PublishMachinesOnlineResetValue;
+				m_publishMachinesOnline = PublishMachinesListResetValue;
 
-				this->publishMachinesOnline();
+				this->publishMachinesList();
 			}
 		}
 
@@ -88,7 +91,7 @@ namespace Umati {
 			}
 		}
 
-		void DashboardMachineObserver::publishMachinesOnline()
+		void DashboardMachineObserver::publishMachinesList()
 		{
 			nlohmann::json publishData = nlohmann::json::array();
 			for (const auto machineOnline : m_onlineMachines)
@@ -101,6 +104,15 @@ namespace Umati {
 			m_pPublisher->Publish(MachinesListTopic, publishData.dump(2));
 		}
 
+		void DashboardMachineObserver::publishOnlineStatus(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine, bool online)
+		{
+			auto pubTopics = m_pubTopicFactory.getPubTopics(machine);
+			if (pubTopics.isValid())
+			{
+				m_pPublisher->Publish(pubTopics.Online, nlohmann::json(online).dump(2));
+			}
+		}
+
 		void DashboardMachineObserver::addMachine(
 			Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine
 		)
@@ -110,11 +122,27 @@ namespace Umati {
 
 				auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher);
 				auto pubTopics = m_pubTopicFactory.getPubTopics(machine);
-
 				auto nsUri = machine.NodeId.Uri;
+
+				if (!pubTopics.isValid())
+				{
+					std::stringstream ss;
+					ss << "Invalid publisher topic. Machine: " << machine.BrowseName.Name
+						<< " NodeId:" << static_cast<std::string>(machine.NodeId);
+					LOG(ERROR) << ss.str();
+					throw Exceptions::NoPublishTopicSet(ss.str());
+				}
 
 				MachineInformation_t machineInformation;
 				machineInformation.TopicPrefix = pubTopics.TopicPrefix;
+
+				if (!isOnline(machine))
+				{
+					std::stringstream ss;
+					ss << "Machine: '" << machine.BrowseName.Name << "' (" << machine.NodeId.Uri << ") is offline";
+					LOG(INFO) << ss.str();
+					throw Umati::MachineObserver::Exceptions::MachineOfflineException(ss.str());
+				}
 
 				LOG(INFO) << "Read machine data";
 
@@ -244,6 +272,34 @@ namespace Umati {
 			{
 				LOG(INFO) << "Machine was not online: '" << static_cast<std::string>(machine.NodeId) << "'";
 			}
+		}
+
+		bool DashboardMachineObserver::isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine)
+		{
+			bool retIsOnline;
+			const std::string NodeIdIdentifier_BuildYear("i=6001");
+
+			auto valuesList = m_pDataClient->readValues(
+				{
+					{machine.NodeId.Uri, NodeIdIdentifier_BuildYear},
+				}
+			);
+
+			if (!valuesList.at(0)["statusCode"].is_object() ||
+				!valuesList.at(0)["statusCode"]["code"].is_number_unsigned() ||
+				valuesList.at(0)["statusCode"]["code"] != 0x800d0000 // BadServerNotConnected (0x800d0000)
+				)
+			{
+				retIsOnline = false;
+			}
+			else
+			{
+				retIsOnline = true;
+			}
+
+			this->publishOnlineStatus(machine, retIsOnline);
+
+			return retIsOnline;
 		}
 	}
 }

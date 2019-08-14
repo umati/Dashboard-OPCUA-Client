@@ -5,6 +5,9 @@
 
 #include "Exceptions/MachineInvalidException.hpp"
 #include "Exceptions/MachineOfflineException.hpp"
+#include "Exceptions/NoPublishTopicSet.hpp"
+#include <Exceptions/OpcUaException.hpp>
+#include <Exceptions/ClientNotConnected.hpp>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -43,11 +46,24 @@ namespace Umati {
 
 		void MachineObserver::UpdateMachines()
 		{
-			auto browseResults = m_pDataClient->Browse(
-				ModelOpcUa::NodeId_t{ Dashboard::TypeDefinition::UmatiNamespaceUri, "i=1000" },
-				Dashboard::TypeDefinition::OrganizesTypeNodeId,
-				Dashboard::TypeDefinition::NodeIds::MachineToolType
-			);
+			std::list < Umati::Dashboard::IDashboardDataClient::BrowseResult_t > browseResults;
+			try {
+				browseResults = m_pDataClient->Browse(
+					ModelOpcUa::NodeId_t{ Dashboard::TypeDefinition::UmatiNamespaceUri, "i=1000" },
+					Dashboard::TypeDefinition::OrganizesTypeNodeId,
+					Dashboard::TypeDefinition::NodeIds::MachineToolType
+				);
+			}
+			catch (const Umati::Exceptions::OpcUaException & ex)
+			{
+				LOG(ERROR) << "Browse new machines failed with: " << ex.what();
+				return;
+			}
+			catch (const Umati::Exceptions::ClientNotConnected &ex)
+			{
+				LOG(ERROR) << "OPC UA Client not connected." << ex.what();
+				return;
+			}
 
 			std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> newMachines;
 			auto removedMachines = m_knownMachines;
@@ -57,7 +73,16 @@ namespace Umati {
 				auto it = removedMachines.find(browseResult.NodeId);
 				if (it != removedMachines.end())
 				{
-					removedMachines.erase(it);
+					try {
+						if (isOnline(it->second))
+						{
+							removedMachines.erase(it);
+						}
+					}
+					catch (const Umati::Exceptions::OpcUaException &ex)
+					{
+						LOG(INFO) << "Machine disconnected: '" << it->second.BrowseName.Name << "' (" << it->second.NodeId.Uri << ")";
+					}
 				}
 				else
 				{
@@ -100,6 +125,11 @@ namespace Umati {
 				{
 					LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.second.NodeId);
 					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterOffline));
+				}
+				catch (const Exceptions::NoPublishTopicSet &)
+				{
+					LOG(INFO) << "PublishTopic not set: " << static_cast<std::string>(newMachine.second.NodeId);
+					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
 				}
 			}
 

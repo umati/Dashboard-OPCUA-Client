@@ -43,8 +43,8 @@ namespace Umati {
 			std::smatch match;
 			bool found = std::regex_search(browseName.Name, match, pattern);
 
-			std::string company = "NotSet";
-			std::string machineName = "NotSet";
+			std::string company = "<CompanyNotSet>";
+			std::string machineName = "<MachineNameNotSet>";
 			if (!found)
 			{
 				LOG(ERROR) << "Could not determine company and machine name from: "

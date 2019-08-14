@@ -13,7 +13,7 @@ namespace Umati
 			UaDataValueToJsonValue::UaDataValueToJsonValue(const UaDataValue &dataValue)
 			{
 				setValueFromDataValue(dataValue);
-
+				setStatusCodeFromDataValue(dataValue);
 			}
 
 			void UaDataValueToJsonValue::setValueFromDataValue(const UaDataValue & dataValue)
@@ -248,6 +248,14 @@ namespace Umati
 					break;
 				}
 				}
+			}
+
+			void UaDataValueToJsonValue::setStatusCodeFromDataValue(const UaDataValue & dataValue)
+			{
+				auto &jsonStatusCode = m_value["statusCode"];
+
+				jsonStatusCode["code"] = dataValue.statusCode();
+				jsonStatusCode["isGood"] = UaStatusCode(dataValue.statusCode()).isGood();
 			}
 		}
 	}

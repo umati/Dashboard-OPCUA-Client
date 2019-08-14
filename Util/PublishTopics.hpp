@@ -15,9 +15,12 @@ namespace Umati
 			static const std::string Postfix_Tools;
 			static const std::string Postfix_ProductionPlan;
 			static const std::string Postfix_StateMode;
+			static const std::string Postfix_Online;
 
 		public:
 			PublishTopics(std::string topicPrefix);
+			bool isValid();
+
 			const std::string TopicPrefix; // "/ISW/ExampleMachine"
 			const std::string ClientOnline; // "/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
 			const std::string Information; //"/umati/emo/ISW/ExampleMachine/Information",
@@ -25,6 +28,7 @@ namespace Umati
 			const std::string Tools; //	"/umati/emo/ISW/ExampleMachine/ToolManagement/Tools",
 			const std::string ProductionPlan; // "/umati/emo/ISW/ExampleMachine/ProductionPlan",
 			const std::string StateMode; // "/umati/emo/ISW/ExampleMachine/StateMode",
+			const std::string Online; // "/umati/emo/ISW/ExampleMachine/Online",
 		};
 	}
 }

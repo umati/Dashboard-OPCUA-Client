@@ -11,8 +11,8 @@ namespace Umati {
 	namespace MachineObserver {
 		class DashboardMachineObserver : public MachineObserver {
 		public:
-			const int PublishMachinesOnlineResetValue = 30;
-			const std::string MachinesListTopic = std::string("/umati/emo/machines/list");
+			const int PublishMachinesListResetValue = 30; // in seconds
+			const std::string MachinesListTopic = std::string("/umati/emo/config/machines/list");
 
 			DashboardMachineObserver(
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
@@ -27,11 +27,14 @@ namespace Umati {
 			void startUpdateMachineThread();
 			void stopMachineUpdateThread();
 
-			void publishMachinesOnline();
+			void publishMachinesList();
+
+			void publishOnlineStatus(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine, bool online);
 
 			// Inherit from MachineObserver
-			virtual void addMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
-			virtual void removeMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
+			void addMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
+			void removeMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
+			bool isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
 
 			struct MachineInformation_t
 			{

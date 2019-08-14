@@ -19,13 +19,14 @@ namespace Umati {
 			virtual ~MachineObserver() = 0 {};
 
 			const int NumSkipAfterInvalid = 100;
-			const int NumSkipAfterOffline = 100;
+			const int NumSkipAfterOffline = 3;
 
 		protected:
 			void UpdateMachines();
 
 			virtual void addMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) = 0;
 			virtual void removeMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) = 0;
+			virtual bool isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) = 0;
 
 			std::shared_ptr<Dashboard::IDashboardDataClient> m_pDataClient;
 			std::map <ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> m_knownMachines;

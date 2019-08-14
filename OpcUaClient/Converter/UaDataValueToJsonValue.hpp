@@ -20,6 +20,7 @@ namespace Umati
 			protected:
 
 				void setValueFromDataValue(const UaDataValue &dataValue);
+				void setStatusCodeFromDataValue(const UaDataValue &dataValue);
 
 				nlohmann::json m_value;
 			};
