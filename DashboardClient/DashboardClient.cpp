@@ -18,7 +18,8 @@ namespace Umati {
 
 		DashboardClient::~DashboardClient()
 		{
-			// Cleanup is done automatically as is 'm_subscribedValues' cleaned up
+			// Ensure that everything is unsubscribed before deleting m_dataSets
+			m_subscribedValues.clear();
 		}
 
 		void DashboardClient::addDataSet(
