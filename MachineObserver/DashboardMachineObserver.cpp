@@ -90,7 +90,7 @@ namespace Umati {
 
 		void DashboardMachineObserver::publishMachinesOnline()
 		{
-			nlohmann::json publishData;
+			nlohmann::json publishData = nlohmann::json::array();
 			for (const auto machineOnline : m_onlineMachines)
 			{
 				publishData.push_back(
