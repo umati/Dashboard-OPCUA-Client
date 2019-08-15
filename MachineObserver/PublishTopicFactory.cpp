@@ -31,7 +31,7 @@ namespace Umati {
 				);
 			}
 
-			LOG(INFO) << "Using prefix '" << topicPrefix << "' for machine " << machineRoot.BrowseName.Uri;
+			//LOG(INFO) << "Using prefix '" << topicPrefix << "' for machine " << machineRoot.BrowseName.Uri;
 			
 			return Umati::Util::PublishTopics(topicPrefix);
 		}

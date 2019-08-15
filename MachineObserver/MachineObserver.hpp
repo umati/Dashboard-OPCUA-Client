@@ -18,8 +18,8 @@ namespace Umati {
 
 			virtual ~MachineObserver() = 0 {};
 
-			const int NumSkipAfterInvalid = 100;
-			const int NumSkipAfterOffline = 3;
+			const int NumSkipAfterInvalid = 10; ///< in 10s, e.g. 5 means 5*10s = 50s
+			const int NumSkipAfterOffline = 3; ///< in 10s,
 
 		protected:
 			void UpdateMachines();

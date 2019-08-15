@@ -79,7 +79,7 @@ namespace Umati {
 							removedMachines.erase(it);
 						}
 					}
-					catch (const Umati::Exceptions::OpcUaException &ex)
+					catch (const Umati::Exceptions::OpcUaException &)
 					{
 						LOG(INFO) << "Machine disconnected: '" << it->second.BrowseName.Name << "' (" << it->second.NodeId.Uri << ")";
 					}
@@ -93,6 +93,7 @@ namespace Umati {
 			for (auto &removedMachine : removedMachines)
 			{
 				removeMachine(removedMachine.second);
+				m_knownMachines.erase(removedMachine.first);
 			}
 
 			for (auto &newMachine : newMachines)

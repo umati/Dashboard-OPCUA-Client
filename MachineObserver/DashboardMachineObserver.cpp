@@ -124,6 +124,8 @@ namespace Umati {
 				auto pubTopics = m_pubTopicFactory.getPubTopics(machine);
 				auto nsUri = machine.NodeId.Uri;
 
+				LOG(INFO) << "Prefix '" << pubTopics.TopicPrefix << "' for machine " << machine.NodeId.Uri;
+
 				if (!pubTopics.isValid())
 				{
 					std::stringstream ss;
@@ -135,6 +137,7 @@ namespace Umati {
 
 				MachineInformation_t machineInformation;
 				machineInformation.TopicPrefix = pubTopics.TopicPrefix;
+				machineInformation.NamespaceURI = machine.NodeId.Uri;
 
 				if (!isOnline(machine))
 				{
@@ -167,7 +170,7 @@ namespace Umati {
 					throw Exceptions::MachineInvalidException(ss.str());
 				}
 				machineInformation.LocationPlant = valuesList.at(0)["value"].get<std::string>();
-				LOG(INFO) << "LocationPlant: " << machineInformation.LocationPlant;
+				//LOG(INFO) << "LocationPlant: " << machineInformation.LocationPlant;
 
 				if (!valuesList.at(1)["value"].is_string())
 				{
@@ -178,7 +181,7 @@ namespace Umati {
 					throw Exceptions::MachineInvalidException(ss.str());
 				}
 				machineInformation.DisplayManufacturer = valuesList.at(1)["value"].get<std::string>();
-				LOG(INFO) << "Manufacturer: " << machineInformation.DisplayManufacturer;
+				//LOG(INFO) << "Manufacturer: " << machineInformation.DisplayManufacturer;
 
 				if (!valuesList.at(2)["value"].is_string())
 				{
@@ -189,7 +192,7 @@ namespace Umati {
 					throw Exceptions::MachineInvalidException(ss.str());
 				}
 				machineInformation.DisplayName = valuesList.at(2)["value"].get<std::string>();
-				LOG(INFO) << "NameCatalog: " << machineInformation.DisplayName;
+				//LOG(INFO) << "NameCatalog: " << machineInformation.DisplayName;
 
 				LOG(INFO) << "Begin read model";
 
@@ -228,7 +231,7 @@ namespace Umati {
 					pubTopics.StateMode
 				);
 
-				LOG(INFO) << "Read model finished, start publishing";
+				LOG(INFO) << "Read model finished";
 
 				{
 					std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
