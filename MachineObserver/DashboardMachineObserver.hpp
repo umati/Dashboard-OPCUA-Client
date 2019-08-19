@@ -36,8 +36,11 @@ namespace Umati {
 			void removeMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
 			bool isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
 
+
+
 			struct MachineInformation_t
 			{
+				ModelOpcUa::NodeId_t StartNodeId;
 				std::string DisplayName;
 				std::string DisplayManufacturer;
 				std::string NamespaceURI;
@@ -56,6 +59,8 @@ namespace Umati {
 					return ret;
 				}
 			};
+
+			void updateMachinesMachineData(MachineInformation_t &machineInfo);
 
 			int m_publishMachinesOnline = 0;
 

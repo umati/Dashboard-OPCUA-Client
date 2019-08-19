@@ -2,6 +2,7 @@
 #include "DashboardMachineObserver.hpp"
 #include "DashboardMachineObserver.hpp"
 #include "DashboardMachineObserver.hpp"
+#include "DashboardMachineObserver.hpp"
 
 #include <easylogging++.h>
 
@@ -94,8 +95,20 @@ namespace Umati {
 		void DashboardMachineObserver::publishMachinesList()
 		{
 			nlohmann::json publishData = nlohmann::json::array();
-			for (const auto machineOnline : m_onlineMachines)
+			for (auto &machineOnline : m_onlineMachines)
 			{
+				try
+				{
+					updateMachinesMachineData(machineOnline.second);
+				}
+				catch (const Umati::Exceptions::OpcUaException &)
+				{
+					continue;
+				}
+				catch (const Exceptions::MachineInvalidException &)
+				{
+					continue;
+				}
 				publishData.push_back(
 					static_cast<nlohmann::json>(machineOnline.second)
 				);
@@ -138,61 +151,9 @@ namespace Umati {
 				MachineInformation_t machineInformation;
 				machineInformation.TopicPrefix = pubTopics.TopicPrefix;
 				machineInformation.NamespaceURI = machine.NodeId.Uri;
+				machineInformation.StartNodeId = machine.NodeId;
 
-				if (!isOnline(machine))
-				{
-					std::stringstream ss;
-					ss << "Machine: '" << machine.BrowseName.Name << "' (" << machine.NodeId.Uri << ") is offline";
-					LOG(INFO) << ss.str();
-					throw Umati::MachineObserver::Exceptions::MachineOfflineException(ss.str());
-				}
-
-				LOG(INFO) << "Read machine data";
-
-				const std::string NodeIdIdentifier_LocationPlant("i=6005");
-				const std::string NodeIdIdentifier_Manufacturer("i=6006");
-				const std::string NodeIdIdentifier_NameCatalog("i=6002");
-
-				auto valuesList = m_pDataClient->readValues(
-					{
-						{nsUri, NodeIdIdentifier_LocationPlant},
-						{nsUri, NodeIdIdentifier_Manufacturer},
-						{nsUri, NodeIdIdentifier_NameCatalog},
-					}
-				);
-
-				if (!valuesList.at(0)["value"].is_string())
-				{
-					std::stringstream ss;
-					ss << "LocationPlant is not a string. Machine: " << machine.BrowseName.Name
-						<< " NodeId:" << static_cast<std::string>(machine.NodeId);
-					LOG(ERROR) << ss.str();
-					throw Exceptions::MachineInvalidException(ss.str());
-				}
-				machineInformation.LocationPlant = valuesList.at(0)["value"].get<std::string>();
-				//LOG(INFO) << "LocationPlant: " << machineInformation.LocationPlant;
-
-				if (!valuesList.at(1)["value"].is_string())
-				{
-					std::stringstream ss;
-					ss << "Manufacturer is not a string. Machine: " << machine.BrowseName.Name
-						<< " NodeId:" << static_cast<std::string>(machine.NodeId);
-					LOG(ERROR) << ss.str();
-					throw Exceptions::MachineInvalidException(ss.str());
-				}
-				machineInformation.DisplayManufacturer = valuesList.at(1)["value"].get<std::string>();
-				//LOG(INFO) << "Manufacturer: " << machineInformation.DisplayManufacturer;
-
-				if (!valuesList.at(2)["value"].is_string())
-				{
-					std::stringstream ss;
-					ss << "NameCatalog is not a string. Machine: " << machine.BrowseName.Name
-						<< " NodeId:" << static_cast<std::string>(machine.NodeId);
-					LOG(ERROR) << ss.str();
-					throw Exceptions::MachineInvalidException(ss.str());
-				}
-				machineInformation.DisplayName = valuesList.at(2)["value"].get<std::string>();
-				//LOG(INFO) << "NameCatalog: " << machineInformation.DisplayName;
+				updateMachinesMachineData(machineInformation);
 
 				LOG(INFO) << "Begin read model";
 
@@ -303,6 +264,54 @@ namespace Umati {
 			this->publishOnlineStatus(machine, retIsOnline);
 
 			return retIsOnline;
+		}
+
+		void DashboardMachineObserver::updateMachinesMachineData(
+			DashboardMachineObserver::MachineInformation_t &machineInformation
+		)
+		{
+			const std::string NodeIdIdentifier_LocationPlant("i=6005");
+			const std::string NodeIdIdentifier_Manufacturer("i=6006");
+			const std::string NodeIdIdentifier_NameCatalog("i=6002");
+
+			auto valuesList = m_pDataClient->readValues(
+				{
+					{machineInformation.NamespaceURI, NodeIdIdentifier_LocationPlant},
+					{machineInformation.NamespaceURI, NodeIdIdentifier_Manufacturer},
+					{machineInformation.NamespaceURI, NodeIdIdentifier_NameCatalog},
+				}
+			);
+
+			if (!valuesList.at(0)["value"].is_string())
+			{
+				std::stringstream ss;
+				ss << "LocationPlant is not a string. Machine-NodeId:" << static_cast<std::string>(machineInformation.StartNodeId);
+				LOG(ERROR) << ss.str();
+				throw Exceptions::MachineInvalidException(ss.str());
+			}
+			machineInformation.LocationPlant = valuesList.at(0)["value"].get<std::string>();
+			//LOG(INFO) << "LocationPlant: " << machineInformation.LocationPlant;
+
+			if (!valuesList.at(1)["value"].is_string())
+			{
+				std::stringstream ss;
+				ss << "Manufacturer is not a string. Machine-NodeId:" << static_cast<std::string>(machineInformation.StartNodeId);
+				LOG(ERROR) << ss.str();
+				throw Exceptions::MachineInvalidException(ss.str());
+			}
+			machineInformation.DisplayManufacturer = valuesList.at(1)["value"].get<std::string>();
+			//LOG(INFO) << "Manufacturer: " << machineInformation.DisplayManufacturer;
+
+			if (!valuesList.at(2)["value"].is_string())
+			{
+				std::stringstream ss;
+				ss << "NameCatalog is not a string.Machine-NodeId:" << static_cast<std::string>(machineInformation.StartNodeId);
+				LOG(ERROR) << ss.str();
+				throw Exceptions::MachineInvalidException(ss.str());
+			}
+			machineInformation.DisplayName = valuesList.at(2)["value"].get<std::string>();
+			//LOG(INFO) << "NameCatalog: " << machineInformation.DisplayName;
+
 		}
 	}
 }
