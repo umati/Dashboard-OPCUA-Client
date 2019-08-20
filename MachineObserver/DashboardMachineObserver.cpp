@@ -272,13 +272,13 @@ namespace Umati {
 		{
 			const std::string NodeIdIdentifier_LocationPlant("i=6005");
 			const std::string NodeIdIdentifier_Manufacturer("i=6006");
-			const std::string NodeIdIdentifier_NameCatalog("i=6002");
+			const std::string NodeIdIdentifier_NameCustom("i=6003");
 
 			auto valuesList = m_pDataClient->readValues(
 				{
 					{machineInformation.NamespaceURI, NodeIdIdentifier_LocationPlant},
 					{machineInformation.NamespaceURI, NodeIdIdentifier_Manufacturer},
-					{machineInformation.NamespaceURI, NodeIdIdentifier_NameCatalog},
+					{machineInformation.NamespaceURI, NodeIdIdentifier_NameCustom},
 				}
 			);
 
