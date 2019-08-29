@@ -16,6 +16,7 @@ namespace Umati
 			static const std::string Postfix_ProductionPlan;
 			static const std::string Postfix_StateMode;
 			static const std::string Postfix_Online;
+			static const std::string Postfix_JobCurrentStateNumber;
 
 		public:
 			PublishTopics(std::string topicPrefix);
@@ -29,6 +30,7 @@ namespace Umati
 			const std::string ProductionPlan; // "/umati/emo/ISW/ExampleMachine/ProductionPlan",
 			const std::string StateMode; // "/umati/emo/ISW/ExampleMachine/StateMode",
 			const std::string Online; // "/umati/emo/ISW/ExampleMachine/Online",
+			const std::string JobCurrentStateNumber; // "/umati/emo/ISW/ExampleMachine/ProductionPlan/JobCurrentStateNumber",
 		};
 	}
 }

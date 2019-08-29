@@ -12,6 +12,7 @@ namespace Umati
 		const std::string PublishTopics::Postfix_Tools = std::string("/ToolManagement/Tools");
 		const std::string PublishTopics::Postfix_ProductionPlan = std::string("/ProductionPlan");
 		const std::string PublishTopics::Postfix_StateMode = std::string("/StateMode");
+		const std::string PublishTopics::Postfix_JobCurrentStateNumber = std::string("/ProductionPlan/JobCurrentStateNumber");
 		const std::string PublishTopics::Postfix_Online = std::string("/Online");
 
 
@@ -23,7 +24,8 @@ namespace Umati
 			Tools(Prefix_UmatiEmo + topicPrefix + Postfix_Tools),
 			ProductionPlan(Prefix_UmatiEmo + topicPrefix + Postfix_ProductionPlan),
 			StateMode(Prefix_UmatiEmo + topicPrefix + Postfix_StateMode),
-			Online(Prefix_UmatiEmo + topicPrefix + Postfix_Online)
+			Online(Prefix_UmatiEmo + topicPrefix + Postfix_Online),
+			JobCurrentStateNumber(Prefix_UmatiEmo + topicPrefix + Postfix_JobCurrentStateNumber)
 		{
 		}
 

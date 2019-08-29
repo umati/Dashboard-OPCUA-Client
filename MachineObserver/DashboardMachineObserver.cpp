@@ -11,6 +11,7 @@
 #include <TypeDefinition/ToolListType.hpp>
 #include <TypeDefinition/ProductionJobListType.hpp>
 #include <TypeDefinition/StateModeListType.hpp>
+#include <TypeDefinition/JobCurrentStateNumber.hpp>
 
 #include "MachineCacheJsonFile.hpp"
 
@@ -190,6 +191,13 @@ namespace Umati {
 					{ nsUri, NodeIdIdentifier_StateMode },
 					Umati::Dashboard::TypeDefinition::getStateModeListType(),
 					pubTopics.StateMode
+				);
+
+				const std::string NodeIdIdentifier_JobCurrentStateNumber("i=6045");
+				pDashClient->addDataSet(
+					{ nsUri, NodeIdIdentifier_JobCurrentStateNumber },
+					Umati::Dashboard::TypeDefinition::getJobCurrentStateNumber(),
+					pubTopics.JobCurrentStateNumber
 				);
 
 				LOG(INFO) << "Read model finished";
