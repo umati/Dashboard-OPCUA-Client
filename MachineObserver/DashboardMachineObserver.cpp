@@ -313,7 +313,7 @@ namespace Umati {
 			if (!valuesList.at(2)["value"].is_string())
 			{
 				std::stringstream ss;
-				ss << "NameCatalog is not a string.Machine-NodeId:" << static_cast<std::string>(machineInformation.StartNodeId);
+				ss << "NameCustom is not a string.Machine-NodeId:" << static_cast<std::string>(machineInformation.StartNodeId);
 				LOG(ERROR) << ss.str();
 				throw Exceptions::MachineInvalidException(ss.str());
 			}
