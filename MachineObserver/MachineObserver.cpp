@@ -70,24 +70,31 @@ namespace Umati {
 
 			for (auto &browseResult : browseResults)
 			{
+
+				// Check if Machine is known as online machine
 				auto it = removedMachines.find(browseResult.NodeId);
-				if (it != removedMachines.end())
-				{
-					try {
-						if (isOnline(it->second))
+
+				// Machine known
+				try {
+					// Check if machine is still online
+					if (isOnline(browseResult))
+					{
+						if (it != removedMachines.end())
 						{
 							removedMachines.erase(it);
 						}
-					}
-					catch (const Umati::Exceptions::OpcUaException &)
-					{
-						LOG(INFO) << "Machine disconnected: '" << it->second.BrowseName.Name << "' (" << it->second.NodeId.Uri << ")";
+						else
+						{
+							newMachines.insert(std::make_pair(browseResult.NodeId, browseResult));
+						}
 					}
 				}
-				else
+				// Cach exceptions durng CheckOnline, this will cause that the machine stay in the removedMachines list
+				catch (const Umati::Exceptions::OpcUaException &)
 				{
-					newMachines.insert(std::make_pair(browseResult.NodeId, browseResult));
+					LOG(INFO) << "Machine disconnected: '" << it->second.BrowseName.Name << "' (" << it->second.NodeId.Uri << ")";
 				}
+
 			}
 
 			for (auto &removedMachine : removedMachines)
@@ -98,6 +105,7 @@ namespace Umati {
 
 			for (auto &newMachine : newMachines)
 			{
+				// Ignore known invalid machines for a specific time
 				auto it = m_invalidMachines.find(newMachine.second.NodeId);
 				if (it != m_invalidMachines.end())
 				{
@@ -111,7 +119,6 @@ namespace Umati {
 						continue;
 					}
 				}
-
 				try
 				{
 					addMachine(newMachine.second);

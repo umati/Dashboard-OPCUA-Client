@@ -259,7 +259,8 @@ namespace Umati {
 
 			if (!valuesList.at(0)["statusCode"].is_object() ||
 				!valuesList.at(0)["statusCode"]["code"].is_number_unsigned() ||
-				valuesList.at(0)["statusCode"]["code"] == 0x800d0000 // BadServerNotConnected (0x800d0000)
+				//valuesList.at(0)["statusCode"]["code"] == 0x800d0000 // BadServerNotConnected (0x800d0000)
+				valuesList.at(0)["statusCode"]["code"] != 0x00000000 // Good
 				)
 			{
 				retIsOnline = false;
