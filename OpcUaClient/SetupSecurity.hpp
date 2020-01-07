@@ -1,5 +1,6 @@
 #pragma once
 #include <uaclientsdk.h>
+#include <string>
 
 namespace Umati {
 	namespace OpcUa {

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-find_package(PahoMqttCpp REQUIRED)
+#find_package(PahoMqttCpp REQUIRED)
 
 set(MQTTPUBLISHER_PAHO_SRC
 	"MqttPublisher_Paho.cpp"
