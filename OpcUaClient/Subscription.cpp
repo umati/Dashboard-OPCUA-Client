@@ -58,9 +58,17 @@ namespace Umati {
 
 		}
 
-		void Subscription::subscriptionStatusChanged(OpcUa_UInt32 /*clientSubscriptionHandle*/, const UaStatus & status)
+		void Subscription::subscriptionStatusChanged(OpcUa_UInt32 clientSubscriptionHandle, const UaStatus & status)
 		{
-			LOG(WARNING) << "SubscriptionStatus changed to " << status.toString().toUtf8();
+			OpcUa_ReferenceParameter(clientSubscriptionHandle); // We use the callback only for this subscription
+
+			std::stringstream str;
+			str << "SubscriptionStatus changed to " << status.toString().toUtf8();
+			LOG(WARNING) << str.str().c_str();
+
+			// recover subscription
+			deleteSubscription(_pSession);
+			createSubscription(_pSession);
 		}
 
 		void Subscription::dataChange(OpcUa_UInt32 /*clientSubscriptionHandle*/, const UaDataNotifications & dataNotifications, const UaDiagnosticInfos & /*diagnosticInfos*/)
@@ -89,6 +97,7 @@ namespace Umati {
 		{
 			UaClientSdk::ServiceSettings servSettings;
 			UaClientSdk::SubscriptionSettings subSettings;
+			_pSession = pSession;
 			auto result = pSession.get()->createSubscription(servSettings, this, 1, subSettings, OpcUa_True, &m_pSubscription);
 			if (!result.isGood())
 			{

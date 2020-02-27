@@ -61,7 +61,7 @@ namespace Umati {
 		{
 			if (m_running)
 			{
-				LOG(INFO) << "Machine update trhead already running";
+				LOG(INFO) << "Machine update thread already running";
 				return;
 			}
 

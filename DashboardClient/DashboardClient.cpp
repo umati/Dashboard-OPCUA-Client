@@ -39,6 +39,7 @@ namespace Umati {
 
 		void DashboardClient::Publish()
 		{
+			// todo only publish dataset when machine is online
 			for (auto &pDataSetStorage : m_dataSets)
 			{
 				m_pPublisher->Publish(pDataSetStorage->channel, getJson(pDataSetStorage));
