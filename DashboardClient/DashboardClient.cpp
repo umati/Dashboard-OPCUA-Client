@@ -4,6 +4,7 @@
 #include "Converter/ModelToJson.hpp"
 #include "Exceptions/UmatiException.hpp"
 
+
 namespace Umati {
 
 	namespace Dashboard {
@@ -22,6 +23,10 @@ namespace Umati {
 			m_subscribedValues.clear();
 		}
 
+		/**
+		* Receives a nodeId, a typeDefinition and a mqtt topic to hold for a machine. Available types are
+		* Identification, JobCurrentStateNumber, ProductionJobList, Stacklight, StateModelList, ToolList
+		*/
 		void DashboardClient::addDataSet(
 			ModelOpcUa::NodeId_t startNodeId,
 			std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
@@ -172,6 +177,11 @@ namespace Umati {
 					)
 				)
 			{
+				/**
+				* Creates a lambda function which gets pNode as a copy and valueMap as a reference from this function,
+				* the input parameters of the lambda function is the nlohmann::json value and the body updates the value
+				* at position pNode with the received json value.
+				*/
 				auto callback = [pNode, &valueMap](nlohmann::json value) {
 					valueMap[pNode] = value;
 				};

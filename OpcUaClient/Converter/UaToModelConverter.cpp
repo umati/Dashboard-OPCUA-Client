@@ -10,6 +10,8 @@ namespace Umati {
 			{
 			}
 
+			UaToModelConverter::~UaToModelConverter() {}
+
 
 			std::string UaToModelConverter::getUriFromNsIndex(uint16_t nsIndex)
 			{

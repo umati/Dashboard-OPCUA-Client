@@ -12,7 +12,7 @@ namespace Umati {
 			public:
 				UaToModelConverter(const std::map<uint16_t, std::string> &idToUri);
 
-				virtual ~UaToModelConverter() = 0 {}
+				virtual ~UaToModelConverter() = 0;
 			protected:
 
 				std::string getUriFromNsIndex(uint16_t nsIndex);

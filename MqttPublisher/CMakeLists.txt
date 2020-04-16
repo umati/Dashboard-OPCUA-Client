@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.9)
 
+message("### opcua_dashboardclient/MqttPublisher: loading MqttPublisher")
+
 find_package(MosquittoMqtt REQUIRED)
 
 set(MQTTPUBLISHER_SRC
 	"MqttPublisher.cpp"
 )
+message("### opcua_dashboardclient/MqttPublisher: collecting source file list for library: ${MQTTPUBLISHER_SRC}")
 
 add_library(MqttPublisher ${MQTTPUBLISHER_SRC})
 

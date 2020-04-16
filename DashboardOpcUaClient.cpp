@@ -31,7 +31,8 @@
 #include <Exceptions/ConfigurationException.hpp>
 #include <DashboardMachineObserver.hpp>
 
-std::atomic_bool running = true;
+
+std::atomic_bool running = { true };
 
 static void stopHandler(int sig) {
 	LOG(INFO) << "Execution termindated by ctrl-c";
@@ -40,11 +41,13 @@ static void stopHandler(int sig) {
 
 int main(int argc, char* argv[])
 {
-	Umati::Util::ConfigureLogger("DashboardOpcUaClient");
+
+    Umati::Util::ConfigureLogger("DashboardOpcUaClient");
 
 	signal(SIGINT, stopHandler);
 	signal(SIGTERM, stopHandler);
-	LOG(INFO) << "Start Dashboard OPC UA Client";
+
+    LOG(INFO) << "Start Dashboard OPC UA Client";
 
 	std::string configFilename("configuration.json");
 
@@ -106,7 +109,6 @@ int main(int argc, char* argv[])
 
 		if ((i % 10) == 0)
 		{
-			//dashClient.Publish();
 			dashboardMachineObserv.PublishAll();
 		}
 	}

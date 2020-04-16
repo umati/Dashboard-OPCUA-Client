@@ -47,7 +47,7 @@ namespace Umati {
 			Subscription *m_pClientSubscription;
 		};
 
-		std::atomic_uint Subscription::nextId = 100;
+		std::atomic_uint Subscription::nextId = {100};
 
 		Subscription::Subscription(
 			const std::map<std::string, uint16_t>& uriToIndexCache,

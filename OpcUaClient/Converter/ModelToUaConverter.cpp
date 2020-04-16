@@ -9,6 +9,8 @@ namespace Umati {
 			{
 			}
 
+            ModelToUaConverter::~ModelToUaConverter() {}
+
 			uint16_t ModelToUaConverter::getNsIndexFromUri(std::string uri)
 			{
 				if (uri.empty())

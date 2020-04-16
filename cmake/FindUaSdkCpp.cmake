@@ -34,12 +34,15 @@ function(to_abs_libraries _out_var_abs_libs_var _libDir)
 	set (${_out_var_abs_libs_var} ${_out_var_abs_libs} PARENT_SCOPE)
 endfunction()
 
+message(STATUS "### UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR: ${UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR}")
 
 
 # include Unified Automation SDK
-set(UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR  CACHE PATH "Path to directory 'cmake' of a build SDK")
+set(UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../uasdk/cmake")
+#set(UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR "/mnt/c/Projektdaten/umati/sdk2/cmake/")
+#set(UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR  CACHE PATH "Path to directory 'cmake' of a build SDK")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${UNIFIED_AUTOMATION_CPP_SERVER_SDK_DIR})
-
+message("### current dir: ${CMAKE_CURRENT_SOURCE_DIR}/../../uasdk/cmake")
 find_package(UaOpenSSL REQUIRED)
 find_package(UaLibXml2 REQUIRED)
 
@@ -56,28 +59,38 @@ include(ConfigureCppSdk)
 add_library(UaSDKCpp::UaSDKCpp INTERFACE IMPORTED)
 
 # Include directories and libraries
+target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UABASE_INCLUDE})
 
 target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UASTACK_INCLUDE})
-target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UABASE_INCLUDE})
+target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UACLIENT_INCLUDE})
 target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UAPKI_INCLUDE})
 target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UAXMLPARSER_INCLUDE})
 #target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UACOREMODULE_INCLUDE})
 #target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UAMODULE_INCLUDE})
 target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${OPENSSL_INCLUDE_DIR})
-target_include_directories(UaSDKCpp::UaSDKCpp INTERFACE ${UACLIENT_INCLUDE})
 
+message("### opcua_dashboardclient/cmake UAMODULE_INCLUDE was set to ${UAMODULE_INCLUDE}")
+message("### opcua_dashboardclient/cmake UACOREMODULE_INCLUDE was set to ${UACOREMODULE_INCLUDE}")
+message("### opcua_dashboardclient/cmake UAMODULE_LIBRARY was set to ${UAMODULE_LIBRARY}")
+message("### opcua_dashboardclient/cmake UACOREMODULE_LIBRARY was set to ${UACOREMODULE_LIBRARY}")
+#set(UASDK_WITH_XMLPARSER ON CACHE BOOL "")
 
 if (UASDK_WITH_XMLPARSER)
-    to_abs_libraries(UA_XML_ABS_PATHS_TO_LIBS ${UA_LIB_DIR} ${UAXML_LIBRARY} ${LIBXML2_LIBRARIES})
-	target_link_libraries(UaSDKCpp::UaSDKCpp INTERFACE ${UA_XML_ABS_PATHS_TO_LIBS})
+	message("###########################################")
+   # to_abs_libraries(UA_XML_ABS_PATHS_TO_LIBS})
+	#target_link_libraries(UaSDKCpp::UaSDKCpp INTERFACE ${UA_XML_ABS_PATHS_TO_LIBS})
 endif ()
-to_abs_libraries(UA_COMMON_LIBS_ABS_PATHS ${UA_LIB_DIR} ${UAMODULE_LIBRARY}
-	${UACLIENT_LIBRARY}
-	${UACOREMODULE_LIBRARY}
+to_abs_libraries(UA_COMMON_LIBS_ABS_PATHS
+		${UA_LIB_DIR}
+	#	${UAMODULE_LIBRARY}
+#	${UACOREMODULE_LIBRARY}
+		${UACLIENT_LIBRARY}
 	${UAPKI_LIBRARY}
 	${UABASE_LIBRARY}
 	${UASTACK_LIBRARY}
+		${UAXML_LIBRARY}
+		${LIBXML2_LIBRARIES}
 	${SYSTEM_LIBS})
 target_link_libraries(UaSDKCpp::UaSDKCpp INTERFACE ${UA_COMMON_LIBS_ABS_PATHS})
 
@@ -87,6 +100,11 @@ if (UASTACK_WITH_OPENSSL)
     target_link_libraries(UaSDKCpp::UaSDKCpp INTERFACE ${UA_OPENSSL_ABS_PATHS_TO_LIBS})
 endif ()
 
+if(UAMODULE_LIBRARY)
+	message("### opcua_dashboardclient/cmake UAMODULE_LIBRARY was set")
+endif()
+
 if(UACOREMODULE_LIBRARY)
+	message("### opcua_dashboardclient/cmake UACOREMODULE_LIBRARY was set")
 	SET(UASDKCPP_FOUND 1)
 endif()

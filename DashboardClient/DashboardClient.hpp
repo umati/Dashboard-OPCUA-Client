@@ -7,6 +7,23 @@
 namespace Umati {
 
 	namespace Dashboard {
+
+		/**
+		* DashboardClient
+		* Depends on instances of:
+		* - IDashboardDataClient (like Umati::OpcUa::OpcUaClient)
+		* - IPublisher (like Umati::MqttPublisher::MqttPublisher)
+		*
+		* How DashboardClient works
+		* - While the IDashboardDataClient instance acts as a source and IPublisher as the sink.
+		* - DashboardClient is initialized by DashboardMachineObserver when a machine was found. 
+		* - DashboardMachineObserver calls addDataSet to integrate the machine into the 
+		*   system. Besides, DashboardMachineObserver forwards the Publish() function to the 
+		*   DashboardOpcUaClient which contains a thread calling the fowarded Publish() method
+		*   every second. DashboardClient itself then resolves topics and payloads and forwards this
+		*   to the IPublisher.
+		* All further functions are protected and used internally 
+		*/
 		class DashboardClient {
 		public:
 			DashboardClient(std::shared_ptr<IDashboardDataClient> pDashboardDataClient,

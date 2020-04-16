@@ -9,7 +9,9 @@ namespace Umati
 	{
 		namespace TypeDefinition
 		{
-			
+			/**
+			* Some nodeIds that are used to define type node ids of the umati namespace
+			*/
 			const ModelOpcUa::NodeId_t HasComponentTypeNodeId{ "", "i=33" };
 			const ModelOpcUa::NodeId_t HasPropertyTypeNodeId{ "", "i=46" };
 			const ModelOpcUa::NodeId_t OrganizesTypeNodeId{ "", "i=35" };

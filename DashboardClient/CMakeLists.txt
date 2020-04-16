@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 
+message("### opcua_dashboardclient/DashboardClient: loading Dasbhoard client")
+
+find_package(nlohmann_json 3.6.1 REQUIRED)
+
 set(DASHBOARDCLIENT_SRC
 	"TypeDefinition/IdentificationType.cpp"
 	"TypeDefinition/StacklightType.cpp"
@@ -8,10 +12,12 @@ set(DASHBOARDCLIENT_SRC
 	"TypeDefinition/StateModeListType.cpp"
 	"TypeDefinition/JobCurrentStateNumber.cpp"
 	"DashboardClient.cpp"
+	"IDashboardDataClient.cpp"
 	"Converter/ModelToJson.cpp"
 )
 
-find_package(nlohmann_json 3.6.1 REQUIRED)
+
+message("### opcua_dashboardclient/DashboardClient: collecting source file list for library: ${DASHBOARDCLIENT_SRC}")
 
 add_library(DashboardClient ${DASHBOARDCLIENT_SRC})
 
