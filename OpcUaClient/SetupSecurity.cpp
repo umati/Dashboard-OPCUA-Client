@@ -9,8 +9,8 @@
 #include <uapkicertificate.h>
 #include <iostream>
 #include <easylogging++.h>
+#include <unistd.h>
 
-#include <direct.h> // _mkdir
 
 namespace Umati {
 	namespace OpcUa {
@@ -73,7 +73,7 @@ namespace Umati {
 					continue;
 				}
 
-				if (_mkdir(ss.str().c_str()) != 0)
+				if (mkdir(ss.str().c_str(), 0x777) != 0)
 				{
 					if (errno != EEXIST)
 					{

@@ -23,6 +23,7 @@ namespace Umati {
 			void deleteSubscription(std::shared_ptr<UaClientSdk::UaSession> pSession);
 
 		protected:
+			std::shared_ptr<UaClientSdk::UaSession> _pSession;
 
 			friend class ValueSubscriptionHandle;
 

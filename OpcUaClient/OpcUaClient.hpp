@@ -69,8 +69,8 @@ namespace Umati {
 			OpcUa_MessageSecurityMode m_security = OpcUa_MessageSecurityMode::OpcUa_MessageSecurityMode_None;
 
 			std::shared_ptr<std::thread> m_connectThread;
-			std::atomic_bool m_isConnected = false;
-			std::atomic_bool m_tryConnecting = false;
+			std::atomic_bool m_isConnected = { false };
+			std::atomic_bool m_tryConnecting = { false };
 
 			Subscription m_subscr;
 

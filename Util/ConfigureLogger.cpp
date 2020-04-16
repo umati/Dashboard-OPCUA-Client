@@ -3,7 +3,7 @@
 #include <easylogging++.h>
 
 // Initiliaze Logger once
-INITIALIZE_EASYLOGGINGPP;
+ INITIALIZE_EASYLOGGINGPP;
 //INITIALIZE_NULL_EASYLOGGINGPP;
 
 namespace Umati
