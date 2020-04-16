@@ -1,4 +1,4 @@
-﻿/// \TODO Kopfkommentar
+/// \TODO Kopfkommentar
 
 #pragma once
 

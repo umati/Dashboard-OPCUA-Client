@@ -9,7 +9,9 @@ namespace Umati
 		namespace TypeDefinition
 		{
 			const std::string UmatiNamespaceUri("http://www.umati.info");
-			
+			/**
+			* Defines the types in the umati namespace, also see the opcua_dashboardclient/Tools/umati.xml 
+			*/
 			namespace NodeIds
 			{
 				const ModelOpcUa::NodeId_t AlertType {UmatiNamespaceUri, "i=1020" };

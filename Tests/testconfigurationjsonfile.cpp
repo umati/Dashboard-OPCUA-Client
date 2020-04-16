@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <Configuration.hpp>
 #include <ConfigurationJsonFile.hpp>
 #include <Exceptions/ConfigurationException.hpp>
 

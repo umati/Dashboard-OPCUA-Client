@@ -19,6 +19,8 @@ namespace Umati {
 		{
 		}
 
+		MachineObserver::~MachineObserver() {}
+
 		std::shared_ptr<ModelOpcUa::StructureNode> MachineObserver::getMachinesModel(ModelOpcUa::QualifiedName_t qualifiedName)
 		{
 			auto MachineToolType = std::make_shared<ModelOpcUa::StructureNode>(
@@ -44,11 +46,95 @@ namespace Umati {
 			return MachineToolsFolderType;
 		}
 
+		/**
+		* index 1000 is the folder machineTools where all the machines are inside
+		*/
 		void MachineObserver::UpdateMachines()
 		{
-			std::list < Umati::Dashboard::IDashboardDataClient::BrowseResult_t > browseResults;
+
+			/**
+			* Assumes that all machines are offline / to be removed
+			*/
+			std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> toBeRemovedMachines = m_knownMachines;
+			std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> newMachines;
+			std::list < Umati::Dashboard::IDashboardDataClient::BrowseResult_t > machineToolList;
+
+			/**
+			* Browses the machineToolList and fills the list if possible
+			*/
+			if (!canBrowseMachineToolList(machineToolList)) {
+				return;
+			}
+
+			if (machineToolListsNotEqual(machineToolList)) {
+
+				findNewAndOfflineMachines(machineToolList, toBeRemovedMachines, newMachines);
+
+				removeOfflineMachines(toBeRemovedMachines);
+
+				for (auto& newMachine : newMachines)
+				{
+					// Ignore known invalid machines for a specific time
+					if (ignoreInvalidMachinesTemporarily(newMachine)) {
+						continue;
+					};
+					addNewMachine(newMachine);
+				}
+			}
+		}
+
+		bool MachineObserver::machineToolListsNotEqual(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
+		{
+			if (m_knownMachineToolsMap.size() != machineToolList.size()) {
+				recreateKnownMachineToolsMap(machineToolList);
+				return true;
+			}
+			for (auto& machineTool : machineToolList) {
+				auto it = m_knownMachineToolsMap.find(machineTool.NodeId);
+				if (it == m_knownMachineToolsMap.end()) {
+					// List differs
+					recreateKnownMachineToolsMap(machineToolList);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		void MachineObserver::recreateKnownMachineToolsMap(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
+		{
+			LOG(WARNING) << "Lists differ, recreating known machine tools map" ;
+			removeOfflineMachines(m_knownMachineToolsMap);
+			m_knownMachineToolsMap.clear();
+			for (auto& machineTool : machineToolList) {
+				m_knownMachineToolsMap.insert(std::make_pair(machineTool.NodeId, machineTool));
+			}
+		}
+
+		bool MachineObserver::ignoreInvalidMachinesTemporarily(std::pair<const ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachine)
+		{
+			auto it = m_invalidMachines.find(newMachine.second.NodeId);
+			if (it != m_invalidMachines.end())
+			{
+				--(it->second);
+				if (it->second <= 0)
+				{
+					m_invalidMachines.erase(it);
+				}
+				else
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool MachineObserver::canBrowseMachineToolList(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
+		{
+			/**
+			* i=1000 contains the list of all available machines
+			*/
 			try {
-				browseResults = m_pDataClient->Browse(
+				machineToolList = m_pDataClient->Browse(
 					ModelOpcUa::NodeId_t{ Dashboard::TypeDefinition::UmatiNamespaceUri, "i=1000" },
 					Dashboard::TypeDefinition::OrganizesTypeNodeId,
 					Dashboard::TypeDefinition::NodeIds::MachineToolType
@@ -57,90 +143,82 @@ namespace Umati {
 			catch (const Umati::Exceptions::OpcUaException & ex)
 			{
 				LOG(ERROR) << "Browse new machines failed with: " << ex.what();
-				return;
+				return false;
 			}
-			catch (const Umati::Exceptions::ClientNotConnected &ex)
+			catch (const Umati::Exceptions::ClientNotConnected & ex)
 			{
 				LOG(ERROR) << "OPC UA Client not connected." << ex.what();
-				return;
+				return false;
 			}
+			return true;
+		}
 
-			std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> newMachines;
-			auto removedMachines = m_knownMachines;
-
-			for (auto &browseResult : browseResults)
+		void MachineObserver::findNewAndOfflineMachines(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachines)
+		{
+			for (auto& machineTool : machineToolList)
 			{
 
 				// Check if Machine is known as online machine
-				auto it = removedMachines.find(browseResult.NodeId);
+				auto it = toBeRemovedMachines.find(machineTool.NodeId);
 
 				// Machine known
 				try {
-					// Check if machine is still online
-					if (isOnline(browseResult))
+					// Check if machine is still online. If so, remove it from the removed machines. If it is not on there, it must be a new machine
+					if (isOnline(machineTool))
 					{
-						if (it != removedMachines.end())
+						if (it != toBeRemovedMachines.end())
 						{
-							removedMachines.erase(it);
+							toBeRemovedMachines.erase(it);
 						}
 						else
 						{
-							newMachines.insert(std::make_pair(browseResult.NodeId, browseResult));
+							newMachines.insert(std::make_pair(machineTool.NodeId, machineTool));
 						}
 					}
 				}
-				// Cach exceptions durng CheckOnline, this will cause that the machine stay in the removedMachines list
-				catch (const Umati::Exceptions::OpcUaException &)
+				// Cach exceptions durng CheckOnline, this will cause that the machine stay in the toBeRemovedMachines list
+				catch (const Umati::Exceptions::OpcUaException&)
 				{
 					LOG(INFO) << "Machine disconnected: '" << it->second.BrowseName.Name << "' (" << it->second.NodeId.Uri << ")";
 				}
 
 			}
+		}
 
-			for (auto &removedMachine : removedMachines)
+		void MachineObserver::removeOfflineMachines(std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& toBeRemovedMachines)
+		{
+			/**
+			* First: NodeId, Second: BrowseResult_t
+			*/
+			for (auto& toBeRemovedMachine : toBeRemovedMachines)
 			{
-				removeMachine(removedMachine.second);
-				m_knownMachines.erase(removedMachine.first);
+				removeMachine(toBeRemovedMachine.second);
+				m_knownMachines.erase(toBeRemovedMachine.first);
 			}
+		}
 
-			for (auto &newMachine : newMachines)
+		void MachineObserver::addNewMachine(std::pair<const ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachine)
+		{
+			try
 			{
-				// Ignore known invalid machines for a specific time
-				auto it = m_invalidMachines.find(newMachine.second.NodeId);
-				if (it != m_invalidMachines.end())
-				{
-					--(it->second);
-					if (it->second <= 0)
-					{
-						m_invalidMachines.erase(it);
-					}
-					else
-					{
-						continue;
-					}
-				}
-				try
-				{
-					addMachine(newMachine.second);
-					m_knownMachines.insert(newMachine);
-				}
-				catch (const Exceptions::MachineInvalidException &)
-				{
-					LOG(INFO) << "Machine invalid: " << static_cast<std::string>(newMachine.second.NodeId);
-					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
-				}
-				catch (const Exceptions::MachineOfflineException &)
-				{
-					LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.second.NodeId);
-					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterOffline));
-				}
-				catch (const Exceptions::NoPublishTopicSet &)
-				{
-					LOG(INFO) << "PublishTopic not set: " << static_cast<std::string>(newMachine.second.NodeId);
-					m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
-				}
+				addMachine(newMachine.second);
+				m_knownMachines.insert(newMachine);
 			}
-
+			catch (const Exceptions::MachineInvalidException&)
+			{
+				LOG(INFO) << "Machine invalid: " << static_cast<std::string>(newMachine.second.NodeId);
+				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
+			}
+			catch (const Exceptions::MachineOfflineException&)
+			{
+				LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.second.NodeId);
+				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterOffline));
+			}
+			catch (const Exceptions::NoPublishTopicSet&)
+			{
+				LOG(INFO) << "PublishTopic not set: " << static_cast<std::string>(newMachine.second.NodeId);
+				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
+			}
 		}
 	}
 }

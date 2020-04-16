@@ -9,10 +9,17 @@
 
 namespace Umati {
 	namespace MachineObserver {
+		/**
+		* Depends on an iPublisher (e.g. mqtt client) to publish a machine list and online states of machines and
+		* an iDashboardDataClient (e.g. Umati::OpcUa::OpcUaClient) to read the machineList. It inherits stuff from MachineObserver
+		* and is itself used by the main function DashboardOpcUaClient.
+		*/
 		class DashboardMachineObserver : public MachineObserver {
 		public:
 			const int PublishMachinesListResetValue = 30; // in seconds
-			const std::string MachinesListTopic = std::string("/umati/emo/config/machines/list");
+			const std::string MachinesListTopic1 = std::string("/umati/");
+			const std::string MachinesListTopic2 = std::string("/config/machines/list");
+
 
 			DashboardMachineObserver(
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
@@ -46,6 +53,7 @@ namespace Umati {
 				std::string NamespaceURI;
 				std::string TopicPrefix;
 				std::string LocationPlant;
+				std::string LocationMachine;
 
 				operator nlohmann::json() const
 				{
@@ -55,6 +63,7 @@ namespace Umati {
 					ret["NamespaceURI"] = NamespaceURI;
 					ret["TopicPrefix"] = TopicPrefix;
 					ret["LocationPlant"] = LocationPlant;
+					ret["LocationMachine"] = LocationMachine;
 
 					return ret;
 				}
@@ -62,9 +71,11 @@ namespace Umati {
 
 			void updateMachinesMachineData(MachineInformation_t &machineInfo);
 
+			std::string  getValueFromValuesList(std::vector<nlohmann::json, std::allocator<nlohmann::json>>& valuesList, std::string valueName, int valueIndex, ModelOpcUa::NodeId_t startNodeId);
+			void split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter = ' ');
 			int m_publishMachinesOnline = 0;
 
-			std::atomic_bool m_running = false;
+			std::atomic_bool m_running = { false };
 			std::thread m_updateMachineThread;
 
 			std::shared_ptr<Umati::Dashboard::IPublisher> m_pPublisher;

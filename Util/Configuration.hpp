@@ -10,7 +10,7 @@ namespace Umati
 		class Configuration
 		{
 		public:
-			inline virtual ~Configuration() = 0 {};
+			virtual ~Configuration() = 0;
 
 			struct MqttConfig
 			{

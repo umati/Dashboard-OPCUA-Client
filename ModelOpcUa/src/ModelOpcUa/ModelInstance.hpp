@@ -12,7 +12,7 @@ namespace ModelOpcUa {
 	public:
 		using NodeDefinition::NodeDefinition;
 		Node(const NodeDefinition&, const std::list<std::shared_ptr<const Node>> &childNodes);
-		virtual ~Node() = 0 {}
+		virtual ~Node() = 0;
 
 		/// All child elements
 		const std::list<std::shared_ptr<const Node>> ChildNodes;

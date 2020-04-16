@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 
-find_package(UASdkCpp REQUIRED)
+message("### opcua_dashboardclient/OpcUaClient: loading OpcUaClient")
+
+find_package(UaSdkCpp REQUIRED)
 
 set(CLIENT_SRC
 	"OpcUaClient.cpp"
@@ -16,6 +18,7 @@ set(CLIENT_SRC
 	"Converter/UaDataValueToJsonValue.cpp"
 	"Exceptions/OpcUaNonGoodStatusCodeException.cpp"
 )
+message("### opcua_dashboardclient/OpcUaClient: collecting source file list for library: ${CLIENT_SRC}")
 
 add_library(OpcUaClientLib ${CLIENT_SRC})
 target_link_libraries(OpcUaClientLib Util)

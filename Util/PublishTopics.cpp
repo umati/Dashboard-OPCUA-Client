@@ -15,7 +15,11 @@ namespace Umati
 		const std::string PublishTopics::Postfix_JobCurrentStateNumber = std::string("/ProductionPlan/JobCurrentStateNumber");
 		const std::string PublishTopics::Postfix_Online = std::string("/Online");
 
-
+		/**
+		* ClientOnline: Used when the DashboardMachineObserver (main program) starts
+		* Information, Stacklight, Tools, ProductionPlan, StateMOde, JobCurrentStateNumber: // added in DashobardMachineObserver::addMachine and executed in DashboardMachineObserver -> DashboardClients -> forEach -> Publish
+		* Online: Used when PublishOnlineStatus called updated
+		*/
 		PublishTopics::PublishTopics(std::string topicPrefix)
 			: TopicPrefix(topicPrefix), 
 			ClientOnline(Prefix_UmatiEmo + topicPrefix + Postfix_DashboardClientOnline),

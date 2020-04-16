@@ -8,6 +8,10 @@ namespace Umati {
 
 	namespace Dashboard
 	{
+		/**
+		* Interface that describes functions to e.g. browse a source (e.g. OPC UA Server)
+		* Is implemented e.g. by Umati::OpcUa::OpcUaClient. 
+		*/
 		class IDashboardDataClient
 		{
 		public:
@@ -39,7 +43,7 @@ namespace Umati {
 
 			class ValueSubscriptionHandle {
 			public:
-				virtual ~ValueSubscriptionHandle() = 0 {}
+				virtual ~ValueSubscriptionHandle() = 0;
 				virtual void unsubscribe() = 0;
 
 				bool isUnsubscribed() { return m_unsubscribed; }

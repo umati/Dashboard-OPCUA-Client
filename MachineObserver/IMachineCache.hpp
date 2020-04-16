@@ -8,7 +8,7 @@ namespace Umati {
 		class IMachineCache
 		{
 		public:
-			inline virtual ~IMachineCache() = 0 {};
+			virtual ~IMachineCache() = 0;
 
 			struct MachineCacheEntry_t {
 				std::string NamespaceUri;

@@ -20,6 +20,8 @@ namespace ModelOpcUa {
 	{
 	}
 
+	Node::~Node() {}
+
 	SimpleNode::SimpleNode(
 		NodeId_t nodeId,
 		NodeId_t typeNodeId,

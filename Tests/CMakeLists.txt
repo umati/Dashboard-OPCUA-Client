@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.9)
 enable_testing()
 
+message("### opcua_dashboardclient/Tests: loading tests.")
+
 # NO_CMAKE_PATH prevents the findGTest-Skirpt from the cmake installation
 find_package(GTest REQUIRED NO_CMAKE_PATH)
+
+message("### opcua_dashboardclient/Tests: adding executables")
 
 add_executable(TestOpcUaClient TestOpcUaClient.cpp)
 target_link_libraries(TestOpcUaClient OpcUaClientLib GTest::gtest_main)
@@ -20,7 +24,7 @@ add_test(
 	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestConverter>
 )
 
-add_executable(TestConfigurationJsonFile testConfigurationJsonFile.cpp)
+add_executable(TestConfigurationJsonFile testconfigurationjsonfile.cpp)
 target_link_libraries(TestConfigurationJsonFile Util GTest::gtest_main)
 add_test(
 	NAME TestConfigurationJsonFile
@@ -36,7 +40,7 @@ add_custom_command(TARGET TestConfigurationJsonFile POST_BUILD
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(TestMachineCache TestMachineCache.cpp)
+add_executable(TestMachineCache testMachineCache.cpp)
 target_link_libraries(TestMachineCache MachineObserver GTest::gtest_main)
 add_test(
 	NAME TestMachineCache
