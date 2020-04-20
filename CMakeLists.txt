@@ -6,6 +6,14 @@ project(Dashboard_OpcUaClient)
 enable_testing()
 set(CMAKE_CXX_STANDARD 14)
 
+if (CREATE_COVERAGE)
+	SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
+	SET(GCC_COVERAGE_LINK_FLAGS "-lgcov --coverage")
+	SET(CMAKE_CXX_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_CXX_FLAGS}")
+	SET(CMAKE_C_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_C_FLAGS}")
+endif ()
+#SET(CMAKE_EXE_LINKER_FLAGS  "${GCC_COVERAGE_LINK_FLAGS} ${CMAKE_EXE_LINKER_FLAGS}" )
+
 message("### opcua_dashboardclient: adding cmake files to find used libraries from /cmake directory")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
@@ -150,6 +158,7 @@ if(WIN32)
 		$<TARGET_FILE_DIR:DashboardOpcUaClient>/uaSstackd.dll
 		DESTINATION bin)
 endif()
+
 
 target_link_libraries(DashboardOpcUaClient PUBLIC pthread)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")
