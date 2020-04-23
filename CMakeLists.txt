@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 if (CREATE_COVERAGE)
 	SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
-	SET(GCC_COVERAGE_LINK_FLAGS "-lgcov --coverage")
+	SET(GCC_COVERAGE_LINK_FLAGS "-lgcov --coverage -fprofile-arcs -ftest-coverage")
 	SET(CMAKE_CXX_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_CXX_FLAGS}")
 	SET(CMAKE_C_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_C_FLAGS}")
 endif ()
