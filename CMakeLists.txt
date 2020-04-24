@@ -6,6 +6,8 @@ project(Dashboard_OpcUaClient)
 enable_testing()
 set(CMAKE_CXX_STANDARD 14)
 
+
+message("########################### ${CREATE_COVERAGE}")
 if (CREATE_COVERAGE)
 	SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
 	SET(GCC_COVERAGE_LINK_FLAGS "-lgcov --coverage -fprofile-arcs -ftest-coverage")
