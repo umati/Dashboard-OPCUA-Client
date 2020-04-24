@@ -105,7 +105,7 @@ namespace Umati {
 			LOG(WARNING) << "Lists differ, recreating known machine tools map" ;
 			removeOfflineMachines(m_knownMachineToolsMap);
 			m_knownMachineToolsMap.clear();
-			for (auto& machineTool : machineToolList) {
+			for (auto machineTool : machineToolList) {
 				m_knownMachineToolsMap.insert(std::make_pair(machineTool.NodeId, machineTool));
 			}
 		}
@@ -155,7 +155,7 @@ namespace Umati {
 
 		void MachineObserver::findNewAndOfflineMachines(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachines)
 		{
-			for (auto& machineTool : machineToolList)
+			for (auto machineTool : machineToolList)
 			{
 
 				// Check if Machine is known as online machine
