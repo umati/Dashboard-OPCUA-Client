@@ -570,7 +570,34 @@ namespace Umati {
                                                                    UaClientSdk::SessionSecurityInfo& sessionSecurityInfo,
                                                                    UaClientSdk::UaSessionCallback*   pSessionCallback), (override));
             MOCK_METHOD(void, SessionUpdateNamespaceTable, (), (override));
+
+            MOCK_METHOD(UaStatus, SessionDisconnect, (UaClientSdk::ServiceSettings& serviceSettings,
+                                               OpcUa_Boolean    bDeleteSubscriptions), (override));
             MOCK_METHOD(UaStringArray, SessionGetNamespaceTable, (), (override));
+            MOCK_METHOD(UaStatus, SessionRead, (UaClientSdk::ServiceSettings&         serviceSettings,
+                                         OpcUa_Double             maxAge,
+                                         OpcUa_TimestampsToReturn timeStamps,
+                                         const UaReadValueIds&    nodesToRead,
+                                         UaDataValues&            values,
+                                         UaDiagnosticInfos&       diagnosticInfos), (override));
+            MOCK_METHOD(bool, SessionIsConnected, (), (override));
+            MOCK_METHOD(UaStatus, SessionBrowse, (
+                    UaClientSdk::ServiceSettings&         serviceSettings,
+                    const UaNodeId&          nodeToBrowse,
+                    const UaClientSdk::BrowseContext&     browseContext,
+                    UaByteString&            continuationPoint,
+                    UaReferenceDescriptions& referenceDescriptions), (override));
+            MOCK_METHOD(UaStatus, SessionTranslateBrowsePathsToNodeIds, (
+                    UaClientSdk::ServiceSettings&     serviceSettings,
+                    const UaBrowsePaths& browsePaths,
+                    UaBrowsePathResults& browsePathResults,
+                    UaDiagnosticInfos&   diagnosticInfos
+            ), (override));
+
+            MOCK_METHOD(void, setSubscription, (Subscription* p_subscr), (override));
+            MOCK_METHOD(void, SubscriptionCreateSubscription, (std::shared_ptr<UaClientSdk::UaSession>& m_pSession), (override));
+            MOCK_METHOD((std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>), SubscriptionSubscribe, (ModelOpcUa::NodeId_t nodeId,
+            Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback), (override));
         };
     }
 }

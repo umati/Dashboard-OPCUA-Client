@@ -29,10 +29,11 @@ namespace Umati {
 		int OpcUaClient::PlattformLayerInitialized = 0;
 
 		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
-			: m_serverUri(serverURI), m_subscr(m_uriToIndexCache, m_indexToUriCache), m_username(Username), m_password(Password), m_security(static_cast<OpcUa_MessageSecurityMode>(security))
+			: m_serverUri(serverURI), m_username(Username), m_password(Password), m_security(static_cast<OpcUa_MessageSecurityMode>(security)), m_subscr(m_uriToIndexCache, m_indexToUriCache)
 		{
 			m_defaultServiceSettings.callTimeout = 10000;
-
+            m_opcUaWrapper = std::move(opcUaWrapper);
+            m_opcUaWrapper->setSubscription(&m_subscr);
 
 			if (++PlattformLayerInitialized == 1)
 			{
@@ -40,7 +41,6 @@ namespace Umati {
 			}
 
 			m_tryConnecting = true;
-            m_opcUaWrapper = std::move(opcUaWrapper);
 			// Try connecting at least once
 			this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() {this->threadConnectExecution(); });
@@ -124,7 +124,8 @@ namespace Umati {
 			}
 
 			updateNamespaceCache();
-			m_subscr.createSubscription(m_pSession);
+
+			m_opcUaWrapper->SubscriptionCreateSubscription(m_pSession);
 			return true;
 		}
 
@@ -141,7 +142,7 @@ namespace Umati {
 
 			UaDiagnosticInfos diagInfo;
 
-			auto uaResult = m_pSession->read(
+			auto uaResult = m_opcUaWrapper->SessionRead(
 				m_defaultServiceSettings,
 				100.0,
 				OpcUa_TimestampsToReturn_Neither,
@@ -186,7 +187,7 @@ namespace Umati {
 
 		void OpcUaClient::checkConnection()
 		{
-			if (!this->m_isConnected || !m_pSession->isConnected())
+			if (!this->m_isConnected || !m_opcUaWrapper->SessionIsConnected())
 			{
 				throw Exceptions::ClientNotConnected("Need connected client.");
 			}
@@ -224,7 +225,7 @@ namespace Umati {
 
 			UaByteString continuationPoint;
 			UaReferenceDescriptions referenceDescriptions;
-			auto uaResult = m_pSession->browse(m_defaultServiceSettings, typeNodeId, browseContext, continuationPoint, referenceDescriptions);
+			auto uaResult = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, typeNodeId, browseContext, continuationPoint, referenceDescriptions);
 
 			if (uaResult.isBad())
 			{
@@ -336,7 +337,7 @@ namespace Umati {
 			{
 				//Subscr.deleteSubscription(m_pSession);
 				UaClientSdk::ServiceSettings servsettings;
-				return m_pSession->disconnect(servsettings, OpcUa_True).isGood() != OpcUa_False;
+				return m_opcUaWrapper->SessionDisconnect(servsettings, OpcUa_True).isGood() != OpcUa_False;
 			}
 
 			return true;
@@ -404,7 +405,7 @@ namespace Umati {
 
 			UaByteString continuationPoint;
 			UaReferenceDescriptions referenceDescriptions;
-			auto uaResult = m_pSession->browse(m_defaultServiceSettings, startUaNodeId, browseContext, continuationPoint, referenceDescriptions);
+			auto uaResult = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, startUaNodeId, browseContext, continuationPoint, referenceDescriptions);
 
 			if (uaResult.isBad())
 			{
@@ -478,7 +479,7 @@ namespace Umati {
 			UaBrowsePathResults uaBrowsePathResults;
 			UaDiagnosticInfos uaDiagnosticInfos;
 
-			auto uaResult = m_pSession->translateBrowsePathsToNodeIds(
+			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
 				m_defaultServiceSettings,
 				uaBrowsePaths,
 				uaBrowsePathResults,
@@ -521,7 +522,7 @@ namespace Umati {
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
-			return m_subscr.Subscribe(nodeId, callback);
+			return m_opcUaWrapper->SubscriptionSubscribe(nodeId, callback);
 		}
 
 		std::vector<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
@@ -542,7 +543,7 @@ namespace Umati {
 			UaDataValues readValues;
 			UaDiagnosticInfos diagnosticInfos;
 
-			uaStatus = m_pSession->read(
+			uaStatus = m_opcUaWrapper->SessionRead(
 				m_defaultServiceSettings,
 				0,
 				OpcUa_TimestampsToReturn::OpcUa_TimestampsToReturn_Neither,
@@ -565,10 +566,7 @@ namespace Umati {
 				auto value = readValues[i];
 				ret.push_back(Converter::UaDataValueToJsonValue(value).getValue());
 			}
-
 			return ret;
 		}
-
     }
-
 }
