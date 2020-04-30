@@ -67,11 +67,20 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+    std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper;
+	try {
+        opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>();
+    }
+	catch(std::exception &ex) {
+        LOG(ERROR) << "OpcUaInterface couldn't be initialized: " << ex.what();
+    }
+
 	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(
 		config->OpcUa().Endpoint,
 		config->OpcUa().Username,
 		config->OpcUa().Password,
-		config->OpcUa().Security
+		config->OpcUa().Security,
+		opcUaWrapper
 		);
 
 	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;

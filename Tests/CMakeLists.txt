@@ -8,6 +8,14 @@ find_package(GTest REQUIRED NO_CMAKE_PATH)
 
 message("### opcua_dashboardclient/Tests: adding executables")
 
+add_executable(TestOpcUaClient TestOpcUaClient.cpp)
+target_link_libraries(TestOpcUaClient OpcUaClientLib GTest::gtest_main)
+target_link_libraries(TestOpcUaClient OpcUaClientLib GTest::gmock_main)
+add_test(
+	NAME TestOpcUaClient
+	COMMAND TestOpcUaClient
+	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestOpcUaClient>
+)
 
 add_executable(TestConverter TestConverter.cpp)
 target_link_libraries(TestConverter OpcUaClientLib GTest::gtest_main)

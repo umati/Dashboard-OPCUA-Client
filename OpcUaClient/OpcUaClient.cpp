@@ -1,12 +1,4 @@
 #include "OpcUaClient.hpp"
-#include "OpcUaClient.hpp"
-#include "OpcUaClient.hpp"
-#include "OpcUaClient.hpp"
-#include "OpcUaClient.hpp"
-#include "OpcUaClient.hpp"
-#include "OpcUaClient.hpp"
-
-#include "OpcUaClient.hpp"
 #include <uasession.h>
 
 #include <iostream>
@@ -18,7 +10,6 @@
 #include "uadiscovery.h"
 
 #include "uaplatformlayer.h"
-#include "OpcUaClient.hpp"
 
 #include <Exceptions/ClientNotConnected.hpp>
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
@@ -29,6 +20,7 @@
 #include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
+#include "OpcUaInterface.hpp"
 
 namespace Umati {
 
@@ -36,7 +28,7 @@ namespace Umati {
 
 		int OpcUaClient::PlattformLayerInitialized = 0;
 
-		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security)
+		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
 			: m_serverUri(serverURI), m_subscr(m_uriToIndexCache, m_indexToUriCache), m_username(Username), m_password(Password), m_security(static_cast<OpcUa_MessageSecurityMode>(security))
 		{
 			m_defaultServiceSettings.callTimeout = 10000;
@@ -48,7 +40,7 @@ namespace Umati {
 			}
 
 			m_tryConnecting = true;
-
+            m_opcUaWrapper = std::move(opcUaWrapper);
 			// Try connecting at least once
 			this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() {this->threadConnectExecution(); });
@@ -58,25 +50,20 @@ namespace Umati {
 		bool OpcUaClient::connect()
 		{
 
-			//UaString sURL(serverURI.c_str());
 			UaString sURL(m_serverUri.c_str());
 			UaStatus result;
 			UaClientSdk::SessionConnectInfo sessionConnectInfo;
 			sessionConnectInfo.sApplicationName = "KonI4.0 OPC UA Data Client";
-			//sessionConnectInfo.sApplicationUri = "KonI40OpcUaClient";
 			sessionConnectInfo.sApplicationUri = "http://dashboard.umati.app/OPCUA_DataClient";
 			sessionConnectInfo.sProductUri = "KonI40OpcUaClient_Product";
 			sessionConnectInfo.sSessionName = "DefaultSession";
 
 			UaClientSdk::SessionSecurityInfo sessionSecurityInfo;
 			UaClientSdk::ServiceSettings serviceSettings;
-			UaClientSdk::UaDiscovery discovery;
 			SetupSecurity::setupSecurity(&sessionSecurityInfo);
-			//UaApplicationDescriptions applicationDescriptions;
-			//result = discovery.findServers(serviceSettings, sURL, sessionSecurityInfo, applicationDescriptions);
 
 			UaEndpointDescriptions endpointDescriptions;
-			result = discovery.getEndpoints(serviceSettings, sURL, sessionSecurityInfo, endpointDescriptions);
+			result = m_opcUaWrapper->GetEndpoints(serviceSettings, sURL, sessionSecurityInfo, endpointDescriptions);
 			if (result.isBad())
 			{
 				LOG(ERROR) << "could not get Endpoints.(" << result.toString().toUtf8() << ")" << std::endl;
@@ -117,8 +104,6 @@ namespace Umati {
 				return false;
 			}
 
-
-
 			///\todo handle security
 			sessionSecurityInfo.doServerCertificateVerify = OpcUa_False;
 			sessionSecurityInfo.disableErrorCertificateHostNameInvalid = OpcUa_True;
@@ -129,8 +114,8 @@ namespace Umati {
 				sessionSecurityInfo.setUserPasswordUserIdentity(m_username.c_str(), m_password.c_str());
 			}
 
-			m_pSession.reset(new UaClientSdk::UaSession());
-			result = m_pSession->connect(sURL, sessionConnectInfo, sessionSecurityInfo, this);
+			m_opcUaWrapper->GetNewSession(m_pSession);
+			result = m_opcUaWrapper->SessionConnect(sURL, sessionConnectInfo, sessionSecurityInfo, this);
 
 			if (!result.isGood())
 			{
@@ -291,8 +276,8 @@ namespace Umati {
 		void OpcUaClient::updateNamespaceCache()
 		{
 			///\TODO replace by subcription to ns0;i=2255 [Server_NamespaceArray]
-			m_pSession->updateNamespaceTable();
-			UaStringArray uaNamespaces = m_pSession->getNamespaceTable();
+			m_opcUaWrapper->SessionUpdateNamespaceTable();
+			UaStringArray uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
 			for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
 			{
 				std::string namespaceURI(UaString(uaNamespaces[i]).toUtf8());
@@ -584,6 +569,6 @@ namespace Umati {
 			return ret;
 		}
 
-	}
+    }
 
 }

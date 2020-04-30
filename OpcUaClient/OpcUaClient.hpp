@@ -13,6 +13,7 @@
 #include <atomic>
 
 #include "Subscription.hpp"
+#include "OpcUaInterface.hpp"
 
 namespace Umati {
 	namespace OpcUa {
@@ -20,12 +21,11 @@ namespace Umati {
 		{
 			UA_DISABLE_COPY(OpcUaClient);
 		public:
-			OpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1);
+			OpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
 			~OpcUaClient();
 
 			bool disconnect();
 
-			//Subscription Subscr;
 
 			bool isConnected() { return m_isConnected; }
 
@@ -69,6 +69,7 @@ namespace Umati {
 			OpcUa_MessageSecurityMode m_security = OpcUa_MessageSecurityMode::OpcUa_MessageSecurityMode_None;
 
 			std::shared_ptr<std::thread> m_connectThread;
+			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
 			std::atomic_bool m_isConnected = { false };
 			std::atomic_bool m_tryConnecting = { false };
 
@@ -88,6 +89,6 @@ namespace Umati {
 			std::map<UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
 		private:
 			static int PlattformLayerInitialized;
-		};
+        };
 	}
 }
