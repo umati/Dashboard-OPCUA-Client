@@ -275,8 +275,10 @@ namespace Umati {
 			auto itOnlineMachines = m_onlineMachines.find(machine.NodeId);
 			if (itOnlineMachines != m_onlineMachines.end())
 			{
+			    LOG(INFO) << "Erasing online machine";
 				m_onlineMachines.erase(itOnlineMachines);
-			}
+                LOG(INFO) << "Online machine erased";
+            }
 			else
 			{
 				LOG(INFO) << "Machine was not online: '" << static_cast<std::string>(machine.NodeId) << "'";

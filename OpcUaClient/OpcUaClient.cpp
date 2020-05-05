@@ -279,11 +279,17 @@ namespace Umati {
 			///\TODO replace by subcription to ns0;i=2255 [Server_NamespaceArray]
 			m_opcUaWrapper->SessionUpdateNamespaceTable();
 			UaStringArray uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
+			m_uriToIndexCache.clear();
+			m_indexToUriCache.clear();
 			for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
 			{
-				std::string namespaceURI(UaString(uaNamespaces[i]).toUtf8());
+			    auto uaNamespace = uaNamespaces[i];
+			    auto uaNamespaceAsUaString = UaString(uaNamespace);
+			    auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
+				std::string namespaceURI(uaNamespaceUtf8);
 				m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
 				m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
+				LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
 			}
 		}
 

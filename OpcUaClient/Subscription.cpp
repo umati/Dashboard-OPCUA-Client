@@ -36,7 +36,12 @@ namespace Umati {
 				{
 					return;
 				}
-
+				if (m_pClientSubscription == NULL) {
+				    LOG(ERROR) << "clientSubscription is null, cant unsubscribe";
+                    this->setUnsubscribed();
+                    return;
+				}
+                LOG(INFO) << "Unsubscribing monitoredItemId:" << std::to_string(m_monitoredItemId);
 				m_pClientSubscription->Unsubscribe(m_monitoredItemId, m_clientHandle);
 				this->setUnsubscribed();
 			}
@@ -65,11 +70,12 @@ namespace Umati {
 			std::stringstream str;
 			str << "SubscriptionStatus changed to " << status.toString().toUtf8();
 			LOG(WARNING) << str.str().c_str();
-
-			// recover subscription
-			deleteSubscription(_pSession);
-			createSubscription(_pSession);
-		}
+            if(status.isBad()) {
+                // recover subscription
+                deleteSubscription(_pSession);
+                LOG(WARNING) << "deleted subscription";
+            }
+        }
 
 		void Subscription::dataChange(OpcUa_UInt32 /*clientSubscriptionHandle*/, const UaDataNotifications & dataNotifications, const UaDiagnosticInfos & /*diagnosticInfos*/)
 		{
@@ -118,7 +124,10 @@ namespace Umati {
 
 		void Subscription::Unsubscribe(OpcUa_UInt32 monItemId, OpcUa_UInt32 clientHandle)
 		{
-			m_callbacks.erase(clientHandle);
+		    auto it = m_callbacks.find(clientHandle);
+		    if (it != m_callbacks.end()) {
+                m_callbacks.erase(clientHandle);
+            }
 
 			UaStatusCodeArray results;
 			UaUInt32Array monItems;

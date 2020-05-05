@@ -51,6 +51,7 @@ namespace Umati {
 			}
 			catch (const mqtt::exception& ex)
 			{
+
 				LOG(ERROR) << "Paho Exception:" << ex.what();
 			}
 			

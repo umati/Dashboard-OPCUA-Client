@@ -32,6 +32,10 @@ namespace Umati {
                 connectionStatusChanged(opcConnID, serverStatus);
             };
 
+            void callUpdateNamespaceCache() {
+                updateNamespaceCache();
+            }
+
             static std::shared_ptr<Umati::OpcUa::MockOpcUaWrapper>  getWrapper (){
                 std::shared_ptr<Umati::OpcUa::MockOpcUaWrapper> mockWrapper = std::make_shared<Umati::OpcUa::MockOpcUaWrapper>();
                 UaPlatformLayer::init();
@@ -77,6 +81,32 @@ TEST(OpcUaClient, TranslateBrowsePathToNodeId)
 	client.callConnectionStatusChanged(UaClientSdk::UaClient::Connected);
     sleep(2);
 	ASSERT_TRUE(client.isConnected());
+}
+
+TEST(OpcUaClient, updateNamespaceCache_updates)
+{
+	Umati::Util::ConfigureLogger("OpcUaClient.TranslateBrowsePathToNodeId");
+    std::shared_ptr<Umati::OpcUa::MockOpcUaWrapper> mockWrapper = Umati::OpcUa::TestOpcUaClient::getWrapper();
+    UaString endpointUrl1 = "opc.tcp://192.168.0.2:48010";
+    UaString endpointUrl2 = "opc.tcp://192.168.0.20:48010";
+    UaString endpointUrl3 = "opc.tcp://192.168.0.200:48010";
+    OpcUa_String* opcEndpointUrl1 = endpointUrl1.copy();
+    OpcUa_String* opcEndpointUrl2 = endpointUrl2.copy();
+    OpcUa_String* opcEndpointUrl3 = endpointUrl3.copy();
+    OpcUa_String array1[] = {*opcEndpointUrl1};
+    OpcUa_String array2[] = {*opcEndpointUrl1, *opcEndpointUrl2, *opcEndpointUrl3};
+    OpcUa_String array3[] = {*opcEndpointUrl2, *opcEndpointUrl3};
+
+    UaStringArray uaNamespaces1(1, reinterpret_cast<OpcUa_String *>(array1));
+    UaStringArray uaNamespaces2(3, reinterpret_cast<OpcUa_String *>(array2));
+    UaStringArray uaNamespaces3(2, reinterpret_cast<OpcUa_String *>(array3));
+    EXPECT_CALL(*mockWrapper, SessionGetNamespaceTable).Times(AtLeast(2))
+    .WillOnce(Return(uaNamespaces1))
+    .WillOnce(Return(uaNamespaces2))
+    .WillRepeatedly(Return(uaNamespaces3));
+    Umati::OpcUa::TestOpcUaClient client(std::string("someUrl"),std::string("someUser"), std::string("somePassword"), OpcUa_MessageSecurityMode_None, mockWrapper);
+    client.callUpdateNamespaceCache();
+    client.callUpdateNamespaceCache();
 }
 
 TEST(OpcUaClient, Browse)
