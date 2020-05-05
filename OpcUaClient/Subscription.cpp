@@ -5,6 +5,7 @@
 #include "Converter/UaDataValueToJsonValue.hpp"
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
+
 namespace Umati {
 	namespace OpcUa {
 
@@ -63,6 +64,10 @@ namespace Umati {
 
 		}
 
+		void Subscription::setSubscriptionWrapper(OpcUaSubscriptionInterface* pSubscriptionWrapper) {
+            m_pSubscriptionWrapper = pSubscriptionWrapper;
+		}
+
 		void Subscription::subscriptionStatusChanged(OpcUa_UInt32 clientSubscriptionHandle, const UaStatus & status)
 		{
 			OpcUa_ReferenceParameter(clientSubscriptionHandle); // We use the callback only for this subscription
@@ -104,7 +109,7 @@ namespace Umati {
 			UaClientSdk::ServiceSettings servSettings;
 			UaClientSdk::SubscriptionSettings subSettings;
 			_pSession = pSession;
-			auto result = pSession.get()->createSubscription(servSettings, this, 1, subSettings, OpcUa_True, &m_pSubscription);
+			auto result = m_pSubscriptionWrapper->SessionCreateSubscription(_pSession,servSettings, this, 1, subSettings, OpcUa_True, &m_pSubscription);
 			if (!result.isGood())
 			{
 				LOG(ERROR) << "Creation of the subscription failed: " << result.toString().toUtf8();
@@ -117,7 +122,7 @@ namespace Umati {
 			if (m_pSubscription)
 			{
 				UaClientSdk::ServiceSettings servsettings;
-				pSession->deleteSubscription(servsettings, &m_pSubscription);
+                m_pSubscriptionWrapper->SessionDeleteSubscription(pSession,servsettings, &m_pSubscription);
 				m_pSubscription = nullptr;
 			}
 		}
@@ -215,6 +220,5 @@ namespace Umati {
 				monItemCreateResult[0].MonitoredItemId, monItemCreateReq[0].RequestedParameters.ClientHandle
 			);
 		}
-
-	}
+    }
 }

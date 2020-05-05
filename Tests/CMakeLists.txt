@@ -17,6 +17,26 @@ add_test(
 	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestOpcUaClient>
 )
 
+
+add_executable(TestSubscription TestSubscription.cpp)
+target_link_libraries(TestSubscription OpcUaClientLib GTest::gtest_main)
+target_link_libraries(TestSubscription OpcUaClientLib GTest::gmock_main)
+add_test(
+		NAME TestSubscription
+		COMMAND TestSubscription
+		WORKING_DIRECTORY $<TARGET_FILE_DIR:TestSubscription>
+)
+
+
+add_executable(TestMachineObserver TestMachineObserver.cpp)
+target_link_libraries(TestMachineObserver OpcUaClientLib GTest::gtest_main)
+target_link_libraries(TestMachineObserver OpcUaClientLib GTest::gmock_main)
+add_test(
+		NAME TestMachineObserver
+		COMMAND TestMachineObserver
+		WORKING_DIRECTORY $<TARGET_FILE_DIR:TestMachineObserver>
+)
+
 add_executable(TestConverter TestConverter.cpp)
 target_link_libraries(TestConverter OpcUaClientLib GTest::gtest_main)
 add_test(

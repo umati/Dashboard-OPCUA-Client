@@ -5,6 +5,7 @@
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <atomic>
 #include <IDashboardDataClient.hpp>
+#include "OpcUaSubscriptionInterface.hpp"
 
 namespace Umati {
 	namespace OpcUa {
@@ -21,8 +22,9 @@ namespace Umati {
 
 			void createSubscription(std::shared_ptr<UaClientSdk::UaSession> pSession);
 			void deleteSubscription(std::shared_ptr<UaClientSdk::UaSession> pSession);
+            void setSubscriptionWrapper(Umati::OpcUa::OpcUaSubscriptionInterface* pSubscriptionWrapper);
 
-		protected:
+        protected:
 			std::shared_ptr<UaClientSdk::UaSession> _pSession;
 
 			friend class ValueSubscriptionHandle;
@@ -34,6 +36,7 @@ namespace Umati {
 			static std::atomic_uint nextId;
 
 			UaClientSdk::UaSubscription *m_pSubscription = nullptr;
+            Umati::OpcUa::OpcUaSubscriptionInterface* m_pSubscriptionWrapper = new OpcUaSubscriptionWrapper();
 
 			std::map<OpcUa_UInt32, Dashboard::IDashboardDataClient::newValueCallbackFunction_t> m_callbacks;
 		};

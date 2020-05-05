@@ -599,5 +599,24 @@ namespace Umati {
             MOCK_METHOD((std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>), SubscriptionSubscribe, (ModelOpcUa::NodeId_t nodeId,
             Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback), (override));
         };
+
+        class MockOpcUaSubscriptionWrapper : public OpcUaSubscriptionInterface {
+        public:
+            MOCK_METHOD(UaStatus, SessionCreateSubscription, (
+                    std::shared_ptr<UaClientSdk::UaSession>& rSession,
+            UaClientSdk::ServiceSettings&        serviceSettings,
+                    UaClientSdk::UaSubscriptionCallback* pUaSubscriptionCallback,
+            OpcUa_UInt32            clientSubscriptionHandle,
+                    UaClientSdk::SubscriptionSettings&   subscriptionSettings,
+            OpcUa_Boolean           publishingEnabled,
+                    UaClientSdk::UaSubscription**        ppUaSubscription),
+            (override));
+            MOCK_METHOD(UaStatus, SessionDeleteSubscription, (
+                    std::shared_ptr<UaClientSdk::UaSession>& rSession,
+            UaClientSdk::ServiceSettings& serviceSettings,
+            UaClientSdk::UaSubscription** ppUaSubscription,
+            OpcUa_UInt32 waitTimeForTransactionCompletion),
+            (override));
+        };
     }
 }
