@@ -122,14 +122,17 @@ namespace Umati {
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << result.toString().toUtf8() << std::endl;
 				return false;
 			}
+            on_connected();
 
-			updateNamespaceCache();
-
-			m_opcUaWrapper->SubscriptionCreateSubscription(m_pSession);
-			return true;
+            return true;
 		}
 
-		OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
+        void OpcUaClient::on_connected() {
+            updateNamespaceCache();
+            m_opcUaWrapper->SubscriptionCreateSubscription(m_pSession);
+        }
+
+        OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
 		{
 			checkConnection();
 
@@ -304,6 +307,7 @@ namespace Umati {
 			case UaClientSdk::UaClient::Connected:
 				LOG(ERROR) << "Connected." << std::endl;
 				m_isConnected = true;
+				on_connected();
 				break;
 			case UaClientSdk::UaClient::ConnectionWarningWatchdogTimeout:
 				LOG(ERROR) << "ConnectionWarningWatchdogTimeout." << std::endl;

@@ -6,7 +6,6 @@
 #include "Exceptions/MachineInvalidException.hpp"
 #include "Exceptions/MachineOfflineException.hpp"
 #include "Exceptions/NoPublishTopicSet.hpp"
-#include "../../_install-Debug/include/easylogging++.h"
 #include <Exceptions/OpcUaException.hpp>
 #include <Exceptions/ClientNotConnected.hpp>
 
@@ -86,14 +85,13 @@ namespace Umati {
 
 		bool MachineObserver::machineToolListsNotEqual(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
 		{
-            if (m_currentlyAvailableMachines.size() != machineToolList.size()) {
-			    LOG(INFO) << "Sizes of maps aren't equal. Expected: " << std::to_string(m_currentlyAvailableMachines.size()) << ", got: " << std::to_string(machineToolList.size());
+			if (m_knownMachineToolsMap.size() != machineToolList.size()) {
 				recreateKnownMachineToolsMap(machineToolList);
 				return true;
 			}
 			for (auto& machineTool : machineToolList) {
-				auto it = m_currentlyAvailableMachines.find(machineTool.NodeId);
-				if (it == m_currentlyAvailableMachines.end()) {
+				auto it = m_knownMachineToolsMap.find(machineTool.NodeId);
+				if (it == m_knownMachineToolsMap.end()) {
 					// List differs
 					LOG(INFO) << "Missing an entry in machineToolList: " << machineTool.BrowseName.Uri;
 					recreateKnownMachineToolsMap(machineToolList);
@@ -106,13 +104,10 @@ namespace Umati {
 		void MachineObserver::recreateKnownMachineToolsMap(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
 		{
 			LOG(WARNING) << "Lists differ, recreating known machine tools map" ;
-			LOG(INFO) << "Removing all known machine tools";
-			removeOfflineMachines(m_currentlyAvailableMachines);
-			m_currentlyAvailableMachines.clear();
-
-            LOG(INFO) << "Inserting current machine tool list";
-            for (auto& machineTool : machineToolList) {
-				m_currentlyAvailableMachines.insert(std::make_pair(machineTool.NodeId, machineTool));
+			removeOfflineMachines(m_knownMachineToolsMap);
+			m_knownMachineToolsMap.clear();
+			for (auto machineTool : machineToolList) {
+				m_knownMachineToolsMap.insert(std::make_pair(machineTool.NodeId, machineTool));
 			}
 		}
 
@@ -214,16 +209,8 @@ namespace Umati {
 
 			for (auto& toBeRemovedMachine : toBeRemovedMachines)
 			{
-                LOG(INFO) << "Removing machine " << toBeRemovedMachine.first.Uri;
-                LOG(INFO) << "Removing machine " << toBeRemovedMachine.second.BrowseName.Uri.c_str();
-                auto it = m_currentlyAvailableMachines.find(toBeRemovedMachine.first);
-                if (it != m_currentlyAvailableMachines.end()) {
-
-                    removeMachine(toBeRemovedMachine.second);
-                    LOG(INFO) << "Erasing machine from currently available machines map";
-                    m_currentlyAvailableMachines.erase(it);
-                    LOG(INFO) << "Machine from currently available machines map erased";
-                }
+				removeMachine(toBeRemovedMachine.second);
+				m_knownMachines.erase(toBeRemovedMachine.first);
 			}
 		}
 
@@ -232,7 +219,7 @@ namespace Umati {
 			try
 			{
 				addMachine(newMachine.second);
-				m_currentlyAvailableMachines.insert(newMachine);
+				m_knownMachines.insert(newMachine);
 			}
 			catch (const Exceptions::MachineInvalidException&)
 			{

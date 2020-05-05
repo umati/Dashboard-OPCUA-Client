@@ -29,7 +29,7 @@ namespace Umati {
 			}
 
 		protected:
-			/// Ubsubscribe the value, non virtual function, so it's safe to call it in the destructor.
+			/// Unsubscribe the value, non virtual function, so it's safe to call it in the destructor.
 			void unsubscribeInternal()
 			{
 				if (isUnsubscribed())
@@ -135,6 +135,7 @@ namespace Umati {
 			monItems.resize(1);
 			monItems[0] = monItemId;
 			UaClientSdk::ServiceSettings servSettings;
+            // the next call causes a segv => cover with unittest
 			auto ret = m_pSubscription->deleteMonitoredItems(
 				servSettings,
 				monItems,

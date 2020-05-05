@@ -44,8 +44,8 @@ namespace Umati {
 			virtual bool isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) = 0;
 
 			std::shared_ptr<Dashboard::IDashboardDataClient> m_pDataClient;
-            std::mutex m_currentlyAvailableMachines_mutex;
-            std::map <ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> m_currentlyAvailableMachines;
+			std::map <ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> m_knownMachines;
+			std::map <ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> m_knownMachineToolsMap;
 
 			/// Blacklist of invalid machines, that will not be checked periodically
 			/// The value is decremented each time the machine would be checked and will only be added, when it reaches 0 again.

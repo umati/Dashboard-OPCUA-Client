@@ -89,6 +89,8 @@ namespace Umati {
 			std::map<UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
 		private:
 			static int PlattformLayerInitialized;
+
+            void on_connected();
         };
 	}
 }
