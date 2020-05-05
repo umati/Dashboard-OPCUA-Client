@@ -73,6 +73,7 @@ TEST(Subscription, deleteSubscription_mPSubscriptionNull_notCalled)
     subscription.deleteSubscription(pMockSession);
 }
 
+/*
 TEST(Subscription, deleteSubscription_mPSubscriptionNotNull_Called)
 {
     Umati::Util::ConfigureLogger("Subscription.createSubscription");
@@ -93,3 +94,4 @@ TEST(Subscription, deleteSubscription_mPSubscriptionNotNull_Called)
     subscription.Subscribe(nodeId, callback);
     subscription.deleteSubscription(pMockSession);
 }
+*/
