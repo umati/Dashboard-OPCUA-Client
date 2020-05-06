@@ -54,7 +54,7 @@ TEST(Subscription, createSubscription)
     subscription.setSubscriptionWrapper(&mockOpcUaSubscriptionWrapper);
     subscription.createSubscription(pMockSession);
 }
-
+/*
 TEST(Subscription, deleteSubscription_mPSubscriptionNull_notCalled)
 {
     Umati::Util::ConfigureLogger("Subscription.createSubscription");
@@ -73,7 +73,7 @@ TEST(Subscription, deleteSubscription_mPSubscriptionNull_notCalled)
     subscription.deleteSubscription(pMockSession);
 }
 
-/*
+
 TEST(Subscription, deleteSubscription_mPSubscriptionNotNull_Called)
 {
     Umati::Util::ConfigureLogger("Subscription.createSubscription");
