@@ -9,6 +9,9 @@
 namespace Umati {
 	namespace OpcUa {
 
+	    /***
+	     * Used to handle unsubscribe of subscribedValues of each of the DashboardClients
+	     */
 		class ValueSubscriptionHandle : public Dashboard::IDashboardDataClient::ValueSubscriptionHandle {
 		public:
 			/// \todo reduce to one parameter
