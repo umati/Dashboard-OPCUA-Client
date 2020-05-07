@@ -64,7 +64,7 @@ namespace Umati {
 		)
 			:m_uriToIndexCache(uriToIndexCache), m_indexToUriCache(indexToUriCache)
 		{
-
+            LOG(WARNING) << "Created subscription " << this;
 		}
 
 		void Subscription::setSubscriptionWrapper(OpcUaSubscriptionInterface* pSubscriptionWrapper) {
@@ -80,6 +80,7 @@ namespace Umati {
 			LOG(WARNING) << str.str().c_str();
             if(status.isBad()) {
                 // recover subscription
+                LOG(WARNING) << "Deleting subscription " << this;
                 deleteSubscription(_pSession);
                 LOG(WARNING) << "deleted subscription";
             }
@@ -135,7 +136,9 @@ namespace Umati {
 		    auto it = m_callbacks.find(clientHandle);
 		    if (it != m_callbacks.end()) {
                 m_callbacks.erase(clientHandle);
-            }
+            } else {
+		        LOG(WARNING) << "No callback found for client handle " << clientHandle;
+		    }
 
 			UaStatusCodeArray results;
 			UaUInt32Array monItems;
@@ -144,29 +147,28 @@ namespace Umati {
 			monItems[0] = monItemId;
 			UaClientSdk::ServiceSettings servSettings;
             // the next call causes a segv => cover with unittest
-			auto ret = m_pSubscription->deleteMonitoredItems(
-				servSettings,
-				monItems,
-				results
-			);
+            if (m_pSubscription != NULL) {
+                LOG(WARNING) << "deleting monitored items, subscription used: " << this << ". is this the old one? is this allowed to be the old one?";
+                LOG(WARNING) << "deleting monitored items, uasubscription used: " << m_pSubscription << ". is this the old one? is this allowed to be the old one?";
+                auto ret = m_pSubscription->deleteMonitoredItems(
+                        servSettings,
+                        monItems,
+                        results
+                );
 
-			if (ret.isNotGood())
-			{
-				LOG(WARNING) << "Removal of subscribed item failed: " << ret.toString().toUtf8();
-			}
+                if (ret.isNotGood()) {
+                    LOG(WARNING) << "Removal of subscribed item failed: " << ret.toString().toUtf8();
+                }
 
-			if (results.length() == 1)
-			{
-				UaStatusCode resultCode(results[0]);
-				if (resultCode.isNotGood())
-				{
-					LOG(WARNING) << "Removal of subscribed item failed : " << resultCode.toString().toUtf8();
-				}
-			}
-			else
-			{
-				LOG(ERROR) << "Length mismatch, unsubscribe might have failed.";
-			}
+                if (results.length() == 1) {
+                    UaStatusCode resultCode(results[0]);
+                    if (resultCode.isNotGood()) {
+                        LOG(WARNING) << "Removal of subscribed item failed : " << resultCode.toString().toUtf8();
+                    }
+                } else {
+                    LOG(ERROR) << "Length mismatch, unsubscribe might have failed.";
+                }
+            }
 		}
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
@@ -178,18 +180,9 @@ namespace Umati {
 			UaMonitoredItemCreateRequests monItemCreateReq;
 			UaMonitoredItemCreateResults monItemCreateResult;
 
-			monItemCreateReq.create(1);
-			monItemCreateReq[0].ItemToMonitor.AttributeId = OpcUa_Attributes_Value;
-			monItemCreateReq[0].MonitoringMode = OpcUa_MonitoringMode_Reporting;
-			monItemCreateReq[0].RequestedParameters.ClientHandle = nextId++;
-			monItemCreateReq[0].RequestedParameters.SamplingInterval = 300;
-			monItemCreateReq[0].RequestedParameters.QueueSize = 1;
-			monItemCreateReq[0].RequestedParameters.DiscardOldest = OpcUa_True;
-			Converter::ModelNodeIdToUaNodeId(nodeId, m_uriToIndexCache)
-				.getNodeId().copyTo(&monItemCreateReq[0].ItemToMonitor.NodeId);
+            monItemCreateReq = prepareMonItemCreateReq(nodeId, monItemCreateReq);
 
-
-			auto uaResult = m_pSubscription->createMonitoredItems(
+            auto uaResult = m_pSubscription->createMonitoredItems(
 				servSettings,
 				OpcUa_TimestampsToReturn_Source,
 				monItemCreateReq,
@@ -216,6 +209,7 @@ namespace Umati {
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultMonItem);
 			}
 
+			LOG(INFO) << "Created monItemCreateReq for with clientHandle " << monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
 			m_callbacks.insert(std::make_pair(monItemCreateReq[0].RequestedParameters.ClientHandle, callback));
 
 			return std::make_shared<ValueSubscriptionHandle>(
@@ -223,5 +217,19 @@ namespace Umati {
 				monItemCreateResult[0].MonitoredItemId, monItemCreateReq[0].RequestedParameters.ClientHandle
 			);
 		}
+
+        UaMonitoredItemCreateRequests &Subscription::prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
+                                                                             UaMonitoredItemCreateRequests &monItemCreateReq) const {
+            monItemCreateReq.create(1);
+            monItemCreateReq[0].ItemToMonitor.AttributeId = OpcUa_Attributes_Value;
+            monItemCreateReq[0].MonitoringMode = OpcUa_MonitoringMode_Reporting;
+            monItemCreateReq[0].RequestedParameters.ClientHandle = nextId++;
+            monItemCreateReq[0].RequestedParameters.SamplingInterval = 300;
+            monItemCreateReq[0].RequestedParameters.QueueSize = 1;
+            monItemCreateReq[0].RequestedParameters.DiscardOldest = OpcUa_True;
+            Converter::ModelNodeIdToUaNodeId(nodeId, m_uriToIndexCache)
+                .getNodeId().copyTo(&monItemCreateReq[0].ItemToMonitor.NodeId);
+            return monItemCreateReq;
+        }
     }
 }

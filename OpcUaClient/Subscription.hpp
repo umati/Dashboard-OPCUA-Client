@@ -39,7 +39,11 @@ namespace Umati {
             Umati::OpcUa::OpcUaSubscriptionInterface* m_pSubscriptionWrapper = new OpcUaSubscriptionWrapper();
 
 			std::map<OpcUa_UInt32, Dashboard::IDashboardDataClient::newValueCallbackFunction_t> m_callbacks;
-		};
+
+            UaMonitoredItemCreateRequests &
+            prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
+                                    UaMonitoredItemCreateRequests &monItemCreateReq) const;
+        };
 
 	}
 }
