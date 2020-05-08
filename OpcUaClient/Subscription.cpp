@@ -82,6 +82,7 @@ namespace Umati {
                 // recover subscription
                 LOG(WARNING) << "Deleting subscription " << this;
                 deleteSubscription(_pSession);
+                createSubscription(_pSession);
                 LOG(WARNING) << "deleted subscription";
             }
         }
@@ -113,11 +114,15 @@ namespace Umati {
 			UaClientSdk::ServiceSettings servSettings;
 			UaClientSdk::SubscriptionSettings subSettings;
 			_pSession = pSession;
-			auto result = m_pSubscriptionWrapper->SessionCreateSubscription(_pSession,servSettings, this, 1, subSettings, OpcUa_True, &m_pSubscription);
-			if (!result.isGood())
-			{
-				LOG(ERROR) << "Creation of the subscription failed: " << result.toString().toUtf8();
-				/// \todo throw exception
+			if(m_pSubscription == NULL) {
+                auto result = m_pSubscriptionWrapper->SessionCreateSubscription(_pSession,servSettings, this, 1, subSettings, OpcUa_True, &m_pSubscription);
+                if (!result.isGood())
+                {
+                    LOG(ERROR) << "Creation of the subscription failed: " << result.toString().toUtf8();
+                    /// \todo throw exception
+                }
+			} else {
+			    LOG(WARNING) << "Subscription is not empty, won't create new subscription.";
 			}
 		}
 
@@ -147,6 +152,11 @@ namespace Umati {
 			monItems[0] = monItemId;
 			UaClientSdk::ServiceSettings servSettings;
             // the next call causes a segv => cover with unittest
+
+            if(m_pSubscription == NULL) {
+                createSubscription(_pSession);
+            }
+
             if (m_pSubscription != NULL) {
                 LOG(WARNING) << "deleting monitored items, subscription used: " << this << ". is this the old one? is this allowed to be the old one?";
                 LOG(WARNING) << "deleting monitored items, uasubscription used: " << m_pSubscription << ". is this the old one? is this allowed to be the old one?";
@@ -169,6 +179,9 @@ namespace Umati {
                     LOG(ERROR) << "Length mismatch, unsubscribe might have failed.";
                 }
             }
+            else {
+                LOG(ERROR) << "UaSubscription m_pSubscription is null, can't execute.";
+            }
 		}
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
@@ -189,33 +202,11 @@ namespace Umati {
 				monItemCreateResult
 			);
 
-			
-			if (uaResult.isBad())
-			{
-				LOG(ERROR) << "Create Monitored items failed with: " << uaResult.toString().toUtf8();
-				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
-			}
-
-			if (monItemCreateResult.length() != 1)
-			{
-				LOG(ERROR) << "Expect monItemCreateResult.length() == 1, got:" << monItemCreateResult.length();
-				throw Exceptions::UmatiException("Length mismatch.");
-			}
-
-			auto uaResultMonItem = UaStatusCode(monItemCreateResult[0].StatusCode);
-			if (uaResultMonItem.isBad())
-			{
-				LOG(ERROR) << "Monitored Item status code bad: " << uaResultMonItem.toString().toUtf8();
-				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultMonItem);
-			}
+            validateMonitorItemResult(uaResult, monItemCreateResult);
 
 			LOG(INFO) << "Created monItemCreateReq for with clientHandle " << monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
 			m_callbacks.insert(std::make_pair(monItemCreateReq[0].RequestedParameters.ClientHandle, callback));
-
-			return std::make_shared<ValueSubscriptionHandle>(
-				this,
-				monItemCreateResult[0].MonitoredItemId, monItemCreateReq[0].RequestedParameters.ClientHandle
-			);
+			return std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult[0].MonitoredItemId, monItemCreateReq[0].RequestedParameters.ClientHandle);
 		}
 
         UaMonitoredItemCreateRequests &Subscription::prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
@@ -230,6 +221,27 @@ namespace Umati {
             Converter::ModelNodeIdToUaNodeId(nodeId, m_uriToIndexCache)
                 .getNodeId().copyTo(&monItemCreateReq[0].ItemToMonitor.NodeId);
             return monItemCreateReq;
+        }
+
+        void Subscription::validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult) {
+            if (uaResult.isBad())
+            {
+                LOG(ERROR) << "Create Monitored items failed with: " << uaResult.toString().toUtf8();
+                throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+            }
+
+            if (monItemCreateResult.length() != 1)
+            {
+                LOG(ERROR) << "Expect monItemCreateResult.length() == 1, got:" << monItemCreateResult.length();
+                throw Exceptions::UmatiException("Length mismatch.");
+            }
+
+            auto uaResultMonItem = UaStatusCode(monItemCreateResult[0].StatusCode);
+            if (uaResultMonItem.isBad())
+            {
+                LOG(ERROR) << "Monitored Item status code bad: " << uaResultMonItem.toString().toUtf8();
+                throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultMonItem);
+            }
         }
     }
 }
