@@ -49,21 +49,15 @@ namespace Umati {
 
 		bool OpcUaClient::connect()
 		{
-
 			UaString sURL(m_serverUri.c_str());
 			UaStatus result;
-			UaClientSdk::SessionConnectInfo sessionConnectInfo;
-			sessionConnectInfo.sApplicationName = "KonI4.0 OPC UA Data Client";
-			sessionConnectInfo.sApplicationUri = "http://dashboard.umati.app/OPCUA_DataClient";
-			sessionConnectInfo.sProductUri = "KonI40OpcUaClient_Product";
-			sessionConnectInfo.sSessionName = "DefaultSession";
 
-			UaClientSdk::SessionSecurityInfo sessionSecurityInfo;
+            UaClientSdk::SessionSecurityInfo sessionSecurityInfo;
 			UaClientSdk::ServiceSettings serviceSettings;
-			SetupSecurity::setupSecurity(&sessionSecurityInfo);
-
 			UaEndpointDescriptions endpointDescriptions;
-			result = m_opcUaWrapper->GetEndpoints(serviceSettings, sURL, sessionSecurityInfo, endpointDescriptions);
+            SetupSecurity::setupSecurity(&sessionSecurityInfo);
+
+            result = m_opcUaWrapper->GetEndpoints(serviceSettings, sURL, sessionSecurityInfo, endpointDescriptions);
 			if (result.isBad())
 			{
 				LOG(ERROR) << "could not get Endpoints.(" << result.toString().toUtf8() << ")" << std::endl;
@@ -115,6 +109,10 @@ namespace Umati {
 			}
 
 			m_opcUaWrapper->GetNewSession(m_pSession);
+
+            UaClientSdk::SessionConnectInfo sessionConnectInfo;
+            sessionConnectInfo = prepareSessionConnectInfo(sessionConnectInfo);
+
 			result = m_opcUaWrapper->SessionConnect(sURL, sessionConnectInfo, sessionSecurityInfo, this);
 
 			if (!result.isGood())
@@ -126,6 +124,15 @@ namespace Umati {
 
             return true;
 		}
+
+        UaClientSdk::SessionConnectInfo &
+        OpcUaClient::prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo) const {
+            sessionConnectInfo.sApplicationName = "KonI4.0 OPC UA Data Client";
+            sessionConnectInfo.sApplicationUri = "http://dashboard.umati.app/OPCUA_DataClient";
+            sessionConnectInfo.sProductUri = "KonI40OpcUaClient_Product";
+            sessionConnectInfo.sSessionName = "DefaultSession";
+            return sessionConnectInfo;
+        }
 
         void OpcUaClient::on_connected() {
             updateNamespaceCache();

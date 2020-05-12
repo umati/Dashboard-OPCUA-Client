@@ -91,6 +91,9 @@ namespace Umati {
 			static int PlattformLayerInitialized;
 
             void on_connected();
+
+            UaClientSdk::SessionConnectInfo &
+            prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo) const;
         };
 	}
 }
