@@ -1,6 +1,7 @@
 #include "ConfigurationJsonFile.hpp"
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include "easylogging++.h"
 #include "Exceptions/ConfigurationException.hpp"
 #include <sstream>
 
@@ -72,6 +73,7 @@ namespace Umati
                 auto jsonObjectTypeNamespacesVector = getValueOrException(json, JsonKey_ObjectTypeNamespacesVector);
                 m_ObjectTypeNamespacesVector = jsonObjectTypeNamespacesVector.get<std::vector<std::string>>();
             } else {
+			    LOG(INFO) << "No key " << JsonKey_ObjectTypeNamespacesVector << " found in configuration file";
                 m_ObjectTypeNamespacesVector = std::vector<std::string>();
 			}
 

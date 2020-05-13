@@ -96,6 +96,11 @@ namespace Umati {
 
             UaClientSdk::SessionConnectInfo &
             prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo) const;
+
+            void initializeUpdateNamespaceCache(std::vector<std::string> &notFoundObjectTypeNamespaces);
+
+            void findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
+                                          const std::string &namespaceURI);
         };
 	}
 }

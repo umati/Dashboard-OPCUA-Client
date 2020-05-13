@@ -283,17 +283,12 @@ namespace Umati {
 		void OpcUaClient::updateNamespaceCache()
 		{
 			///\TODO replace by subcription to ns0;i=2255 [Server_NamespaceArray]
-			m_opcUaWrapper->SessionUpdateNamespaceTable();
-			UaStringArray uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
-
-			m_uriToIndexCache.clear();
-            m_indexToUriCache.clear();
-            m_availableObjectTypeNamespaces.clear();
-
             std::vector<std::string> notFoundObjectTypeNamespaces;
-            //for ()
+            UaStringArray uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
 
-			for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
+            initializeUpdateNamespaceCache(notFoundObjectTypeNamespaces);
+
+            for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
 			{
 			    auto uaNamespace = uaNamespaces[i];
 			    auto uaNamespaceAsUaString = UaString(uaNamespace);
@@ -301,11 +296,41 @@ namespace Umati {
 				std::string namespaceURI(uaNamespaceUtf8);
 				m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
 				m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
-				LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
+
+                findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI);
+
+                LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
 			}
+
+            for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
+                LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
+            }
+
 		}
 
-		void OpcUaClient::connectionStatusChanged(OpcUa_UInt32 /*clientConnectionId*/, UaClientSdk::UaClient::ServerStatus serverStatus)
+        void OpcUaClient::findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
+                                                   const std::string &namespaceURI) {
+            auto it = find (notFoundObjectTypeNamespaces.begin(), notFoundObjectTypeNamespaces.end(), namespaceURI);
+            if (it != notFoundObjectTypeNamespaces.end()) {
+                m_availableObjectTypeNamespaces[namespaceURI] = static_cast<uint16_t>(i);
+                notFoundObjectTypeNamespaces.erase(it);
+                LOG(INFO) << "Expected object type namespace " << namespaceURI << " found at index " << std::to_string(i);
+            }
+        }
+
+        void OpcUaClient::initializeUpdateNamespaceCache(std::vector<std::string> &notFoundObjectTypeNamespaces) {
+            m_opcUaWrapper->SessionUpdateNamespaceTable();
+
+            m_uriToIndexCache.clear();
+            m_indexToUriCache.clear();
+            m_availableObjectTypeNamespaces.clear();
+
+            for (std::size_t i = 0; i < m_expectedObjectTypeNamespaces.size(); i++) {
+                notFoundObjectTypeNamespaces.push_back(m_expectedObjectTypeNamespaces[i]);
+            }
+        }
+
+        void OpcUaClient::connectionStatusChanged(OpcUa_UInt32 /*clientConnectionId*/, UaClientSdk::UaClient::ServerStatus serverStatus)
 		{
 			switch (serverStatus)
 			{
