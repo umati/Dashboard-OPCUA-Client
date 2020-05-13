@@ -21,6 +21,7 @@ namespace Umati {
 
 		MachineObserver::~MachineObserver() {}
 
+		// _2020 something like this
 		std::shared_ptr<ModelOpcUa::StructureNode> MachineObserver::getMachinesModel(ModelOpcUa::QualifiedName_t qualifiedName)
 		{
 			auto MachineToolType = std::make_shared<ModelOpcUa::StructureNode>(

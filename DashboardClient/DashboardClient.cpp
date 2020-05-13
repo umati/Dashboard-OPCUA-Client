@@ -25,7 +25,7 @@ namespace Umati {
 		}
 
 		/**
-		* Receives a nodeId, a typeDefinition and a mqtt topic to hold for a machine. Available types are
+		* Receives a nodeId, a typeDefinition and an mqtt topic to hold for a machine. Available types are
 		* Identification, JobCurrentStateNumber, ProductionJobList, Stacklight, StateModelList, ToolList
 		*/
 		void DashboardClient::addDataSet(
