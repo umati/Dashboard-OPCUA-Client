@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <vector>
 
 namespace Umati
 {
@@ -39,6 +40,8 @@ namespace Umati
 			};
 
 			inline virtual std::string MachineCacheFile() = 0;
+
+			inline virtual std::vector<std::string> ObjectTypeNamespacesVector() = 0;
 			
 			inline virtual MqttConfig Mqtt() = 0;
 

@@ -53,13 +53,19 @@ add_test(
 	WORKING_DIRECTORY $<TARGET_FILE_DIR:TestConfigurationJsonFile>
 )
 
+set( CONFIG_TESTFILES
+		data/Configuration.json
+		data/Configuration2.json
+)
+foreach( file_iterator ${CONFIG_TESTFILES})
 add_custom_command(TARGET TestConfigurationJsonFile POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy
-        data/Configuration.json
+        ${file_iterator}
 		$<TARGET_FILE_DIR:TestConfigurationJsonFile>
 	COMMENT "Copy Test Configuration"
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+endforeach( file_iterator )
 
 add_executable(TestMachineCache testMachineCache.cpp)
 target_link_libraries(TestMachineCache MachineObserver GTest::gtest_main)

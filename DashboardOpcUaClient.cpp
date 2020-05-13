@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
 		config->OpcUa().Username,
 		config->OpcUa().Password,
 		config->OpcUa().Security,
+		config->ObjectTypeNamespacesVector(),
 		opcUaWrapper
 		);
 

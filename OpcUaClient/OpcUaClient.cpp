@@ -28,8 +28,8 @@ namespace Umati {
 
 		int OpcUaClient::PlattformLayerInitialized = 0;
 
-		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
-			: m_serverUri(serverURI), m_username(Username), m_password(Password), m_security(static_cast<OpcUa_MessageSecurityMode>(security)), m_subscr(m_uriToIndexCache, m_indexToUriCache)
+		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
+			: m_serverUri(serverURI), m_username(Username), m_password(Password), m_expectedObjectTypeNamespaces(expectedObjectTypeNamespaces), m_security(static_cast<OpcUa_MessageSecurityMode>(security)), m_subscr(m_uriToIndexCache, m_indexToUriCache)
 		{
 			m_defaultServiceSettings.callTimeout = 10000;
             m_opcUaWrapper = std::move(opcUaWrapper);
@@ -69,14 +69,10 @@ namespace Umati {
 				UaByteString serverCetificate;
 				UaString securityPolicy;
 				OpcUa_UInt32 securityMode;
-			} desiredEnpoint;
+			} desiredEndpoint;
 
-			/// \todo
-			//auto desiredSecurity = OpcUa_MessageSecurityMode_None;
-			//auto desiredSecurity = OpcUa_MessageSecurityMode_SignAndEncrypt;
+
 			auto desiredSecurity = m_security;
-
-			/// \todo select endpoint dependent on the desired authentification (Anonymous, UserPassword/Cert)
 			for (OpcUa_UInt32 iEndpoint = 0; iEndpoint < endpointDescriptions.length(); iEndpoint++)
 			{
 
@@ -84,15 +80,15 @@ namespace Umati {
 				{
 					continue;
 				}
-				desiredEnpoint.url = UaString(endpointDescriptions[iEndpoint].EndpointUrl);
-				LOG(INFO) << "desiredEnpoint.url: " << desiredEnpoint.url.toUtf8() << std::endl;
+                desiredEndpoint.url = UaString(endpointDescriptions[iEndpoint].EndpointUrl);
+				LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url.toUtf8() << std::endl;
 				sessionSecurityInfo.serverCertificate = endpointDescriptions[iEndpoint].ServerCertificate;
 				sessionSecurityInfo.sSecurityPolicy = endpointDescriptions[iEndpoint].SecurityPolicyUri;
 				sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpointDescriptions[iEndpoint].SecurityMode);
 				break;
 			}
 
-			if (desiredEnpoint.url.isEmpty())
+			if (desiredEndpoint.url.isEmpty())
 			{
 				LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
 				return false;
@@ -289,8 +285,14 @@ namespace Umati {
 			///\TODO replace by subcription to ns0;i=2255 [Server_NamespaceArray]
 			m_opcUaWrapper->SessionUpdateNamespaceTable();
 			UaStringArray uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
+
 			m_uriToIndexCache.clear();
-			m_indexToUriCache.clear();
+            m_indexToUriCache.clear();
+            m_availableObjectTypeNamespaces.clear();
+
+            std::vector<std::string> notFoundObjectTypeNamespaces;
+            //for ()
+
 			for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
 			{
 			    auto uaNamespace = uaNamespaces[i];

@@ -56,13 +56,26 @@ namespace Umati
 			parseConfigurationOpcUa(jsonOpcUa);
 
 			auto jsonMachineCacheFile = getValueOrException(json, JsonKey_MachineCacheFile);
+
+
+
 			if (!jsonMachineCacheFile.is_string())
 			{
 				std::stringstream ss;
 				ss << "Key '" << JsonKey_MachineCacheFile << "' is not of type " << "string" << std::endl;
 				throw Exception::ConfigurationException(ss.str().c_str());
 			}
+
 			m_machineCacheFile = jsonMachineCacheFile.get<std::string>();
+
+			if (json.find(JsonKey_ObjectTypeNamespacesVector) != json.end()) {
+                auto jsonObjectTypeNamespacesVector = getValueOrException(json, JsonKey_ObjectTypeNamespacesVector);
+                m_ObjectTypeNamespacesVector = jsonObjectTypeNamespacesVector.get<std::vector<std::string>>();
+            } else {
+                m_ObjectTypeNamespacesVector = std::vector<std::string>();
+			}
+
+
 
 			auto jsonMqtt = getValueOrException(json, JsonKey_Mqtt);
 			if (!jsonMqtt.is_object())
@@ -117,6 +130,7 @@ namespace Umati
 			m_mqtt.Password = jsonPassword.get<std::string>();
 
 		}
+
 		void ConfigurationJsonFile::parseConfigurationOpcUa(nlohmann::json json)
 		{
 			auto jsonEndpoint = getValueOrException(json, JsonKey_OpcUa_Endpoint);
@@ -164,5 +178,9 @@ namespace Umati
 		{
 			return m_machineCacheFile;
 		}
+
+        std::vector<std::string> ConfigurationJsonFile::ObjectTypeNamespacesVector() {
+            return m_ObjectTypeNamespacesVector;
+        }
 	}
 }

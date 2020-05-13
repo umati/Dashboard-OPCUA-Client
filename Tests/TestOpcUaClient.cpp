@@ -26,7 +26,7 @@ namespace Umati {
         class TestOpcUaClient : public OpcUaClient {
         public:
             TestOpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>())
-            : OpcUaClient(serverURI, Username, Password, security, opcUaWrapper) {};
+            : OpcUaClient(serverURI, Username, Password, security, std::vector<std::string>(), opcUaWrapper) {};
             void callConnectionStatusChanged(UaClientSdk::UaClient::ServerStatus serverStatus) {
                 OpcUa_UInt32 opcConnID = 1;
                 connectionStatusChanged(opcConnID, serverStatus);

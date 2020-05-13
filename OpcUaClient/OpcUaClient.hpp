@@ -21,7 +21,7 @@ namespace Umati {
 		{
 			UA_DISABLE_COPY(OpcUaClient);
 		public:
-			OpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
+			OpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1, std::vector<std::string> expectedObjectTypeNamespaces = std::vector<std::string>(), std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
 			~OpcUaClient();
 
 			bool disconnect();
@@ -63,9 +63,11 @@ namespace Umati {
 			std::shared_ptr<UaClientSdk::UaSession> m_pSession;
 			std::map<std::string, uint16_t> m_uriToIndexCache;
 			std::map<uint16_t, std::string> m_indexToUriCache;
-			std::string m_serverUri;
+            std::map<std::string, uint16_t> m_availableObjectTypeNamespaces;
+            std::string m_serverUri;
 			std::string m_username;
 			std::string m_password;
+			std::vector<std::string> m_expectedObjectTypeNamespaces;
 			OpcUa_MessageSecurityMode m_security = OpcUa_MessageSecurityMode::OpcUa_MessageSecurityMode_None;
 
 			std::shared_ptr<std::thread> m_connectThread;
