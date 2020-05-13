@@ -96,7 +96,8 @@ namespace ModelOpcUa {
 	enum NodeClass_t
 	{
 		Object,
-		Variable
+		Variable,
+		ObjectType
 	};
 
 

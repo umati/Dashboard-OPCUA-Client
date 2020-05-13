@@ -63,7 +63,7 @@ namespace Umati {
 			std::shared_ptr<UaClientSdk::UaSession> m_pSession;
 			std::map<std::string, uint16_t> m_uriToIndexCache;
 			std::map<uint16_t, std::string> m_indexToUriCache;
-            std::map<std::string, uint16_t> m_availableObjectTypeNamespaces;
+            std::map<uint16_t, std::string> m_availableObjectTypeNamespaces;
             std::string m_serverUri;
 			std::string m_username;
 			std::string m_password;
@@ -101,6 +101,10 @@ namespace Umati {
 
             void findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
                                           const std::string &namespaceURI);
+
+            UaClientSdk::BrowseContext prepareBrowseContext(const UaNodeId &referenceTypeUaNodeId) const;
+
+            void browseTypes();
         };
 	}
 }
