@@ -36,12 +36,12 @@ namespace Umati {
 
 			void publishMachinesList();
 
-			void publishOnlineStatus(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine, bool online);
+			void publishOnlineStatus(ModelOpcUa::BrowseResult_t machine, bool online);
 
 			// Inherit from MachineObserver
-			void addMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
-			void removeMachine(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
-			bool isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine) override;
+			void addMachine(ModelOpcUa::BrowseResult_t machine) override;
+			void removeMachine(ModelOpcUa::BrowseResult_t machine) override;
+			bool isOnline(ModelOpcUa::BrowseResult_t machine) override;
 
 
 

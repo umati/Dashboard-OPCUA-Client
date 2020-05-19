@@ -89,7 +89,7 @@ namespace Umati {
             void preparePlaceholderNodesTypeId(
                     const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pStructurePlaceholder,
                     std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
-                    const std::list<IDashboardDataClient::BrowseResult_t> &browseResults);
+                    const std::list<ModelOpcUa::BrowseResult_t> &browseResults);
 
             std::shared_ptr<DataSetStorage_t> prepareDataSetStorage(const ModelOpcUa::NodeId_t &startNodeId,
                                                                     const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,

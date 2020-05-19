@@ -152,7 +152,7 @@ namespace Umati {
 			resultContainer.push_back(inputString.substr(previous_char_position, current_char_position - previous_char_position));
 		}
 
-		void DashboardMachineObserver::publishOnlineStatus(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine, bool online)
+		void DashboardMachineObserver::publishOnlineStatus(ModelOpcUa::BrowseResult_t machine, bool online)
 		{
 			auto pubTopics = m_pubTopicFactory.getPubTopics(machine);
 			if (pubTopics.isValid())
@@ -165,7 +165,7 @@ namespace Umati {
 		* looks for the onode 5005 (list of stacklights) 5024 (Tools), 5007 (StateMOde) and more
 		*/
 		void DashboardMachineObserver::addMachine(
-			Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine
+			ModelOpcUa::BrowseResult_t machine
 		)
 		{
 			try {
@@ -257,7 +257,7 @@ namespace Umati {
 		}
 
 		void DashboardMachineObserver::removeMachine(
-			Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine
+			ModelOpcUa::BrowseResult_t machine
 		)
 		{
 			std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
@@ -288,7 +288,7 @@ namespace Umati {
 		/*
 		* searches for the node id i=6001 in the namespace of the machine
 		**/
-		bool DashboardMachineObserver::isOnline(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machine)
+		bool DashboardMachineObserver::isOnline(ModelOpcUa::BrowseResult_t machine)
 		{
 			bool retIsOnline;
 			const std::string NodeIdIdentifier_BuildYear("i=6001");

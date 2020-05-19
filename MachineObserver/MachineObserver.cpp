@@ -56,9 +56,9 @@ namespace Umati {
 			/**
 			* Assumes that all machines are offline / to be removed
 			*/
-			std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> toBeRemovedMachines = m_knownMachines;
-			std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> newMachines;
-			std::list < Umati::Dashboard::IDashboardDataClient::BrowseResult_t > machineToolList;
+			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> toBeRemovedMachines = m_knownMachines;
+			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> newMachines;
+			std::list < ModelOpcUa::BrowseResult_t > machineToolList;
 
 			/**
 			* Browses the machineToolList and fills the list if possible
@@ -84,7 +84,7 @@ namespace Umati {
 			}
 		}
 
-		bool MachineObserver::machineToolListsNotEqual(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
+		bool MachineObserver::machineToolListsNotEqual(std::list<ModelOpcUa::BrowseResult_t>& machineToolList)
 		{
 			if (m_knownMachineToolsMap.size() != machineToolList.size()) {
 				recreateKnownMachineToolsMap(machineToolList);
@@ -102,7 +102,7 @@ namespace Umati {
 			return false;
 		}
 
-		void MachineObserver::recreateKnownMachineToolsMap(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
+		void MachineObserver::recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t>& machineToolList)
 		{
 			LOG(WARNING) << "Lists differ, recreating known machine tools map" ;
 			removeOfflineMachines(m_knownMachineToolsMap);
@@ -112,7 +112,7 @@ namespace Umati {
 			}
 		}
 
-		bool MachineObserver::ignoreInvalidMachinesTemporarily(std::pair<const ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachine)
+		bool MachineObserver::ignoreInvalidMachinesTemporarily(std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachine)
 		{
 			auto it = m_invalidMachines.find(newMachine.second.NodeId);
 			if (it != m_invalidMachines.end())
@@ -130,7 +130,7 @@ namespace Umati {
 			return false;
 		}
 
-		bool MachineObserver::canBrowseMachineToolList(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList)
+		bool MachineObserver::canBrowseMachineToolList(std::list<ModelOpcUa::BrowseResult_t>& machineToolList)
 		{
 			/**
 			* i=1000 contains the list of all available machines
@@ -155,7 +155,7 @@ namespace Umati {
 			return true;
 		}
 
-		void MachineObserver::findNewAndOfflineMachines(std::list<Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachines)
+		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines)
 		{
             LOG(INFO) << "Checking which machines are online / offline";
 
@@ -192,7 +192,7 @@ namespace Umati {
         }
 
         void MachineObserver::logMachinesChanging(std::string text,
-                const std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t> &machines) {
+                const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &machines) {
             std::stringstream machinesStringStream;
             for(auto& machine : machines)
             {
@@ -201,7 +201,7 @@ namespace Umati {
             LOG(INFO) << text << "\n" << machinesStringStream.str().c_str();
         }
 
-        void MachineObserver::removeOfflineMachines(std::map<ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& toBeRemovedMachines)
+        void MachineObserver::removeOfflineMachines(std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines)
 		{
 			/**
 			* First: NodeId, Second: BrowseResult_t
@@ -215,7 +215,7 @@ namespace Umati {
 			}
 		}
 
-		void MachineObserver::addNewMachine(std::pair<const ModelOpcUa::NodeId_t, Umati::Dashboard::IDashboardDataClient::BrowseResult_t>& newMachine)
+		void MachineObserver::addNewMachine(std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachine)
 		{
 			try
 			{

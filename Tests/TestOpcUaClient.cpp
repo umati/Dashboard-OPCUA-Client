@@ -55,7 +55,7 @@ namespace Umati {
                 opcUaEndpointDescriptions[0] = *description_a;
                 endpointDescriptions.setEndpointDescriptions(length, opcUaEndpointDescriptions);
 
-                EXPECT_CALL(*mockWrapper, GetEndpoints).Times(AtLeast(1))
+                EXPECT_CALL(*mockWrapper, DiscoveryGetEndpoints).Times(AtLeast(1))
                         .WillRepeatedly(
                                 DoAll(
                                         SetArgReferee<3>(endpointDescriptions),

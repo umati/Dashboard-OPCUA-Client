@@ -15,7 +15,7 @@ namespace Umati {
 		{
 		}
 
-		Umati::Util::PublishTopics PublishTopicFactory::getPubTopics(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machineRoot)
+		Umati::Util::PublishTopics PublishTopicFactory::getPubTopics(ModelOpcUa::BrowseResult_t machineRoot)
 		{
 			auto pCache = m_pMachineCache->GetEntry(machineRoot.NodeId.Uri);
 			std::string topicPrefix;

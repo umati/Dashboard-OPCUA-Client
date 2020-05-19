@@ -93,15 +93,38 @@ namespace ModelOpcUa {
 		MandatoryPlaceholder
 	};
 
+	 /*
+             * - OpcUa_NodeClass_Object        = 1,
+             * - OpcUa_NodeClass_Variable      = 2,
+             * - OpcUa_NodeClass_Method        = 4,
+             * - OpcUa_NodeClass_ObjectType    = 8,
+             * - OpcUa_NodeClass_VariableType  = 16,
+             * - OpcUa_NodeClass_ReferenceType = 32,
+             * - OpcUa_NodeClass_DataType      = 64,
+             * - OpcUa_NodeClass_View          = 128
+             * */
 	enum NodeClass_t
 	{
-		Object,
-		Variable,
-		ObjectType
+		Object          = 1 << 0,
+		Variable        = 1 << 1,
+		Method          = 1 << 2,
+		ObjectType      = 1 << 3,
+		VariableType    = 1 << 4,
+		ReferenceType   = 1 << 5,
+		DataType        = 1 << 6,
+		View            = 1 << 7
 	};
 
+    struct BrowseResult_t
+    {
+        ModelOpcUa::NodeClass_t NodeClass;
+        ModelOpcUa::NodeId_t NodeId;
+        ModelOpcUa::NodeId_t TypeDefinition;
+        ModelOpcUa::NodeId_t ReferenceTypeId;
+        ModelOpcUa::QualifiedName_t BrowseName;
+    };
 
-	/// Only Information about the overall structure
+    /// Only Information about the overall structure
 	class NodeDefinition {
 
 	public:
@@ -141,10 +164,41 @@ namespace ModelOpcUa {
 				std::list<std::shared_ptr<const StructureNode>>()
 		);
 
+        StructureNode(BrowseResult_t browseResult,
+                      std::list<std::shared_ptr<const StructureNode>> childNodes =
+                      std::list<std::shared_ptr<const StructureNode>>()
+        );
+
 		/// All child elements
 		/// \TODO what is used in case of an Placeholder, use a different Type for non placeholder elements?
-		const std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
+		std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
 	};
+
+	/**
+	 * Bidirectional node holding a shared_ptr to the parent
+	 */
+	class StructureBiNode
+	{
+	public:
+        StructureBiNode(NodeClass_t nodeClass,
+        ModellingRule_t modellingRule,
+                NodeId_t referenceType,
+        NodeId_t specifiedTypeNodeId,
+                QualifiedName_t specifiedBrowseName,
+        std::list<std::shared_ptr<const StructureNode>> childNodes =
+                std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
+        );
+
+        StructureBiNode(BrowseResult_t browseResult,
+        std::list<std::shared_ptr<const StructureNode>> childNodes =
+                std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
+        );
+
+        std::shared_ptr<StructureNode> structureNode;
+        std::shared_ptr<StructureBiNode> parent;
+        uint16_t namespaceIndex;
+        std::list<std::shared_ptr<StructureBiNode>> SpecifiedBiChildNodes = std::list<std::shared_ptr<StructureBiNode>>();
+    };
 
 	class StructurePlaceholderNode : public StructureNode {
 	public:
@@ -159,7 +213,7 @@ namespace ModelOpcUa {
 			std::list<std::shared_ptr<const StructureNode>> possibleTypes
 		);
 
-		// All predefined subtypes that are handeled separately
+		// All predefined subtypes that are handled separately
 		const std::list<std::shared_ptr<const StructureNode>> PossibleTypes;
 	};
 

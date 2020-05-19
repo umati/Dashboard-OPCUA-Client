@@ -11,7 +11,7 @@ namespace Umati {
 		public:
 			PublishTopicFactory(std::shared_ptr<IMachineCache> pMachineCache);
 
-			Umati::Util::PublishTopics getPubTopics(Umati::Dashboard::IDashboardDataClient::BrowseResult_t machineRoot);
+			Umati::Util::PublishTopics getPubTopics(ModelOpcUa::BrowseResult_t machineRoot);
 		protected:
 
 			std::string getTopicPrefixFromBrowseName(ModelOpcUa::QualifiedName_t browseName);

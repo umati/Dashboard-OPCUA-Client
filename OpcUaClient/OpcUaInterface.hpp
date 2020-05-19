@@ -18,10 +18,15 @@ namespace Umati {
 
         public:
 
-            virtual UaStatus GetEndpoints(UaClientSdk::ServiceSettings &serviceSettings,
-                                          const UaString &sDiscoveryURL,
-                                          UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
-                                          UaEndpointDescriptions &endpointDescriptions) = 0;
+            virtual UaStatus DiscoveryGetEndpoints(UaClientSdk::ServiceSettings &serviceSettings,
+                                                   const UaString &sDiscoveryURL,
+                                                   UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
+                                                   UaEndpointDescriptions &endpointDescriptions) = 0;
+            virtual UaStatus DiscoveryFindServers(
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaString &sDiscoveryURL,
+                    UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
+                    UaApplicationDescriptions &applicationDescriptions) = 0;
             virtual void GetNewSession(std::shared_ptr<UaClientSdk::UaSession>& m_pSession) = 0;
             virtual UaStatus SessionConnect(const UaString&      sURL,
                                             UaClientSdk::SessionConnectInfo&  sessionConnectInfo,
@@ -61,12 +66,22 @@ namespace Umati {
         class OpcUaWrapper: public OpcUaInterface {
         public:
 
-            UaStatus GetEndpoints(UaClientSdk::ServiceSettings &serviceSettings,
-                                          const UaString &sDiscoveryURL,
-                                          UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
-                                          UaEndpointDescriptions &endpointDescriptions) override {
+            UaStatus DiscoveryGetEndpoints(UaClientSdk::ServiceSettings &serviceSettings,
+                                           const UaString &sDiscoveryURL,
+                                           UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
+                                           UaEndpointDescriptions &endpointDescriptions) override {
                 UaClientSdk::UaDiscovery discovery;
                 return discovery.getEndpoints(serviceSettings, sDiscoveryURL, clientSecurityInfo, endpointDescriptions);
+            };
+
+            UaStatus DiscoveryFindServers(
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaString &sDiscoveryURL,
+                    UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
+                    UaApplicationDescriptions &applicationDescriptions) override {
+                UaClientSdk::UaDiscovery discovery;
+                return discovery.findServers(serviceSettings, sDiscoveryURL, clientSecurityInfo,
+                                             applicationDescriptions);
             };
 
             void GetNewSession(std::shared_ptr<UaClientSdk::UaSession>& m_pSession) override {

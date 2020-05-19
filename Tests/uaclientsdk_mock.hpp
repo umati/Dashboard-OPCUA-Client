@@ -558,12 +558,18 @@ namespace Umati {
             MockOpcUaWrapper() = default;
             virtual ~MockOpcUaWrapper() = default;
 
-            MOCK_METHOD(UaStatus, GetEndpoints, (
+            MOCK_METHOD(UaStatus, DiscoveryGetEndpoints, (
                     UaClientSdk::ServiceSettings &serviceSettings,
                     const UaString &sDiscoveryURL,
                     UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
                     UaEndpointDescriptions &endpointDescriptions
                     ), (override));
+            MOCK_METHOD(UaStatus, DiscoveryFindServers, (
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaString &sDiscoveryURL,
+                    UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
+                    UaApplicationDescriptions &applicationDescriptions
+                    ),(override));
             MOCK_METHOD(void, GetNewSession, (std::shared_ptr<UaClientSdk::UaSession>& m_pSession), (override));
             MOCK_METHOD(UaStatus, SessionConnect, (const UaString&      sURL,
                                                                    UaClientSdk::SessionConnectInfo&  sessionConnectInfo,

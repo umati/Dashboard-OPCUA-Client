@@ -81,7 +81,7 @@ namespace Umati {
 		)
 		{
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
-			for (auto & pChild : pTypeDefinition->SpecifiedChildNodes)
+			for (auto & pChild : pTypeDefinition->SpecifiedChildNodes) //todo what is specifiedTypeNodes and what is specifiedTypeNodeId
 			{
 				switch (pChild->ModellingRule)
 				{
@@ -175,10 +175,10 @@ namespace Umati {
         void DashboardClient::preparePlaceholderNodesTypeId(
                 const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pStructurePlaceholder,
                 std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
-                const std::list<IDashboardDataClient::BrowseResult_t> &browseResults) {
+                const std::list<ModelOpcUa::BrowseResult_t> &browseResults) {
             for (auto &browseResult : browseResults)
             {
-                auto iteraturPossibleType = std::find_if(
+                auto iteratorPossibleType = std::find_if(
                         pStructurePlaceholder->PossibleTypes.begin(),
                         pStructurePlaceholder->PossibleTypes.end(),
                         [browseResult](const std::shared_ptr<const ModelOpcUa::StructureNode> &posType) -> bool
@@ -187,7 +187,7 @@ namespace Umati {
                     return posType->SpecifiedTypeNodeId == browseResult.TypeDefinition;
                 }
                 );
-                if (iteraturPossibleType == pStructurePlaceholder->PossibleTypes.end())
+                if (iteratorPossibleType == pStructurePlaceholder->PossibleTypes.end())
                 {
                     LOG(WARNING) << "Could not find a possible type for :" << static_cast<std::string>(browseResult.TypeDefinition) << ". Continuing without a candidate.";
                     LOG(WARNING) << "Pointer shows to pStructurePlaceholder->PossibleTypes.end()!";
@@ -195,7 +195,7 @@ namespace Umati {
 
                 ModelOpcUa::PlaceholderElement plElement;
                 plElement.BrowseName = browseResult.BrowseName;
-                plElement.pNode = TransformToNodeIds(browseResult.NodeId, *iteraturPossibleType);
+                plElement.pNode = TransformToNodeIds(browseResult.NodeId, *iteratorPossibleType);
 
                 pPlaceholderNode->addInstance(plElement);
             }
