@@ -12,6 +12,10 @@ namespace Umati
 				m_nodeId.Uri = getUriFromNsIndex(nodeId.namespaceIndex());
 				nodeId.setNamespaceIndex(0);
 				m_nodeId.Id = nodeId.toXmlString().toUtf8();
+
+				std::string a = nodeId.toString().toUtf8();
+				std::string b = nodeId.toFullString().toUtf8();
+				int i = 0;
 			}
 		}
 	}

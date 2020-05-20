@@ -87,10 +87,11 @@ namespace ModelOpcUa {
 
 	enum ModellingRule_t
 	{
+	    None,
 		Optional,
 		Mandatory,
 		OptionalPlaceholder,
-		MandatoryPlaceholder
+		MandatoryPlaceholder,
 	};
 
 	 /*
@@ -169,9 +170,14 @@ namespace ModelOpcUa {
                       std::list<std::shared_ptr<const StructureNode>>()
         );
 
-		/// All child elements
+        StructureNode(BrowseResult_t browseResult, std::list<std::shared_ptr<const StructureNode>> childNodes,
+                      ModellingRule_t modellingRule);
+
+/// All child elements
 		/// \TODO what is used in case of an Placeholder, use a different Type for non placeholder elements?
 		std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
+
+		static std::string printType(std::shared_ptr<const StructureNode> node, std::string parentTree);
 	};
 
 	/**
@@ -194,9 +200,17 @@ namespace ModelOpcUa {
                 std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
         );
 
+        StructureBiNode(BrowseResult_t browseResult,
+                        std::list<std::shared_ptr<const StructureNode>> childNodes =
+                        std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0, ModellingRule_t = Optional
+        );
+
+        std::shared_ptr<StructureNode> toStructureNode();
+
         std::shared_ptr<StructureNode> structureNode;
         std::shared_ptr<StructureBiNode> parent;
         uint16_t namespaceIndex;
+        bool isType = false;
         std::list<std::shared_ptr<StructureBiNode>> SpecifiedBiChildNodes = std::list<std::shared_ptr<StructureBiNode>>();
     };
 

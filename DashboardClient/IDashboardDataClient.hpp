@@ -27,8 +27,9 @@ namespace Umati {
 				ModelOpcUa::NodeId_t startNode,
 				ModelOpcUa::QualifiedName_t browseName
 			) = 0;
+            std::shared_ptr<std::map <std::string, ModelOpcUa::StructureNode>> m_typeMap = std::make_shared<std::map <std::string,ModelOpcUa::StructureNode>>();
 
-			class ValueSubscriptionHandle {
+            class ValueSubscriptionHandle {
 			public:
 				virtual ~ValueSubscriptionHandle() = 0;
 				virtual void unsubscribe() = 0;

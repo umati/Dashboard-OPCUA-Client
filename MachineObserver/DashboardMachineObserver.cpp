@@ -195,31 +195,42 @@ namespace Umati {
 
 				LOG(INFO) << "Begin read model";
 
+                std::shared_ptr<ModelOpcUa::StructureNode> identificationType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("IdentificationType")->second);
+                std::shared_ptr<ModelOpcUa::StructureNode> identificationType2 = Umati::Dashboard::TypeDefinition::getIdentificationType();
 				const std::string NodeIdIdentifier_Identification("i=5001");
 				pDashClient->addDataSet(
 					{ nsUri, NodeIdIdentifier_Identification },
-					Umati::Dashboard::TypeDefinition::getIdentificationType(),
+                    identificationType,
 					pubTopics.Information
 				);
+
+                std::shared_ptr<ModelOpcUa::StructureNode> stacklightType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("StacklightType")->second);
+                std::shared_ptr<ModelOpcUa::StructureNode> stacklightType2 = Umati::Dashboard::TypeDefinition::getStacklightType();
 
 				const std::string NodeIdIdentifier_Stacklight("i=5005");
 				pDashClient->addDataSet(
 					{ nsUri, NodeIdIdentifier_Stacklight },
-					Umati::Dashboard::TypeDefinition::getStacklightType(),
+                    stacklightType,
 					pubTopics.Stacklight
 				);
 
-				const std::string NodeIdIdentifier_Tools("i=5024");
+                std::shared_ptr<ModelOpcUa::StructureNode> toolListType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("ToolListType")->second);
+                std::shared_ptr<ModelOpcUa::StructureNode> toolListType2 = Umati::Dashboard::TypeDefinition::getProductionJobListType();
+
+                const std::string NodeIdIdentifier_Tools("i=5024");
 				pDashClient->addDataSet(
 					{ nsUri, NodeIdIdentifier_Tools },
-					Umati::Dashboard::TypeDefinition::getToolListType(),
+					toolListType,
 					pubTopics.Tools
 				);
+
+                std::shared_ptr<ModelOpcUa::StructureNode> prodJobListType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("ProductionJobListType")->second);
+                std::shared_ptr<ModelOpcUa::StructureNode> prodJobListType2 = Umati::Dashboard::TypeDefinition::getProductionJobListType();
 
 				const std::string NodeIdIdentifier_ProductionPlan("i=5012");
 				pDashClient->addDataSet(
 					{ nsUri, NodeIdIdentifier_ProductionPlan },
-					Umati::Dashboard::TypeDefinition::getProductionJobListType(),
+                    prodJobListType,
 					pubTopics.ProductionPlan
 				);
 

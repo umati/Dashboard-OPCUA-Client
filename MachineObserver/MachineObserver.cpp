@@ -21,32 +21,6 @@ namespace Umati {
 
 		MachineObserver::~MachineObserver() {}
 
-		// _2020 something like this
-		std::shared_ptr<ModelOpcUa::StructureNode> MachineObserver::getMachinesModel(ModelOpcUa::QualifiedName_t qualifiedName)
-		{
-			auto MachineToolType = std::make_shared<ModelOpcUa::StructureNode>(
-				ModelOpcUa::NodeClass_t::Object,
-				ModelOpcUa::ModellingRule_t::Mandatory,
-				Dashboard::TypeDefinition::OrganizesTypeNodeId,
-				Dashboard::TypeDefinition::NodeIds::MachineToolType,
-				qualifiedName,
-				std::list<std::shared_ptr<const ModelOpcUa::StructureNode>>{
-			}
-			);
-
-			auto MachineToolsFolderType = std::make_shared<ModelOpcUa::StructureNode>(
-				ModelOpcUa::NodeClass_t::Object,
-				ModelOpcUa::ModellingRule_t::Mandatory,
-				ModelOpcUa::NodeId_t{},
-				Dashboard::TypeDefinition::NodeIds::MachineToolsFolderType,
-				qualifiedName,
-				std::list<std::shared_ptr<const ModelOpcUa::StructureNode>>{
-				MachineToolType
-			}
-			);
-			return MachineToolsFolderType;
-		}
-
 		/**
 		* index 1000 is the folder machineTools where all the machines are inside
 		*/

@@ -317,8 +317,7 @@ namespace Umati {
                 auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58" };
                 UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
                 browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr);
-                std::shared_ptr<std::map <std::string, ModelOpcUa::StructureNode>> typeMap = std::make_shared<std::map <std::string,ModelOpcUa::StructureNode>>();
-                createTypeMap(bidirectionalTypeMap, typeMap, 3);
+                createTypeMap(bidirectionalTypeMap, m_typeMap, 3);
                 LOG(INFO) << "Delete me";
             }
         }
@@ -339,29 +338,64 @@ namespace Umati {
 
             for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
             {
-                ModelOpcUa::BrowseResult_t entry = ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
-                auto current = handleBrowseTypeResult(bidirectionalTypeMap, startUaNodeId, referenceDescriptions, i, entry, parent);
-                UaNodeId nextUaNodeId = Converter::ModelNodeIdToUaNodeId(entry.NodeId, m_uriToIndexCache).getNodeId();
+                ModelOpcUa::BrowseResult_t browseResult = ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
+                UaNodeId nextUaNodeId = Converter::ModelNodeIdToUaNodeId(browseResult.NodeId, m_uriToIndexCache).getNodeId();
+                ModelOpcUa::ModellingRule_t modellingRule = browseModellingRule(nextUaNodeId);
+                auto current = handleBrowseTypeResult(bidirectionalTypeMap, startUaNodeId, referenceDescriptions, i, browseResult, parent, modellingRule);
                 browseTypes(bidirectionalTypeMap, browseContext, nextUaNodeId, current);
             }
         }
+
+        ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(UaNodeId uaNodeId) {
+            UaByteString continuationPoint;
+            UaReferenceDescriptions referenceDescriptions;
+
+            /// begin browse modelling rule
+            UaClientSdk::BrowseContext browseContext2 = prepareObjectTypeContext();
+            browseContext2.referenceTypeId = UaNodeId(OpcUaId_HasModellingRule);
+            ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::None;
+
+            auto uaResult2 = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, uaNodeId,
+                                                           browseContext2,
+                                                           continuationPoint, referenceDescriptions);
+            if (uaResult2.isBad()) {
+                LOG(ERROR) << "Bad return from browse: " << uaResult2.toString().toUtf8();
+                throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult2);
+            }
+
+            for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+                auto refDescr = referenceDescriptions[i];
+                ModelOpcUa::BrowseResult_t browseResult = ReferenceDescriptionToBrowseResult(refDescr);
+                if (browseResult.BrowseName.Name == "Mandatory") {
+                    modellingRule = ModelOpcUa::Mandatory;
+                } else if (browseResult.BrowseName.Name == "Optional") {
+                    modellingRule = ModelOpcUa::Optional;
+                } else if (browseResult.BrowseName.Name == "MandatoryPlaceholder") {
+                    modellingRule = ModelOpcUa::MandatoryPlaceholder;
+                } else if (browseResult.BrowseName.Name == "OptionalPlaceholder") {
+                    modellingRule = ModelOpcUa::OptionalPlaceholder;
+                }
+            }
+            return modellingRule;
+		}
 
         std::shared_ptr<ModelOpcUa::StructureBiNode> OpcUaClient::handleBrowseTypeResult(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap,
                                             const UaNodeId &startUaNodeId,
                                             const UaReferenceDescriptions &referenceDescriptions,
                                             OpcUa_UInt32 i,
                                             const ModelOpcUa::BrowseResult_t &entry,
-                                            const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent) {
+                                            const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule) {
             UaNodeId currentUaNodeId = Converter::ModelNodeIdToUaNodeId(entry.NodeId, m_uriToIndexCache).getNodeId();
             uint16_t currentNamespaceIndex = currentUaNodeId.namespaceIndex();
             auto it = m_availableObjectTypeNamespaces.find(currentNamespaceIndex);
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
-            ModelOpcUa::StructureBiNode node(entry, std::list<std::shared_ptr<const ModelOpcUa::StructureNode>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex());
+            ModelOpcUa::StructureBiNode node(entry, std::list<std::shared_ptr<const ModelOpcUa::StructureNode>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule );
             auto current = std::make_shared<ModelOpcUa::StructureBiNode>(node);
 
             if (isObjectType) {
                 std::string typeName = node.structureNode->SpecifiedBrowseName.Name;
                 if(bidirectionalTypeMap->count(typeName) == 0) {
+                    current->isType = true;
                     std::pair <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>> newType(typeName, current);
                     bidirectionalTypeMap->insert(newType);
                 } else {
@@ -379,6 +413,7 @@ namespace Umati {
             browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
             browseContext.includeSubtype = OpcUa_True;
             browseContext.maxReferencesToReturn = 0;
+
             /*
              * - OpcUa_NodeClass_Object        = 1,
              * - OpcUa_NodeClass_Variable      = 2,
@@ -565,11 +600,13 @@ namespace Umati {
 
         ModelOpcUa::BrowseResult_t OpcUaClient::ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescription) {
             ModelOpcUa::BrowseResult_t entry;
-            auto browseTypeNodeId = UaNodeId(UaExpandedNodeId(referenceDescription.TypeDefinition).nodeId());
+            auto browseTypeUaNodeId = UaNodeId(UaExpandedNodeId(referenceDescription.TypeDefinition).nodeId());
             entry.NodeClass = Converter::UaNodeClassToModelNodeClass(referenceDescription.NodeClass).getNodeClass();
-            entry.TypeDefinition = Converter::UaNodeIdToModelNodeId(browseTypeNodeId,m_indexToUriCache).getNodeId();
+            entry.TypeDefinition = Converter::UaNodeIdToModelNodeId(browseTypeUaNodeId,m_indexToUriCache).getNodeId();
             entry.NodeId = Converter::UaNodeIdToModelNodeId(UaNodeId(UaExpandedNodeId(referenceDescription.NodeId).nodeId()),m_indexToUriCache).getNodeId();
-            entry.ReferenceTypeId = Converter::UaNodeIdToModelNodeId(UaNodeId(referenceDescription.ReferenceTypeId),m_indexToUriCache).getNodeId();
+            auto referenceTypeUaNodeId = UaNodeId(referenceDescription.ReferenceTypeId);
+            auto referenceTypeModelNodeId = Converter::UaNodeIdToModelNodeId(referenceTypeUaNodeId,m_indexToUriCache);
+            entry.ReferenceTypeId = referenceTypeModelNodeId.getNodeId();
             entry.BrowseName = Converter::UaQualifiedNameToModelQualifiedName(referenceDescription.BrowseName,m_indexToUriCache).getQualifiedName();
 
             return entry;
@@ -734,15 +771,28 @@ namespace Umati {
                 }
                 std::string typeName = bloodline.front()->structureNode->SpecifiedBrowseName.Name;
                 ModelOpcUa::StructureNode node = bloodline.front()->structureNode.operator*();
-                for(auto bloodlineIterator = bloodline.end(); bloodlineIterator != bloodline.begin(); bloodlineIterator--){
-                    auto ancestor = bloodlineIterator->get();
+                std::stringstream bloodlineStringStream;
+                for(auto bloodlineIterator = bloodline.end(); bloodlineIterator != bloodline.begin(); ){
+                    --bloodlineIterator;
+                    auto ancestor = bloodlineIterator.operator*();
+                    bloodlineStringStream << "->" << ancestor->structureNode->SpecifiedBrowseName.Name;
                     for(auto childIterator = ancestor->SpecifiedBiChildNodes.begin(); childIterator != ancestor->SpecifiedBiChildNodes.end(); childIterator++) {
-                        LOG(INFO) << "Ping!";
-                        //node.SpecifiedChildNodes.emplace_back()
+                        auto currentChild = childIterator.operator*();
+                        if(!currentChild->isType){
+                            // todo update the specific node if it comes again
+                            // todo extract unittest
+                            auto structureNode = currentChild->toStructureNode();
+                            node.SpecifiedChildNodes.emplace_back(structureNode);
+                        }
                     }
                 }
+                // todo
+
+                auto shared = std::make_shared<ModelOpcUa::StructureNode>(node);
 
 
+
+                LOG(INFO) << std::endl << bloodlineStringStream.str() << ModelOpcUa::StructureNode::printType(shared, "");
                 std::pair <std::string, ModelOpcUa::StructureNode> newType(typeName, node);
                 typeMap->insert(newType);
             }

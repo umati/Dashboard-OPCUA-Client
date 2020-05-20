@@ -13,10 +13,6 @@ namespace Umati {
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient
 				);
 
-			std::shared_ptr<ModelOpcUa::StructureNode> getMachinesModel(
-				ModelOpcUa::QualifiedName_t qualifiedName = {}
-			);
-
 			virtual ~MachineObserver() = 0;
 
 			const int NumSkipAfterInvalid = 10; ///< in 10s, e.g. 5 means 5*10s = 50s
