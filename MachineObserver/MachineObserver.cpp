@@ -111,7 +111,7 @@ namespace Umati {
 			*/
 			try {
 				machineToolList = m_pDataClient->Browse(
-					ModelOpcUa::NodeId_t{ Dashboard::TypeDefinition::UmatiNamespaceUri, "i=1000" },
+					ModelOpcUa::NodeId_t{ Dashboard::TypeDefinition::UmatiNamespaceUri, "i=1001" },
 					Dashboard::TypeDefinition::OrganizesTypeNodeId,
 					Dashboard::TypeDefinition::NodeIds::MachineToolType
 				);

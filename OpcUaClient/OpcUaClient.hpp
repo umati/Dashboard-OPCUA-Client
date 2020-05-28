@@ -100,7 +100,7 @@ namespace Umati {
             void initializeUpdateNamespaceCache(std::vector<std::string> &notFoundObjectTypeNamespaces);
 
             void findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
-                                          const std::string &namespaceURI);
+                                          const std::string &namespaceURI, std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap);
 
             UaClientSdk::BrowseContext prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);
 

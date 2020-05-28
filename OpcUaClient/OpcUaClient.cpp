@@ -286,19 +286,29 @@ namespace Umati {
 
             initializeUpdateNamespaceCache(notFoundObjectTypeNamespaces);
 
-            for (std::size_t i = 0; i < uaNamespaces.length(); ++i)
-			{
-			    auto uaNamespace = uaNamespaces[i];
-			    auto uaNamespaceAsUaString = UaString(uaNamespace);
-			    auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
-				std::string namespaceURI(uaNamespaceUtf8);
-				m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
-				m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
-
-                findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI);
-
+            for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
+                auto uaNamespace = uaNamespaces[i];
+                auto uaNamespaceAsUaString = UaString(uaNamespace);
+                auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
+                std::string namespaceURI(uaNamespaceUtf8);
+                m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
+                m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
                 LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
-			}
+            }
+
+            std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
+            UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
+            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58" };
+            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
+            browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr);
+
+            for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
+                auto uaNamespace = uaNamespaces[i];
+                auto uaNamespaceAsUaString = UaString(uaNamespace);
+                auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
+                std::string namespaceURI(uaNamespaceUtf8);
+                findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI, bidirectionalTypeMap);
+            }
 
             for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
@@ -306,20 +316,14 @@ namespace Umati {
 		}
 
         void OpcUaClient::findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
-                                                   const std::string &namespaceURI) {
+                                                   const std::string &namespaceURI, std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap) {
             auto it = find (notFoundObjectTypeNamespaces.begin(), notFoundObjectTypeNamespaces.end(), namespaceURI);
             if (it != notFoundObjectTypeNamespaces.end()) {
                 m_availableObjectTypeNamespaces[static_cast<uint16_t>(i)] = namespaceURI;
                 notFoundObjectTypeNamespaces.erase(it);
                 LOG(INFO) << "Expected object type namespace " << namespaceURI << " found at index " << std::to_string(i);
-
-                std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
-                UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
-                auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58" };
-                UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
-                browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr);
-                createTypeMap(bidirectionalTypeMap, m_typeMap, 3);
-                LOG(INFO) << "Delete me";
+                createTypeMap(bidirectionalTypeMap, m_typeMap, i);
+                LOG(INFO) << "Finished creatingTypeMap for " << namespaceURI;
             }
         }
 
@@ -342,6 +346,7 @@ namespace Umati {
                 ModelOpcUa::BrowseResult_t browseResult = ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
                 UaNodeId nextUaNodeId = Converter::ModelNodeIdToUaNodeId(browseResult.NodeId, m_uriToIndexCache).getNodeId();
                 ModelOpcUa::ModellingRule_t modellingRule = browseModellingRule(nextUaNodeId);
+                // LOG(INFO) << "currently at " << startUaNodeId.toFullString().toUtf8();
                 auto current = handleBrowseTypeResult(bidirectionalTypeMap, startUaNodeId, referenceDescriptions, i, browseResult, parent, modellingRule);
                 browseTypes(bidirectionalTypeMap, browseContext, nextUaNodeId, current);
             }
@@ -360,10 +365,9 @@ namespace Umati {
                                                            browseContext2,
                                                            continuationPoint, referenceDescriptions);
             if (uaResult2.isBad()) {
-                LOG(ERROR) << "Bad return from browse: " << uaResult2.toString().toUtf8();
+                LOG(ERROR) << "Bad return from browse: " << uaResult2.toString().toUtf8() << "for nodeId" << uaNodeId.toFullString().toUtf8();
                 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult2);
             }
-
             for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
                 auto refDescr = referenceDescriptions[i];
                 ModelOpcUa::BrowseResult_t browseResult = ReferenceDescriptionToBrowseResult(refDescr);
@@ -399,6 +403,9 @@ namespace Umati {
                     current->isType = true;
                     std::pair <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>> newType(typeName, current);
                     bidirectionalTypeMap->insert(newType);
+                    if((bidirectionalTypeMap->size()%50) == 0){
+                        LOG(INFO) << "Current size BiDirectionalTypeMap: " << bidirectionalTypeMap->size();
+                    }
                 } else {
                     LOG(INFO) << "Found Type " << typeName << " again.";
                 }

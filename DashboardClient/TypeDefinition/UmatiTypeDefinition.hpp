@@ -17,8 +17,6 @@ namespace Umati
 			const ModelOpcUa::NodeId_t OrganizesTypeNodeId{ "", "i=35" };
 			const ModelOpcUa::NodeId_t BaseDataVariableTypeNodeId{ "", "i=63" };
 			const ModelOpcUa::NodeId_t PropertyTypeNodeId{ "", "i=68" };
-			const ModelOpcUa::NodeId_t BaseObjectTypeNodeId{ "", "i=58" };
-			const ModelOpcUa::NodeId_t FolderTypeNodeId{ "", "i=61" };
 		}
 	}
 }
