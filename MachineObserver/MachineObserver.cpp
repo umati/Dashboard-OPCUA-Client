@@ -112,7 +112,7 @@ namespace Umati {
 			try {
 				machineToolList = m_pDataClient->Browse(
                         ModelOpcUa::NodeId_t{ "http://opcfoundation.org/UA/Machinery/", "i=1001"}, // todo for each namespace selected (is it always 1001?)
-					ModelOpcUa::NodeId_t{ "http://opcfoundation.org/UA/", "i=61"},// folder type (is it always folderType?
+										Dashboard::TypeDefinition::OrganizesTypeNodeId,//  folder type? no, tells the names of what it organizes(is it always folderType?
                         ModelOpcUa::NodeId_t{ "http://opcfoundation.org/UA/MachineTool/", "i=1014"}// folder type (is it always folderType?
 
 					//Dashboard::TypeDefinition::NodeIds::MachineToolType // todo change away from const (should be depending on the ns?)

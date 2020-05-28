@@ -576,7 +576,8 @@ namespace Umati {
 
             if (uaResult.isBad())
             {
-                LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8();
+                LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8() << ", with startUaNodeId " << startUaNodeId.toFullString().toUtf8()
+                << " and ref id " << browseContext.referenceTypeId.toFullString().toUtf8() ;
                 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
             }
 
