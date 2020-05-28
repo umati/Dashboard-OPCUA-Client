@@ -146,7 +146,7 @@ namespace Umati {
 			UaDataValues readResult;
 
 			UaDiagnosticInfos diagInfo;
-
+// todo this is failing
 			auto uaResult = m_opcUaWrapper->SessionRead(
 				m_defaultServiceSettings,
 				100.0,
@@ -172,7 +172,7 @@ namespace Umati {
 			UaStatusCode uaResultElement(readResult[0].StatusCode);
 			if (uaResultElement.isBad())
 			{
-				LOG(ERROR) << "Bad value status code failed for node: '" << nodeId.toXmlString().toUtf8()
+				LOG(ERROR) << "Bad value status code failed for node: '" << nodeId.toFullString().toUtf8()
 					<< "' with " << uaResultElement.toString().toUtf8();
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
 			}
@@ -296,11 +296,14 @@ namespace Umati {
                 LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
             }
 
-            std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
-            UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
-            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58" };
-            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
-            browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr);
+            if(m_typeMap->size() == 0) { // todo remove!
+                std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
+                UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
+                auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+                UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode,
+                                                                          m_uriToIndexCache).getNodeId();
+                browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr);
+
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
                 auto uaNamespace = uaNamespaces[i];
@@ -309,7 +312,7 @@ namespace Umati {
                 std::string namespaceURI(uaNamespaceUtf8);
                 findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI, bidirectionalTypeMap);
             }
-
+        }
             for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
             }

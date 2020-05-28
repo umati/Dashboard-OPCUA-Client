@@ -17,12 +17,12 @@ namespace Umati
             */
 			namespace NodeIds
 			{
-				const ModelOpcUa::NodeId_t ProductionJobType {UmatiNamespaceUri, "i=1031" };
-				const ModelOpcUa::NodeId_t MachineStateModeType {UmatiNamespaceUri, "i=1028" };
-				const ModelOpcUa::NodeId_t StateModeType {UmatiNamespaceUri, "i=1025" };
-				const ModelOpcUa::NodeId_t ChannelStateModeType {UmatiNamespaceUri, "i=1018" };
-				const ModelOpcUa::NodeId_t ControllerStateModeType {UmatiNamespaceUri, "i=1023" };
-				const ModelOpcUa::NodeId_t SpindleStateModeType {UmatiNamespaceUri, "i=1024" };
+				const ModelOpcUa::NodeId_t ProductionJobType {UmatiNamespaceUri, "i=1031" }; // used in production job list type
+				const ModelOpcUa::NodeId_t MachineStateModeType {UmatiNamespaceUri, "i=1028" }; // used
+				const ModelOpcUa::NodeId_t StateModeType {UmatiNamespaceUri, "i=1025" };  // Used in stateModeList type
+				const ModelOpcUa::NodeId_t ChannelStateModeType {UmatiNamespaceUri, "i=1018" }; // used in stateModeListType
+				const ModelOpcUa::NodeId_t ControllerStateModeType {UmatiNamespaceUri, "i=1023" }; // used in StateModeType
+				const ModelOpcUa::NodeId_t SpindleStateModeType {UmatiNamespaceUri, "i=1024" }; //
 				const ModelOpcUa::NodeId_t ToolType {UmatiNamespaceUri, "i=1056" };
 				const ModelOpcUa::NodeId_t IdentificationType {UmatiNamespaceUri, "i=1021" };
 				const ModelOpcUa::NodeId_t LampType {UmatiNamespaceUri, "i=1041" };
