@@ -24,7 +24,7 @@ namespace Umati {
 
 	namespace OpcUa {
 
-		int OpcUaClient::PlattformLayerInitialized = 0;
+		int OpcUaClient::PlatformLayerInitialized = 0;
 
 		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
 			: m_serverUri(serverURI), m_username(Username), m_password(Password), m_expectedObjectTypeNamespaces(expectedObjectTypeNamespaces), m_security(static_cast<OpcUa_MessageSecurityMode>(security)), m_subscr(m_uriToIndexCache, m_indexToUriCache)
@@ -33,7 +33,7 @@ namespace Umati {
             m_opcUaWrapper = std::move(opcUaWrapper);
             m_opcUaWrapper->setSubscription(&m_subscr);
 
-			if (++PlattformLayerInitialized == 1)
+			if (++PlatformLayerInitialized == 1)
 			{
 				UaPlatformLayer::init();
 			}
@@ -59,6 +59,7 @@ namespace Umati {
             result = m_opcUaWrapper->DiscoveryGetEndpoints(serviceSettings, sURL, sessionSecurityInfo,endpointDescriptions);
             if (result.isBad())
 			{
+                LOG(ERROR) << result.toString().toUtf8();
                 return false;
 			}
 
@@ -486,7 +487,7 @@ namespace Umati {
 
 			m_pSession = nullptr;
 
-			if (--PlattformLayerInitialized == 0)
+			if (--PlatformLayerInitialized == 0)
 			{
 				UaPlatformLayer::cleanup();
 			}

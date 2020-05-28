@@ -90,7 +90,7 @@ namespace Umati {
 			/// Map for chaching super types. Key = Type, Value = Supertype
 			std::map<UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
 		private:
-			static int PlattformLayerInitialized;
+			static int PlatformLayerInitialized;
 
             void on_connected();
 
