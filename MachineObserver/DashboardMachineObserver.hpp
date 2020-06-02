@@ -36,7 +36,6 @@ namespace Umati {
 
 			void publishMachinesList();
 
-			void publishOnlineStatus(ModelOpcUa::BrowseResult_t machine, bool online);
 
 			// Inherit from MachineObserver
 			void addMachine(ModelOpcUa::BrowseResult_t machine) override;
@@ -85,6 +84,17 @@ namespace Umati {
 			std::map < ModelOpcUa::NodeId_t, MachineInformation_t> m_onlineMachines;
 
 			PublishTopicFactory m_pubTopicFactory;
-		};
+
+            void browseIdentificationValues(std::list<ModelOpcUa::BrowseResult_t> &identification, int namespaceIndex,
+                                            UaReferenceDescriptions &referenceDescriptions,
+                                            std::vector<nlohmann::json> &identificationListValues) const;
+
+            std::string identificationValuesToJsonString(const UaReferenceDescriptions &referenceDescriptions,
+                                                         const std::vector<nlohmann::json> &identificationListValues,
+                                                         std::string &fair, std::string &manufacturer,
+                                                         std::string &machine_name) const;
+
+            std::string getMachineIsOnlineTopic(const std::string &fair, std::string &manufacturer, std::string &machine_name) const;
+        };
 	}
 }

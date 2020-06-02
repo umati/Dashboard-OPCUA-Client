@@ -4,7 +4,6 @@
 
 #include <TypeDefinition/IdentificationType.hpp>
 #include <TypeDefinition/StacklightType.hpp>
-#include <TypeDefinition/ToolListType.hpp>
 #include <TypeDefinition/ProductionJobListType.hpp>
 #include <TypeDefinition/StateModeListType.hpp>
 #include <TypeDefinition/JobCurrentStateNumber.hpp>
@@ -12,10 +11,10 @@
 #include "MachineCacheJsonFile.hpp"
 
 #include "Exceptions/MachineInvalidException.hpp"
-#include "Exceptions/MachineOfflineException.hpp"
 #include "Exceptions/NoPublishTopicSet.hpp"
 
 #include <Exceptions/OpcUaException.hpp>
+#include <TypeDefinition/UmatiTypeDefinition.hpp>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -94,20 +93,30 @@ namespace Umati {
 			std::map<std::string, nlohmann::json> publishData;
 			for (auto &machineOnline : m_onlineMachines)
 			{
+
 				std::string fair = "offsite";
+                std::string manufacturer;
+                std::string machine_name;
+                std::string heyJson;
+                ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;
+                std::vector<ModelOpcUa::QualifiedName_t> identifierIds;
 
-				// todo split string
-				std::vector<std::string> strcont;
-				split(machineOnline.second.LocationMachine, strcont, ' ');
+                /*
+                for (auto it = type.SpecifiedChildNodes.begin(); it != type.SpecifiedChildNodes.end(); it++) {
+                    identifierIds.emplace_back(it->get()->SpecifiedBrowseName);
+                }
+                */
+                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first,Dashboard::TypeDefinition::HasComponent,type);
+                int namespaceIndex = 5;// todo ! change
+                if(!identification.empty()) {
 
-				if (strcont.size() == 3) {
-					transform(strcont[0].begin(), strcont[0].end(), strcont[0].begin(), ::tolower);
-
-					fair = strcont[0];
-				}
-
-				// todo determine fair
-				// todo to lower case
+                    UaReferenceDescriptions referenceDescriptions;
+                    std::vector<nlohmann::json> identificationListValues;
+                    browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
+                    if(!identificationListValues.empty()) {
+                        heyJson = identificationValuesToJsonString(referenceDescriptions, identificationListValues, fair,manufacturer,machine_name);
+                    }
+                }
 
 				auto findFairListIterator = publishData.find(fair);
 				if (findFairListIterator == publishData.end())
@@ -116,24 +125,12 @@ namespace Umati {
 				}
 				auto fairList = publishData.find(fair);
 
-				try
-				{
-					updateMachinesMachineData(machineOnline.second);
-				}
-				catch (const Umati::Exceptions::OpcUaException &)
-				{
-					continue;
-				}
-				catch (const Exceptions::MachineInvalidException &)
-				{
-					continue;
-				}
-				fairList->second.push_back(
-                        machineOnline.second.operator nlohmann::json()
-				);
+                if(!heyJson.empty()) {
+                    fairList->second.push_back(heyJson);
+                }
 			}
 
-			for (auto fairList : publishData) {
+			for (const auto& fairList : publishData) {
 				std::stringstream stream;
 				stream << MachinesListTopic1 << fairList.first << MachinesListTopic2;
 				m_pPublisher->Publish(stream.str(), fairList.second.dump(2));
@@ -152,17 +149,8 @@ namespace Umati {
 			resultContainer.push_back(inputString.substr(previous_char_position, current_char_position - previous_char_position));
 		}
 
-		void DashboardMachineObserver::publishOnlineStatus(ModelOpcUa::BrowseResult_t machine, bool online)
-		{
-			auto pubTopics = m_pubTopicFactory.getPubTopics(machine);
-			if (pubTopics.isValid())
-			{
-				m_pPublisher->Publish(pubTopics.Online, nlohmann::json(online).dump(2));
-			}
-		}
-
 		/**
-		* looks for the onode 5005 (list of stacklights) 5024 (Tools), 5007 (StateMOde) and more
+		* looks for the node 5005 (list of stacklights) 5024 (Tools), 5007 (StateMOde) and more
 		*/
 		void DashboardMachineObserver::addMachine(
 			ModelOpcUa::BrowseResult_t machine
@@ -193,7 +181,7 @@ namespace Umati {
 
 				updateMachinesMachineData(machineInformation);
 
-				LOG(INFO) << "Begin read model";
+				LOG(INFO) << "Begin read model 2";
 
                 std::shared_ptr<ModelOpcUa::StructureNode> identificationType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("IdentificationType")->second);
                 std::shared_ptr<ModelOpcUa::StructureNode> identificationType2 = Umati::Dashboard::TypeDefinition::getIdentificationType();
@@ -301,33 +289,108 @@ namespace Umati {
 		**/
 		bool DashboardMachineObserver::isOnline(ModelOpcUa::BrowseResult_t machine)
 		{
-			bool retIsOnline;
-			const std::string NodeIdIdentifier_BuildYear("i=6001");
+		    // todo get the identification type here and browse all of its elements
+            // auto type = m_pDataClient->m_typeMap->find("MachineToolIdentificationType")->second;
+            ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;
+            std::vector<ModelOpcUa::QualifiedName_t> identifierIds;
 
-			auto valuesList = m_pDataClient->readValues(
-				{
-					{machine.NodeId.Uri, NodeIdIdentifier_BuildYear},
-				}
-			);
+            /*
+            for (auto it = type.SpecifiedChildNodes.begin(); it != type.SpecifiedChildNodes.end(); it++) {
+                identifierIds.emplace_back(it->get()->SpecifiedBrowseName);
+            }
+            */
+            std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machine.NodeId,Dashboard::TypeDefinition::HasComponent,type);
+            int namespaceIndex = 5;// todo change
+            if(!identification.empty()) {
 
-			if (!valuesList.at(0)["statusCode"].is_object() ||
-				!valuesList.at(0)["statusCode"]["code"].is_number_unsigned() ||
-				//valuesList.at(0)["statusCode"]["code"] == 0x800d0000 // BadServerNotConnected (0x800d0000)
-				valuesList.at(0)["statusCode"]["code"] != 0x00000000 // Good
-				)
-			{
-				retIsOnline = false;
-			}
-			else
-			{
-				retIsOnline = true;
-			}
+                UaReferenceDescriptions referenceDescriptions;
+                std::vector<nlohmann::json> identificationListValues;
+                browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
+                if(identificationListValues.size() > 0) {
+                    std::string fair;
+                    std::string manufacturer;
+                    std::string machine_name;
+                    std::string heyJson = identificationValuesToJsonString(referenceDescriptions,
+                                                                           identificationListValues, fair, manufacturer,
+                                                                           machine_name);
 
-			this->publishOnlineStatus(machine, retIsOnline);
 
-			return retIsOnline;
+                    std::string topic = getMachineIsOnlineTopic(fair, manufacturer, machine_name);
+                    bool online = true;
+                    std::string payload = nlohmann::json(online).dump(2);
+                    m_pPublisher->Publish(topic, payload);
+                    m_pPublisher->Publish(topic, heyJson);
+
+                return true;
+                }
+            }
+			return false;
 		}
 
+        std::string
+        DashboardMachineObserver::getMachineIsOnlineTopic(const std::string &fair, std::string &manufacturer,
+                                                          std::string &machine_name) const {
+            std::replace(manufacturer.begin(), manufacturer.end(), ' ', '_');
+            std::replace( machine_name.begin(), machine_name.end(), ' ', '_');
+            std::stringstream onlineTopicStream;
+            onlineTopicStream << "/umati/" << fair << '/' << manufacturer << '/' << machine_name;
+            std::string topic = onlineTopicStream.str();
+            return topic;
+        }
+
+        std::string
+        DashboardMachineObserver::identificationValuesToJsonString(const UaReferenceDescriptions &referenceDescriptions,
+                                                                   const std::vector<nlohmann::json> &identificationListValues,
+                                                                   std::string &fair, std::string &manufacturer,
+                                                                   std::string &machine_name) const {
+            fair= "offsite";
+            std::stringstream jsonstream;
+            jsonstream << '{';
+            for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+                ModelOpcUa::BrowseResult_t browseResult = m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
+                std::string s;
+                if (identificationListValues.at(i)["value"].is_string()) {
+                    s =  identificationListValues.at(i)["value"].get<std::string>();
+                }
+                if (identificationListValues.at(i)["value"].is_structured()){
+                    s =  identificationListValues.at(i)["value"]["text"].get<std::string>();
+                }
+                if (!s.empty()) {
+                    LOG(INFO) << browseResult.BrowseName.Name << ", " << s;
+                    jsonstream << '"' << browseResult.BrowseName.Name << '"'<<':'<<'"' << s << '"' << ','  ;
+                }
+                if(browseResult.BrowseName.Name == "Manufacturer") {
+                    manufacturer = s;
+                }
+                if(browseResult.BrowseName.Name == "Model") {
+                    machine_name = s;
+                }
+            }
+            jsonstream.seekp(-1,  std::ios_base::end);
+            jsonstream << "}";
+            return jsonstream.str();
+        }
+
+        void DashboardMachineObserver::browseIdentificationValues(std::list<ModelOpcUa::BrowseResult_t> &identification,
+                                                                  int namespaceIndex,
+                                                                  UaReferenceDescriptions &referenceDescriptions,
+                                                                  std::vector<nlohmann::json> &identificationListValues) const {
+
+            auto startNodeId = UaNodeId::fromXmlString(UaString(identification.front().NodeId.Id.c_str()));
+            startNodeId.setNamespaceIndex(namespaceIndex);
+            m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
+
+            std::list<ModelOpcUa::NodeId_t> identificationNodes;
+            for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+                ModelOpcUa::BrowseResult_t browseResult = m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
+                identificationNodes.emplace_back(browseResult.NodeId);
+            }
+
+            identificationListValues= m_pDataClient->readValues(identificationNodes);
+        }
+
+// todo: getMachineToolIdentification ==> Read "MachineToolIdentificationType" of the machine
+// todo update this to the new impl, let it read the name and type and return a json
 		void DashboardMachineObserver::updateMachinesMachineData(
 			DashboardMachineObserver::MachineInformation_t &machineInformation
 		)
@@ -336,7 +399,6 @@ namespace Umati {
 			const std::string NodeIdIdentifier_LocationMachine("i=6004");
 			const std::string NodeIdIdentifier_LocationPlant("i=6005");
 			const std::string NodeIdIdentifier_Manufacturer("i=6006");
-
 			auto valuesList = m_pDataClient->readValues(
 				{
 					{machineInformation.NamespaceURI, NodeIdIdentifier_LocationPlant},

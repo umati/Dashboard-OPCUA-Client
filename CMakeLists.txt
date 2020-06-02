@@ -14,7 +14,6 @@ if (CREATE_COVERAGE)
 	SET(CMAKE_CXX_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_CXX_FLAGS}")
 	SET(CMAKE_C_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_C_FLAGS}")
 endif ()
-#SET(CMAKE_EXE_LINKER_FLAGS  "${GCC_COVERAGE_LINK_FLAGS} ${CMAKE_EXE_LINKER_FLAGS}" )
 
 message("### opcua_dashboardclient: adding cmake files to find used libraries from /cmake directory")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
@@ -38,7 +37,7 @@ add_subdirectory(OpcUaClient)
 add_subdirectory(MachineObserver)
 
 message("### opcua_dashboardclient: Adding test directory")
-add_subdirectory(Tests)
+#add_subdirectory(Tests)
 
 message("### opcua_dashboardclient: Adding the executable c++ file")
 find_package(Threads)
@@ -133,34 +132,6 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
-
-if(DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
-	if(WIN32)
-		message("### opcua_dashboardclient: Also install mosquitto windows libs")
-		install(PROGRAMS
-			$<TARGET_FILE_DIR:DashboardOpcUaClient>/libcrypto-1_1.dll
-			$<TARGET_FILE_DIR:DashboardOpcUaClient>/libssl-1_1.dll
-			$<TARGET_FILE_DIR:DashboardOpcUaClient>/mosquitto.dll
-			$<TARGET_FILE_DIR:DashboardOpcUaClient>/mosquittopp.dll
-			DESTINATION bin)
-	endif()
-endif()
-
-
-if(WIN32)
-	message("### opcua_dashboardclient: Installing windows libs")
-	install(PROGRAMS
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/libeay32.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/libeay32d.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/libxml2.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/libxml2d.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/ssleay32.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/ssleay32d.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/uastack.dll
-		$<TARGET_FILE_DIR:DashboardOpcUaClient>/uaSstackd.dll
-		DESTINATION bin)
-endif()
-
 
 target_link_libraries(DashboardOpcUaClient PUBLIC pthread)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")

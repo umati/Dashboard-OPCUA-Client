@@ -34,7 +34,11 @@ namespace Umati {
 			virtual std::list<ModelOpcUa::BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
 			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
 			virtual std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
-			std::vector<nlohmann::json> readValues(std::list< ModelOpcUa::NodeId_t> nodeIds) override;
+			virtual void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) override;
+            virtual void browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) override;
+            virtual ModelOpcUa::BrowseResult_t ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) override;
+            std::vector<nlohmann::json> readValues(std::list< ModelOpcUa::NodeId_t> nodeIds) override;
+            UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
 
 		protected:
 			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
@@ -63,7 +67,6 @@ namespace Umati {
 			std::shared_ptr<UaClientSdk::UaSession> m_pSession;
 			std::map<std::string, uint16_t> m_uriToIndexCache;
 			std::map<uint16_t, std::string> m_indexToUriCache;
-            std::map<uint16_t, std::string> m_availableObjectTypeNamespaces;
             std::string m_serverUri;
 			std::string m_username;
 			std::string m_password;
@@ -89,6 +92,7 @@ namespace Umati {
 
 			/// Map for chaching super types. Key = Type, Value = Supertype
 			std::map<UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
+
 		private:
 			static int PlatformLayerInitialized;
 
@@ -105,9 +109,6 @@ namespace Umati {
             UaClientSdk::BrowseContext prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);
 
             void browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, UaClientSdk::BrowseContext browseContext, UaNodeId startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent);
-
-            ModelOpcUa::BrowseResult_t
-            ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions);
 
             void handleContinuationPoint(const UaByteString &continuationPoint) const;
 

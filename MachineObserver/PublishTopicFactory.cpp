@@ -23,42 +23,24 @@ namespace Umati {
 			{
 				topicPrefix = pCache->TopicPrefix;
 			}
-			else
+            auto checkPublishTopics = Umati::Util::PublishTopics(topicPrefix);
+			if (!pCache || !checkPublishTopics.isValid())
 			{
-				topicPrefix = getTopicPrefixFromBrowseName(machineRoot.BrowseName);
-				m_pMachineCache->AddEntry(
-					IMachineCache::MachineCacheEntry_t { machineRoot.NodeId.Uri , topicPrefix}
+                // todo browse for IdentifictionType and get mapping for machineName and Manufacturer for specific type from json
+                topicPrefix = ""; //getTopicPrefixFromBrowseName(machineRoot.BrowseName);
+
+                m_pMachineCache->AddEntry(
+					IMachineCache::MachineCacheEntry_t {machineRoot.NodeId.Uri, topicPrefix}
 				);
+			}
+            auto publishTopics = Umati::Util::PublishTopics(topicPrefix);
+			if(!publishTopics.isValid()) {
+			    LOG(ERROR) << "Invalid topic prefix: " << publishTopics.TopicPrefix;
 			}
 
 			//LOG(INFO) << "Using prefix '" << topicPrefix << "' for machine " << machineRoot.BrowseName.Uri;
 			
-			return Umati::Util::PublishTopics(topicPrefix);
-		}
-
-		std::string PublishTopicFactory::getTopicPrefixFromBrowseName(ModelOpcUa::QualifiedName_t browseName)
-		{
-			std::regex pattern("^([a-z0-9A-Z]+)-([a-z0-9A-Z]+)$");
-
-			std::smatch match;
-			bool found = std::regex_search(browseName.Name, match, pattern);
-
-			std::string company = "<CompanyNotSet>";
-			std::string machineName = "<MachineNameNotSet>";
-			if (!found)
-			{
-				LOG(ERROR) << "Could not determine company and machine name from: "
-					<< browseName.Name << "(" << browseName.Uri << ")";
-			}
-			else
-			{
-				company = match[1].str();
-				machineName = match[2].str();
-			}
-
-			std::stringstream ss;
-			ss << "/" << company << "/" << machineName;
-			return ss.str();
+			return publishTopics;
 		}
 	}
 }

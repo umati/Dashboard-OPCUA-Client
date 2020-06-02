@@ -144,13 +144,13 @@ ModelOpcUa::NodeId_t translateBrowsePathToNodeIdMock(ModelOpcUa::NodeId_t startN
 	return ret;
 }
 
-struct BrowseResult_t
-{
-	ModelOpcUa::NodeId_t NodeId;
-	ModelOpcUa::NodeId_t TypeDefinitionId;
-	std::string BrowseName;
-	std::string NodeClass;
+struct BrowseResult_t {
+    ModelOpcUa::NodeId_t NodeId;
+    ModelOpcUa::NodeId_t TypeDefinitionId;
+    std::string BrowseName;
+    std::string NodeClass;
 };
+
 
 std::list<BrowseResult_t> browseNodes(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t nodeTypeId)
 {

@@ -26,8 +26,10 @@ namespace Umati
 				const ModelOpcUa::NodeId_t ToolType {UmatiNamespaceUri, "i=1056" };
 				const ModelOpcUa::NodeId_t IdentificationType {UmatiNamespaceUri, "i=1021" };
 				const ModelOpcUa::NodeId_t LampType {UmatiNamespaceUri, "i=1041" };
-				const ModelOpcUa::NodeId_t MachineToolType {UmatiNamespaceUri, "i=1014" };
-				const ModelOpcUa::NodeId_t ProductionJobListType {UmatiNamespaceUri, "i=1032" };
+				const ModelOpcUa::NodeId_t MachineToolType {"http://opcfoundation.org/UA/MachineTool/", "i=1014" }; // todo read dynamically from typemap + namespace list
+				const ModelOpcUa::NodeId_t MachineToolIdentificationType {"http://opcfoundation.org/UA/MachineTool/", "i=1012" }; // todo read dynamically from typemap + namespace list
+				const ModelOpcUa::NodeId_t BrowseMachinesStartNode{"http://opcfoundation.org/UA/Machinery/", "i=1001"};
+                const ModelOpcUa::NodeId_t ProductionJobListType {UmatiNamespaceUri, "i=1032" };
 				const ModelOpcUa::NodeId_t ProductionStateMachineEMOType {UmatiNamespaceUri, "i=1030" };
 				const ModelOpcUa::NodeId_t SoftwareComponentVersionType {UmatiNamespaceUri, "i=1022" };
 				const ModelOpcUa::NodeId_t StacklightType {UmatiNamespaceUri, "i=1040" };

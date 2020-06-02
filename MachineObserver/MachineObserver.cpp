@@ -109,27 +109,39 @@ namespace Umati {
 			/**
 			* i=1000 contains the list of all available machines
 			*/
-			try {
-				machineToolList = m_pDataClient->Browse(
-                        ModelOpcUa::NodeId_t{ "http://opcfoundation.org/UA/Machinery/", "i=1001"}, // todo for each namespace selected (is it always 1001?)
-										Dashboard::TypeDefinition::OrganizesTypeNodeId,//  folder type? no, tells the names of what it organizes(is it always folderType?
-                        ModelOpcUa::NodeId_t{ "http://opcfoundation.org/UA/MachineTool/", "i=1014"}// folder type (is it always folderType?
+			for (auto availableNamespacesIterator = m_pDataClient->m_availableObjectTypeNamespaces.begin(); availableNamespacesIterator != m_pDataClient->m_availableObjectTypeNamespaces.end(); availableNamespacesIterator++) {
+                LOG(INFO) << "Searching for machinery of namespace " << availableNamespacesIterator->second;
+                try {
+                    std::vector<std::string> splitNamespace;
+                    split(availableNamespacesIterator->second, splitNamespace, '/');
+                    std::string requiredType = splitNamespace.back() + "Type";
 
-					//Dashboard::TypeDefinition::NodeIds::MachineToolType // todo change away from const (should be depending on the ns?)
-				);
-			}
-			catch (const Umati::Exceptions::OpcUaException & ex)
-			{
-				LOG(ERROR) << "Browse new machines failed with: " << ex.what();
-				return false;
-			}
-			catch (const Umati::Exceptions::ClientNotConnected & ex)
-			{
-				LOG(ERROR) << "OPC UA Client not connected." << ex.what();
-				return false;
-			}
-			return true;
-		}
+                    auto it = m_pDataClient->m_typeMap->find(requiredType);
+
+                    //if(it != m_pDataClient->m_typeMap->end()) { // todo uncomment
+                        ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/Machinery/", "i=1001"};
+                        ModelOpcUa::NodeId_t machineTypeSearchedFor = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/", "i=1014"};
+                        // ModelOpcUa::NodeId_t machineTypeSearchedFor = it->second.SpecifiedTypeNodeId;
+                        // todo info is in  it->second.SpecifiedBrowseName this a NodeId_t
+
+                        // speaks: In Machinery i=1001 (StartNode) search all lists that organzies (references) machine tools (machineToolType) (at least i think thats it)
+                        machineToolList=m_pDataClient->Browse(startNode, Dashboard::TypeDefinition::OrganizesTypeNodeId, machineTypeSearchedFor);
+                        // todo for merging lists, it's required to have comparator
+                   // }
+                    machineToolList=m_pDataClient->Browse(Dashboard::TypeDefinition::NodeIds::BrowseMachinesStartNode, Dashboard::TypeDefinition::OrganizesTypeNodeId, Dashboard::TypeDefinition::NodeIds::MachineToolType);
+
+                }
+                catch (const Umati::Exceptions::OpcUaException &ex) {
+                    LOG(ERROR) << "Browse new machines failed with: " << ex.what();
+                    return false;
+                }
+                catch (const Umati::Exceptions::ClientNotConnected &ex) {
+                    LOG(ERROR) << "OPC UA Client not connected." << ex.what();
+                    return false;
+                }
+            }
+            return true;
+        }
 
 		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines)
 		{
@@ -214,5 +226,25 @@ namespace Umati {
 				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
 			}
 		}
-	}
+
+        void MachineObserver::split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter)
+        {
+            std::size_t current_char_position, previous_char_position = 0;
+            current_char_position = inputString.find(delimiter);
+            while (current_char_position != std::string::npos) {
+                fillResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
+                previous_char_position = current_char_position + 1;
+                current_char_position = inputString.find(delimiter, previous_char_position);
+            }
+            fillResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
+        }
+
+        void MachineObserver::fillResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer,
+                                             size_t current_char_position, size_t previous_char_position) const {
+            std::string substring = inputString.substr(previous_char_position, current_char_position - previous_char_position);
+            if(!substring.empty()) {
+                resultContainer.push_back(substring);
+            }
+        }
+    }
 }

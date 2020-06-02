@@ -3,6 +3,9 @@
 
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <functional>
+#include <uanodeid.h>
+#include <uaarraytemplates.h>
+#include <uaclientsdk.h>
 
 namespace Umati {
 
@@ -28,6 +31,7 @@ namespace Umati {
 				ModelOpcUa::QualifiedName_t browseName
 			) = 0;
             std::shared_ptr<std::map <std::string, ModelOpcUa::StructureNode>> m_typeMap = std::make_shared<std::map <std::string,ModelOpcUa::StructureNode>>();
+            std::map<uint16_t, std::string> m_availableObjectTypeNamespaces;
 
             class ValueSubscriptionHandle {
 			public:
@@ -47,7 +51,10 @@ namespace Umati {
 			virtual std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
 			virtual std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
-
+			virtual UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) = 0;
+            virtual void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) = 0;
+            virtual void browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) = 0;
+            virtual ModelOpcUa::BrowseResult_t ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) = 0;
 		};
 	}
 }

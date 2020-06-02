@@ -115,7 +115,7 @@ namespace Umati {
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << result.toString().toUtf8() << std::endl;
 				return false;
 			}
-            on_connected();
+            //on_connected();
 
             return true;
 		}
@@ -296,13 +296,13 @@ namespace Umati {
                 LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
             }
 
-            if(m_typeMap->size() == 0) { // todo remove!
+
                 std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
                 UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
                 auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
                 UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode,
                                                                           m_uriToIndexCache).getNodeId();
-                browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr);
+                //browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr); // todo uncomment
 
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
@@ -312,7 +312,7 @@ namespace Umati {
                 std::string namespaceURI(uaNamespaceUtf8);
                 findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI, bidirectionalTypeMap);
             }
-        }
+
             for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
             }
@@ -330,19 +330,25 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, UaClientSdk::BrowseContext browseContext, UaNodeId startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent)  {
+        void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) {
+            browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectTypeContext());
+		}
 
+        void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) {
+            UaByteString continuationPoint;
             // References -> nodes referenced to this, e.g. child nodes
             // BrowseName: Readable Name and namespace index
-            UaByteString continuationPoint;
-            UaReferenceDescriptions referenceDescriptions;
             auto uaResult = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, startUaNodeId, browseContext, continuationPoint, referenceDescriptions);
-
-            if (uaResult.isBad())
-            {
+            if (uaResult.isBad()) {
                 LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8();
                 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
             }
+        }
+
+        void OpcUaClient::browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, UaClientSdk::BrowseContext browseContext, UaNodeId startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent)  {
+
+            UaReferenceDescriptions referenceDescriptions;
+            browseUnderStartNode(startUaNodeId, referenceDescriptions, browseContext);
 
             for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
             {
@@ -725,47 +731,54 @@ namespace Umati {
 
 		std::vector<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
 		{
-			UaStatus uaStatus;
-			//std::list <UaNodeId> readNodeIds;
-			UaReadValueIds readValueIds;
-			readValueIds.resize(modelNodeIds.size());
-			unsigned int i = 0;
-			for (const auto &modelNodeId : modelNodeIds)
-			{
-				UaNodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				nodeId.copyTo(&(readValueIds[i].NodeId));
-				readValueIds[i].AttributeId = OpcUa_Attributes_Value;
-				++i;
-			}
+            std::vector<nlohmann::json> ret;
+            UaDataValues readValues = readValues2(modelNodeIds);
 
-			UaDataValues readValues;
-			UaDiagnosticInfos diagnosticInfos;
-
-			uaStatus = m_opcUaWrapper->SessionRead(
-				m_defaultServiceSettings,
-				0,
-				OpcUa_TimestampsToReturn::OpcUa_TimestampsToReturn_Neither,
-				readValueIds,
-				readValues,
-				diagnosticInfos);
-
-			if (uaStatus.isNotGood())
-			{
-				LOG(ERROR) << "Received non good status for read: " << uaStatus.toString().toUtf8();
-				std::stringstream ss;
-				ss << "Received non good status  for read: " << uaStatus.toString().toUtf8();
-				throw Exceptions::OpcUaException(ss.str());
-			}
-
-			std::vector<nlohmann::json> ret;
-
-			for (i = 0; i < readValues.length(); ++i)
+			for (uint i = 0; i < readValues.length(); ++i)
 			{
 				auto value = readValues[i];
-				ret.push_back(Converter::UaDataValueToJsonValue(value).getValue());
+				auto valu = Converter::UaDataValueToJsonValue(value);
+				auto val = valu.getValue();
+				ret.push_back(val);
 			}
 			return ret;
 		}
+
+        UaDataValues OpcUaClient::readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
+        {
+            UaStatus uaStatus;
+            UaReadValueIds readValueIds;
+            readValueIds.resize(modelNodeIds.size());
+            unsigned int i = 0;
+            for (const auto &modelNodeId : modelNodeIds)
+            {
+                UaNodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
+                nodeId.copyTo(&(readValueIds[i].NodeId));
+                readValueIds[i].AttributeId = OpcUa_Attributes_Value;
+                ++i;
+            }
+
+            UaDataValues readValues;
+            UaDiagnosticInfos diagnosticInfos;
+
+            uaStatus = m_opcUaWrapper->SessionRead(
+                    m_defaultServiceSettings,
+                    0,
+                    OpcUa_TimestampsToReturn::OpcUa_TimestampsToReturn_Neither,
+                    readValueIds,
+                    readValues,
+                    diagnosticInfos);
+
+            if (uaStatus.isNotGood())
+            {
+                LOG(ERROR) << "Received non good status for read: " << uaStatus.toString().toUtf8();
+                std::stringstream ss;
+                ss << "Received non good status  for read: " << uaStatus.toString().toUtf8();
+                throw Exceptions::OpcUaException(ss.str());
+            }
+
+            return readValues;
+        }
 
         void OpcUaClient::createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::shared_ptr<std::map<std::string, ModelOpcUa::StructureNode>> typeMap, uint16_t namespaceIndex) {
             for ( auto typeIterator = bidirectionalTypeMap->begin(); typeIterator != bidirectionalTypeMap->end(); typeIterator++ ) {
