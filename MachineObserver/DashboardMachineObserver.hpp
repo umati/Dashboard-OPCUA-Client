@@ -71,7 +71,6 @@ namespace Umati {
 			void updateMachinesMachineData(MachineInformation_t &machineInfo);
 
 			std::string  getValueFromValuesList(std::vector<nlohmann::json, std::allocator<nlohmann::json>>& valuesList, std::string valueName, int valueIndex, ModelOpcUa::NodeId_t startNodeId);
-			void split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter = ' ');
 			int m_publishMachinesOnline = 0;
 
 			std::atomic_bool m_running = { false };

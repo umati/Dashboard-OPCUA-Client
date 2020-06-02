@@ -32,18 +32,18 @@ namespace Umati {
 			*/
 			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> toBeRemovedMachines = m_knownMachines;
 			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> newMachines;
-			std::list < ModelOpcUa::BrowseResult_t > machineToolList;
+			std::list < ModelOpcUa::BrowseResult_t > machineList;
 
 			/**
-			* Browses the machineToolList and fills the list if possible
+			* Browses the machineList and fills the list if possible
 			*/
-			if (!canBrowseMachineToolList(machineToolList)) {
+			if (!canBrowsemachineList(machineList)) {
 				return;
 			}
 
-			if (machineToolListsNotEqual(machineToolList)) {
+			if (machineListsNotEqual(machineList)) {
 
-				findNewAndOfflineMachines(machineToolList, toBeRemovedMachines, newMachines);
+				findNewAndOfflineMachines(machineList, toBeRemovedMachines, newMachines);
 
 				removeOfflineMachines(toBeRemovedMachines);
 
@@ -58,30 +58,30 @@ namespace Umati {
 			}
 		}
 
-		bool MachineObserver::machineToolListsNotEqual(std::list<ModelOpcUa::BrowseResult_t>& machineToolList)
+		bool MachineObserver::machineListsNotEqual(std::list<ModelOpcUa::BrowseResult_t>& machineList)
 		{
-			if (m_knownMachineToolsMap.size() != machineToolList.size()) {
-				recreateKnownMachineToolsMap(machineToolList);
+			if (m_knownMachineToolsMap.size() != machineList.size()) {
+				recreateKnownMachineToolsMap(machineList);
 				return true;
 			}
-			for (auto& machineTool : machineToolList) {
+			for (auto& machineTool : machineList) {
 				auto it = m_knownMachineToolsMap.find(machineTool.NodeId);
 				if (it == m_knownMachineToolsMap.end()) {
 					// List differs
-					LOG(INFO) << "Missing an entry in machineToolList: " << machineTool.BrowseName.Uri;
-					recreateKnownMachineToolsMap(machineToolList);
+					LOG(INFO) << "Missing an entry in machineList: " << machineTool.BrowseName.Uri;
+					recreateKnownMachineToolsMap(machineList);
 					return true;
 				}
 			}
 			return false;
 		}
 
-		void MachineObserver::recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t>& machineToolList)
+		void MachineObserver::recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t>& machineList)
 		{
 			LOG(WARNING) << "Lists differ, recreating known machine tools map" ;
 			removeOfflineMachines(m_knownMachineToolsMap);
 			m_knownMachineToolsMap.clear();
-			for (auto machineTool : machineToolList) {
+			for (auto machineTool : machineList) {
 				m_knownMachineToolsMap.insert(std::make_pair(machineTool.NodeId, machineTool));
 			}
 		}
@@ -104,7 +104,7 @@ namespace Umati {
 			return false;
 		}
 
-		bool MachineObserver::canBrowseMachineToolList(std::list<ModelOpcUa::BrowseResult_t>& machineToolList)
+		bool MachineObserver::canBrowsemachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList)
 		{
 			/**
 			* i=1000 contains the list of all available machines
@@ -112,25 +112,19 @@ namespace Umati {
 			for (auto availableNamespacesIterator = m_pDataClient->m_availableObjectTypeNamespaces.begin(); availableNamespacesIterator != m_pDataClient->m_availableObjectTypeNamespaces.end(); availableNamespacesIterator++) {
                 LOG(INFO) << "Searching for machinery of namespace " << availableNamespacesIterator->second;
                 try {
-                    std::vector<std::string> splitNamespace;
-                    split(availableNamespacesIterator->second, splitNamespace, '/');
-                    std::string requiredType = splitNamespace.back() + "Type";
+                    machineList.empty();
+                    ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/Machinery/", "i=1001"};
 
-                    auto it = m_pDataClient->m_typeMap->find(requiredType);
+                    UaReferenceDescriptions referenceDescriptions;
+                    auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
+                    startNodeId.setNamespaceIndex(3);
+                    m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
 
-                    //if(it != m_pDataClient->m_typeMap->end()) { // todo uncomment
-                        ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/Machinery/", "i=1001"};
-                        ModelOpcUa::NodeId_t machineTypeSearchedFor = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/", "i=1014"};
-                        // ModelOpcUa::NodeId_t machineTypeSearchedFor = it->second.SpecifiedTypeNodeId;
-                        // todo info is in  it->second.SpecifiedBrowseName this a NodeId_t
-
-                        // speaks: In Machinery i=1001 (StartNode) search all lists that organzies (references) machine tools (machineToolType) (at least i think thats it)
-                        machineToolList=m_pDataClient->Browse(startNode, Dashboard::TypeDefinition::OrganizesTypeNodeId, machineTypeSearchedFor);
-                        // todo for merging lists, it's required to have comparator
-                   // }
-                    machineToolList=m_pDataClient->Browse(Dashboard::TypeDefinition::NodeIds::BrowseMachinesStartNode, Dashboard::TypeDefinition::OrganizesTypeNodeId, Dashboard::TypeDefinition::NodeIds::MachineToolType);
-
-                }
+                    std::list<ModelOpcUa::NodeId_t> identificationNodes;
+                    for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+                        machineList.emplace_back(m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]));
+                    }
+                 }
                 catch (const Umati::Exceptions::OpcUaException &ex) {
                     LOG(ERROR) << "Browse new machines failed with: " << ex.what();
                     return false;
@@ -143,11 +137,11 @@ namespace Umati {
             return true;
         }
 
-		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines)
+		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines)
 		{
             LOG(INFO) << "Checking which machines are online / offline";
 
-            for (auto machineTool : machineToolList)
+            for (auto machineTool : machineList)
 			{
 
 				// Check if Machine is known as online machine
@@ -226,25 +220,5 @@ namespace Umati {
 				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
 			}
 		}
-
-        void MachineObserver::split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter)
-        {
-            std::size_t current_char_position, previous_char_position = 0;
-            current_char_position = inputString.find(delimiter);
-            while (current_char_position != std::string::npos) {
-                fillResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
-                previous_char_position = current_char_position + 1;
-                current_char_position = inputString.find(delimiter, previous_char_position);
-            }
-            fillResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
-        }
-
-        void MachineObserver::fillResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer,
-                                             size_t current_char_position, size_t previous_char_position) const {
-            std::string substring = inputString.substr(previous_char_position, current_char_position - previous_char_position);
-            if(!substring.empty()) {
-                resultContainer.push_back(substring);
-            }
-        }
     }
 }

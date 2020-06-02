@@ -22,9 +22,9 @@ namespace Umati {
 		protected:
 			void UpdateMachines();
 
-			bool machineToolListsNotEqual(std::list<ModelOpcUa::BrowseResult_t>& machineToolList);
+			bool machineListsNotEqual(std::list<ModelOpcUa::BrowseResult_t>& machineList);
 
-			void recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t>& machineToolList);
+			void recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t>& machineList);
 
 			bool ignoreInvalidMachinesTemporarily(std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachine);
 
@@ -32,9 +32,9 @@ namespace Umati {
 
 			void removeOfflineMachines(std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines);
 
-			bool canBrowseMachineToolList(std::list<ModelOpcUa::BrowseResult_t>& machineToolList);
+			bool canBrowsemachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList);
 
-			void findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineToolList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines);
+			void findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines);
 
 			virtual void addMachine(ModelOpcUa::BrowseResult_t machine) = 0;
 			virtual void removeMachine(ModelOpcUa::BrowseResult_t machine) = 0;
@@ -50,11 +50,6 @@ namespace Umati {
 
             static void logMachinesChanging(std::string text,
                     const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines) ;
-
-            void split(const std::string &inputString, std::vector<std::string> &resultContainer, char delimiter);
-
-            void fillResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer,
-                                     size_t current_char_position, size_t previous_char_position) const;
         };
 	}
 }

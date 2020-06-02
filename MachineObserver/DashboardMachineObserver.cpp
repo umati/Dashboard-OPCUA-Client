@@ -137,24 +137,10 @@ namespace Umati {
 			}
 		}
 
-		void DashboardMachineObserver::split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter)
-		{
-			std::size_t current_char_position, previous_char_position = 0;
-			current_char_position = inputString.find(delimiter);
-			while (current_char_position != std::string::npos) {
-				resultContainer.push_back(inputString.substr(previous_char_position, current_char_position - previous_char_position));
-				previous_char_position = current_char_position + 1;
-				current_char_position = inputString.find(delimiter, previous_char_position);
-			}
-			resultContainer.push_back(inputString.substr(previous_char_position, current_char_position - previous_char_position));
-		}
-
 		/**
 		* looks for the node 5005 (list of stacklights) 5024 (Tools), 5007 (StateMOde) and more
 		*/
-		void DashboardMachineObserver::addMachine(
-			ModelOpcUa::BrowseResult_t machine
-		)
+		void DashboardMachineObserver::addMachine(ModelOpcUa::BrowseResult_t machine)
 		{
 			try {
 				LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:" << static_cast<std::string>(machine.NodeId);
@@ -179,9 +165,24 @@ namespace Umati {
 				machineInformation.NamespaceURI = machine.NodeId.Uri;
 				machineInformation.StartNodeId = machine.NodeId;
 
-				updateMachinesMachineData(machineInformation);
+				//updateMachinesMachineData(machineInformation);
 
 				LOG(INFO) << "Begin read model 2";
+/*
+                auto type = m_pDataClient->m_typeMap->find("MachineToolType")->second;
+
+                for(type)
+                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first,Dashboard::TypeDefinition::HasComponent,type);
+                int namespaceIndex = 5;// todo ! change
+                if(!identification.empty()) {
+
+                    UaReferenceDescriptions referenceDescriptions;
+                    std::vector<nlohmann::json> identificationListValues;
+                    browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
+                    if(!identificationListValues.empty()) {
+                        heyJson = identificationValuesToJsonString(referenceDescriptions, identificationListValues, fair,manufacturer,machine_name);
+                    }
+                }*/
 
                 std::shared_ptr<ModelOpcUa::StructureNode> identificationType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("IdentificationType")->second);
                 std::shared_ptr<ModelOpcUa::StructureNode> identificationType2 = Umati::Dashboard::TypeDefinition::getIdentificationType();
@@ -191,7 +192,7 @@ namespace Umati {
                     identificationType,
 					pubTopics.Information
 				);
-
+/*
                 std::shared_ptr<ModelOpcUa::StructureNode> stacklightType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("StacklightType")->second);
                 std::shared_ptr<ModelOpcUa::StructureNode> stacklightType2 = Umati::Dashboard::TypeDefinition::getStacklightType();
 
@@ -235,8 +236,9 @@ namespace Umati {
 					Umati::Dashboard::TypeDefinition::getJobCurrentStateNumber(),
 					pubTopics.JobCurrentStateNumber
 				);
-
+                */
 				LOG(INFO) << "Read model finished";
+
 
 				{
 					std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
