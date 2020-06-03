@@ -2,11 +2,7 @@
 
 #include <easylogging++.h>
 
-#include <TypeDefinition/IdentificationType.hpp>
-#include <TypeDefinition/StacklightType.hpp>
-#include <TypeDefinition/ProductionJobListType.hpp>
-#include <TypeDefinition/StateModeListType.hpp>
-#include <TypeDefinition/JobCurrentStateNumber.hpp>
+
 
 #include "MachineCacheJsonFile.hpp"
 
@@ -98,7 +94,6 @@ namespace Umati {
                 std::string manufacturer;
                 std::string machine_name;
                 std::string heyJson;
-                ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;
                 std::vector<ModelOpcUa::QualifiedName_t> identifierIds;
 
                 /*
@@ -106,8 +101,9 @@ namespace Umati {
                     identifierIds.emplace_back(it->get()->SpecifiedBrowseName);
                 }
                 */
-                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first,Dashboard::TypeDefinition::HasComponent,type);
+                ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
                 int namespaceIndex = 5;// todo ! change
+                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first,Dashboard::TypeDefinition::HasComponent,type);
                 if(!identification.empty()) {
 
                     UaReferenceDescriptions referenceDescriptions;
@@ -165,78 +161,79 @@ namespace Umati {
 				machineInformation.NamespaceURI = machine.NodeId.Uri;
 				machineInformation.StartNodeId = machine.NodeId;
 
-				//updateMachinesMachineData(machineInformation);
+                UaReferenceDescriptions machineComponentsReferenceDescriptions;
+                UaReferenceDescriptions singleComponentReferenceDescriptions;
+                auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(machine.NodeId.Id.c_str()));
+                uint namespaceIdx = m_pDataClient->m_uriToIndexCache[machine.NodeId.Uri];
+                startFromMachineNodeId.setNamespaceIndex(namespaceIdx);
 
-				LOG(INFO) << "Begin read model 2";
-/*
-                auto type = m_pDataClient->m_typeMap->find("MachineToolType")->second;
 
-                for(type)
-                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first,Dashboard::TypeDefinition::HasComponent,type);
-                int namespaceIndex = 5;// todo ! change
-                if(!identification.empty()) {
+                UaClientSdk::BrowseContext browseContext;
+                browseContext.referenceTypeId = OpcUaId_HierarchicalReferences;
+                browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
+                browseContext.includeSubtype = OpcUa_True;
+                browseContext.maxReferencesToReturn = 0;
+                browseContext.nodeClassMask = 0; // ALL
+                browseContext.resultMask = OpcUa_BrowseResultMask_All;
 
-                    UaReferenceDescriptions referenceDescriptions;
-                    std::vector<nlohmann::json> identificationListValues;
-                    browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
-                    if(!identificationListValues.empty()) {
-                        heyJson = identificationValuesToJsonString(referenceDescriptions, identificationListValues, fair,manufacturer,machine_name);
+                //m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
+                m_pDataClient->browseUnderStartNode(startFromMachineNodeId, machineComponentsReferenceDescriptions, browseContext);
+
+
+                std::shared_ptr<ModelOpcUa::StructureNode> p_type;
+                for (OpcUa_UInt32 machineComponent = 0; machineComponent < machineComponentsReferenceDescriptions.length(); machineComponent++) {
+                    ModelOpcUa::BrowseResult_t machineComponentBrowseResult = m_pDataClient->ReferenceDescriptionToBrowseResult(machineComponentsReferenceDescriptions[machineComponent]);
+
+                    LOG(INFO) << machineComponentBrowseResult.BrowseName.Name;
+
+                    browseContext.referenceTypeId = OpcUaId_NonHierarchicalReferences;
+
+                    auto startFromMachineComponentNodeId = UaNodeId::fromXmlString(UaString(machineComponentBrowseResult.NodeId.Id.c_str()));
+                    startFromMachineComponentNodeId.setNamespaceIndex(namespaceIdx);
+
+                    m_pDataClient->browseUnderStartNode(startFromMachineComponentNodeId, singleComponentReferenceDescriptions, browseContext);
+
+                    for (OpcUa_UInt32 j = 0; j < singleComponentReferenceDescriptions.length(); j++) {
+
+                        ModelOpcUa::BrowseResult_t browseResult2 = m_pDataClient->ReferenceDescriptionToBrowseResult(singleComponentReferenceDescriptions[j]);
+
+                        ModelOpcUa::StructureNode type = m_pDataClient->m_typeMap->find(browseResult2.BrowseName.Name)->second;
+                        p_type = std::make_shared<ModelOpcUa::StructureNode>(type);
+
+                        // todo browse nodes and check if required children are there
+                        uint referenceTypeId = OpcUaId_HasProperty;
+                        UaReferenceDescriptions referenceDescriptions3;
+
+                        std::list<ModelOpcUa::BrowseResult_t> result2;
+                        auto nextnextNodeId = UaNodeId::fromXmlString(UaString(machineComponentBrowseResult.NodeId.Id.c_str()));
+                        nextnextNodeId.setNamespaceIndex(namespaceIdx);
+                        browseContext.referenceTypeId = referenceTypeId;
+                        m_pDataClient->browseUnderStartNode(nextnextNodeId, referenceDescriptions3, browseContext);
+                        for(uint z = 0; z < referenceDescriptions3.length(); z++) {
+                            ModelOpcUa::BrowseResult_t entry = m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions3[z]);
+                            result2.push_back(entry);
+                            bool foundChild = false;
+                            for(auto childIt = type.SpecifiedChildNodes.begin(); childIt != type.SpecifiedChildNodes.end(); childIt++) {
+                                if(entry.BrowseName.Name == childIt.operator*()->SpecifiedBrowseName.Name) {
+                                    foundChild=true;
+                                    break;
+                                }
+                            }
+                            LOG(INFO) << entry.BrowseName.Name << (foundChild ? " found" : " not found");
+                        }
+
+
+
+
+                        pDashClient->addDataSet(
+                                {nsUri, machineComponentBrowseResult.NodeId.Id},
+                                p_type,
+                                pubTopics.Information
+                        );
                     }
-                }*/
 
-                std::shared_ptr<ModelOpcUa::StructureNode> identificationType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("IdentificationType")->second);
-                std::shared_ptr<ModelOpcUa::StructureNode> identificationType2 = Umati::Dashboard::TypeDefinition::getIdentificationType();
-				const std::string NodeIdIdentifier_Identification("i=5001");
-				pDashClient->addDataSet(
-					{ nsUri, NodeIdIdentifier_Identification },
-                    identificationType,
-					pubTopics.Information
-				);
-/*
-                std::shared_ptr<ModelOpcUa::StructureNode> stacklightType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("StacklightType")->second);
-                std::shared_ptr<ModelOpcUa::StructureNode> stacklightType2 = Umati::Dashboard::TypeDefinition::getStacklightType();
+                }
 
-				const std::string NodeIdIdentifier_Stacklight("i=5005");
-				pDashClient->addDataSet(
-					{ nsUri, NodeIdIdentifier_Stacklight },
-                    stacklightType,
-					pubTopics.Stacklight
-				);
-
-                std::shared_ptr<ModelOpcUa::StructureNode> toolListType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("ToolListType")->second);
-                std::shared_ptr<ModelOpcUa::StructureNode> toolListType2 = Umati::Dashboard::TypeDefinition::getProductionJobListType();
-
-                const std::string NodeIdIdentifier_Tools("i=5024");
-				pDashClient->addDataSet(
-					{ nsUri, NodeIdIdentifier_Tools },
-					toolListType,
-					pubTopics.Tools
-				);
-
-                std::shared_ptr<ModelOpcUa::StructureNode> prodJobListType = std::make_shared<ModelOpcUa::StructureNode>(m_pDataClient->m_typeMap->find("ProductionJobListType")->second);
-                std::shared_ptr<ModelOpcUa::StructureNode> prodJobListType2 = Umati::Dashboard::TypeDefinition::getProductionJobListType();
-
-				const std::string NodeIdIdentifier_ProductionPlan("i=5012");
-				pDashClient->addDataSet(
-					{ nsUri, NodeIdIdentifier_ProductionPlan },
-                    prodJobListType,
-					pubTopics.ProductionPlan
-				);
-
-				const std::string NodeIdIdentifier_StateMode("i=5007");
-				pDashClient->addDataSet(
-					{ nsUri, NodeIdIdentifier_StateMode },
-					Umati::Dashboard::TypeDefinition::getStateModeListType(),
-					pubTopics.StateMode
-				);
-
-				const std::string NodeIdIdentifier_JobCurrentStateNumber("i=6045");
-				pDashClient->addDataSet(
-					{ nsUri, NodeIdIdentifier_JobCurrentStateNumber },
-					Umati::Dashboard::TypeDefinition::getJobCurrentStateNumber(),
-					pubTopics.JobCurrentStateNumber
-				);
-                */
 				LOG(INFO) << "Read model finished";
 
 
@@ -266,7 +263,7 @@ namespace Umati {
 			auto it = m_dashboardClients.find(machine.NodeId);
 			if (it != m_dashboardClients.end())
 			{
-				m_dashboardClients.erase(it);
+				m_dashboardClients.erase(it); // todo or does it need to be it++ ?
 			}
 			else
 			{
@@ -277,7 +274,7 @@ namespace Umati {
 			if (itOnlineMachines != m_onlineMachines.end())
 			{
 			    LOG(INFO) << "Erasing online machine";
-				m_onlineMachines.erase(itOnlineMachines);
+				m_onlineMachines.erase(itOnlineMachines); // todo or dies it need to be itOnlineMachines++?
                 LOG(INFO) << "Online machine erased";
             }
 			else

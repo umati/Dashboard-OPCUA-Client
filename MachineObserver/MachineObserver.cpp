@@ -1,6 +1,5 @@
 #include "MachineObserver.hpp"
 #include <TypeDefinition/UmatiTypeDefinition.hpp>
-#include <TypeDefinition/UmatiTypeNodeIds.hpp>
 #include <easylogging++.h>
 
 #include "Exceptions/MachineInvalidException.hpp"
@@ -94,7 +93,7 @@ namespace Umati {
 				--(it->second);
 				if (it->second <= 0)
 				{
-					m_invalidMachines.erase(it);
+					m_invalidMachines.erase(it); // todo or does it need to be it++?
 				}
 				else
 				{
@@ -106,34 +105,30 @@ namespace Umati {
 
 		bool MachineObserver::canBrowsemachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList)
 		{
-			/**
-			* i=1000 contains the list of all available machines
-			*/
-			for (auto availableNamespacesIterator = m_pDataClient->m_availableObjectTypeNamespaces.begin(); availableNamespacesIterator != m_pDataClient->m_availableObjectTypeNamespaces.end(); availableNamespacesIterator++) {
-                LOG(INFO) << "Searching for machinery of namespace " << availableNamespacesIterator->second;
-                try {
-                    machineList.empty();
-                    ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/Machinery/", "i=1001"};
+            try {
+                LOG(INFO) << "Searching for machines";
+                machineList.empty();
+                UaReferenceDescriptions referenceDescriptions;
 
-                    UaReferenceDescriptions referenceDescriptions;
-                    auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
-                    startNodeId.setNamespaceIndex(3);
-                    m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
+                ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/Machinery/","i=1001"};
+                auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
+                startNodeId.setNamespaceIndex(3);
 
-                    std::list<ModelOpcUa::NodeId_t> identificationNodes;
-                    for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
-                        machineList.emplace_back(m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]));
-                    }
-                 }
-                catch (const Umati::Exceptions::OpcUaException &ex) {
-                    LOG(ERROR) << "Browse new machines failed with: " << ex.what();
-                    return false;
-                }
-                catch (const Umati::Exceptions::ClientNotConnected &ex) {
-                    LOG(ERROR) << "OPC UA Client not connected." << ex.what();
-                    return false;
+                m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
+
+                for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+                    machineList.emplace_back(m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]));
                 }
             }
+            catch (const Umati::Exceptions::OpcUaException &ex) {
+                LOG(ERROR) << "Browse new machines failed with: " << ex.what();
+                return false;
+            }
+            catch (const Umati::Exceptions::ClientNotConnected &ex) {
+                LOG(ERROR) << "OPC UA Client not connected." << ex.what();
+                return false;
+            }
+
             return true;
         }
 
@@ -154,7 +149,7 @@ namespace Umati {
 					{
 						if (it != toBeRemovedMachines.end())
 						{
-							toBeRemovedMachines.erase(it);
+							toBeRemovedMachines.erase(it);// todo or does it need to be it++?
 						}
 						else
 						{

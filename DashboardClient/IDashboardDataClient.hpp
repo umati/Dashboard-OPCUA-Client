@@ -32,6 +32,7 @@ namespace Umati {
 			) = 0;
             std::shared_ptr<std::map <std::string, ModelOpcUa::StructureNode>> m_typeMap = std::make_shared<std::map <std::string,ModelOpcUa::StructureNode>>();
             std::map<uint16_t, std::string> m_availableObjectTypeNamespaces;
+            std::map<std::string, uint16_t> m_uriToIndexCache;
 
             class ValueSubscriptionHandle {
 			public:

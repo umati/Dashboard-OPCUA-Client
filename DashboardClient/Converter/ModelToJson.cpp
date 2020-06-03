@@ -67,6 +67,9 @@ namespace Umati
 					m_json["placeholderElements"] = placeholderJsonElements;
 					break;
 				}
+                    case ModelOpcUa::ModellingRule_t::None: {
+                        break;
+                    }
 				default:
 					LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
 					break;

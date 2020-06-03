@@ -1,21 +1,12 @@
 #include "OpcUaClient/OpcUaClient.hpp"
 #include <DashboardClient.hpp>
-#if defined(PUBLISHER_REDIS)
-#include <RedisPublisher.hpp>
-#endif
-#if defined(PUBLISHER_MQTT_MOSQUITTO)
-#include <MqttPublisher.hpp>
-#endif
+
+
 
 #if defined(PUBLISHER_MQTT_PAHO)
 #include <MqttPublisher_Paho.hpp>
 #endif
 
-#include <TypeDefinition/IdentificationType.hpp>
-#include <TypeDefinition/StacklightType.hpp>
-#include <TypeDefinition/ToolListType.hpp>
-#include <TypeDefinition/ProductionJobListType.hpp>
-#include <TypeDefinition/StateModeListType.hpp>
 
 #include <signal.h>
 
@@ -27,7 +18,6 @@
 
 #include <ConfigureLogger.hpp>
 #include <ConfigurationJsonFile.hpp>
-#include <PublishTopics.hpp>
 #include <Exceptions/ConfigurationException.hpp>
 #include <DashboardMachineObserver.hpp>
 
@@ -93,8 +83,7 @@ int main(int argc, char* argv[])
 		pubTopics.ClientOnline,
 		config->Mqtt().Username,
 		config->Mqtt().Password);
-#elif defined(PUBLISHER_REDIS)
-	pPublisher = std::make_shared<Umati::RedisPublisher::RedisPublisher>("prj-umati01");
+
 #elif defined(PUBLISHER_MQTT_PAHO)
 	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
 		config->Mqtt().Hostname,

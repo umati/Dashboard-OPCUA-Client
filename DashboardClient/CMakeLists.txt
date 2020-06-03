@@ -6,12 +6,7 @@ find_package(nlohmann_json 3.6.1 REQUIRED)
 find_package(UaSdkCpp REQUIRED)
 
 set(DASHBOARDCLIENT_SRC
-	"TypeDefinition/IdentificationType.cpp"
-	"TypeDefinition/StacklightType.cpp"
-	"TypeDefinition/ToolListType.cpp"
-	"TypeDefinition/ProductionJobListType.cpp"
-	"TypeDefinition/StateModeListType.cpp"
-	"TypeDefinition/JobCurrentStateNumber.cpp"
+
 	"DashboardClient.cpp"
 	"IDashboardDataClient.cpp"
 	"Converter/ModelToJson.cpp"

@@ -67,12 +67,7 @@ if(DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
 	target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher_Paho)
 endif()
 
-if(DASHBOARD_PUBLISHER STREQUAL "REDIS")
-	message("### opcua_dashboardclient: Adding Publisher redis")
-	add_subdirectory(RedisPublisher)
-	target_link_libraries(DashboardOpcUaClient PUBLIC RedisPublisher)
-	target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_REDIS=1)
-endif()
+
 
 if(WIN32)
 	message("### opcua_dashboardclient: Adding custom command to add windows opcua libs")

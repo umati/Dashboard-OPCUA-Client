@@ -1,6 +1,7 @@
 #include "DashboardClient.hpp"
 
 #include <easylogging++.h>
+#include <Exceptions/OpcUaException.hpp>
 #include "Converter/ModelToJson.hpp"
 #include "Exceptions/UmatiException.hpp"
 #include "../../_install-Debug/include/easylogging++.h"
@@ -33,9 +34,14 @@ namespace Umati {
 			std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
 			std::string channel)
 		{
-            auto pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition, channel);
-            subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
-			m_dataSets.push_back(pDataSetStorage);
+		    try {
+                std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition, channel);
+                subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
+                m_dataSets.push_back(pDataSetStorage);
+            }
+		    catch(const Umati::Exceptions::OpcUaException &ex) {
+		        LOG(WARNING) << ex.what();
+		    }
 		}
 
         std::shared_ptr<DashboardClient::DataSetStorage_t>
@@ -56,7 +62,8 @@ namespace Umati {
 			//  in the lamdba callback when new data is there
 			for (auto &pDataSetStorage : m_dataSets)
 			{
-				m_pPublisher->Publish(pDataSetStorage->channel, getJson(pDataSetStorage));
+			    std::string jsonPayload = getJson(pDataSetStorage);
+				m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
 			}
 		}
 
@@ -85,16 +92,20 @@ namespace Umati {
 			{
 				switch (pChild->ModellingRule)
 				{
+				case ModelOpcUa::ModellingRule_t::Optional: {
+				    continue;  // todo ! handle
+				}
 				case ModelOpcUa::ModellingRule_t::Mandatory:
-				case ModelOpcUa::ModellingRule_t::Optional:
 				{
                     bool should_break = OptionalAndMandatoryTransformToNodeId(startNode, foundChildNodes, pChild);
                     if (should_break) {
                         break;
                     }
 				}
+				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder: {
+				    continue; // todo ! handle
+				}
 				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
-				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
 				{
                     bool should_break = OptionalAndMandatoryPlaceholderTransformToNodeId(startNode, foundChildNodes, pChild);
                     if (should_break) {
@@ -206,7 +217,9 @@ namespace Umati {
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 		)
 		{
-			// Only Mandatory/Optional variables
+		    LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;;
+
+            // Only Mandatory/Optional variables
 			if (isMandatoryOrOptional(pNode))
 			{
                 subscribeValue(pNode, valueMap);
@@ -217,6 +230,7 @@ namespace Umati {
 
         void DashboardClient::handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
                                                         std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
+		    LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;;
             for (auto & pChildNode : pNode->ChildNodes)
             {
                 switch (pChildNode->ModellingRule)
@@ -246,6 +260,8 @@ namespace Umati {
         
         bool DashboardClient::handleSubscribeChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
                                                        std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap){
+            LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
+
             auto pSimpleChild = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pChildNode);
             if (!pSimpleChild)
             {
@@ -260,6 +276,7 @@ namespace Umati {
         // Returns if the caller should exit the loop (break;) or not
         bool DashboardClient::handleSubscribePlaceholderChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
                                                                   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
+            LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
             auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
             if (!pPlaceholderChild)
             {
@@ -283,6 +300,8 @@ namespace Umati {
                                              * the input parameters of the lambda function is the nlohmann::json value and the body updates the value
                                              * at position pNode with the received json value.
                                              */
+            LOG(INFO) << "SubscribeValue " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+
             auto callback = [pNode, &valueMap](nlohmann::json value) {
                 valueMap[pNode] = value;
             };

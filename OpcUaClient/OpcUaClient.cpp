@@ -302,7 +302,7 @@ namespace Umati {
                 auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
                 UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode,
                                                                           m_uriToIndexCache).getNodeId();
-                //browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr); // todo uncomment
+                browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr); // todo uncomment
 
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
@@ -323,7 +323,7 @@ namespace Umati {
             auto it = find (notFoundObjectTypeNamespaces.begin(), notFoundObjectTypeNamespaces.end(), namespaceURI);
             if (it != notFoundObjectTypeNamespaces.end()) {
                 m_availableObjectTypeNamespaces[static_cast<uint16_t>(i)] = namespaceURI;
-                notFoundObjectTypeNamespaces.erase(it);
+                notFoundObjectTypeNamespaces.erase(it);// todo or does it need to be it++?
                 LOG(INFO) << "Expected object type namespace " << namespaceURI << " found at index " << std::to_string(i);
                 createTypeMap(bidirectionalTypeMap, m_typeMap, i);
                 LOG(INFO) << "Finished creatingTypeMap for " << namespaceURI;
@@ -666,6 +666,7 @@ namespace Umati {
 
 			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName, m_uriToIndexCache).getQualifiedName();
+			LOG(INFO) << startUaNodeId.toString().toUtf8() << uaBrowseName.toString().toUtf8();
 
 			UaRelativePathElements uaBrowsePathElements;
 			uaBrowsePathElements.create(1);
@@ -807,7 +808,32 @@ namespace Umati {
                             // todo update the specific node if it comes again
                             // todo extract unittest
                             auto structureNode = currentChild->toStructureNode();
-                            node.SpecifiedChildNodes.emplace_back(structureNode);
+
+                            auto findIterator = std::find(node.SpecifiedChildNodes.begin(), node.SpecifiedChildNodes.end(), structureNode);
+
+                            bool found = findIterator != node.SpecifiedChildNodes.end();
+                            if (!found) {
+                                for(auto fIt = node.SpecifiedChildNodes.begin(); fIt !=  node.SpecifiedChildNodes.end();  fIt++) {
+                                    if (fIt.operator*()->SpecifiedBrowseName.Name == structureNode->SpecifiedBrowseName.Name &&
+                                    fIt.operator*()->SpecifiedBrowseName.Uri == structureNode->SpecifiedBrowseName.Uri
+                                    ) {
+                                        findIterator = fIt;
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (found) {
+                                if (findIterator.operator*()->ModellingRule == ModelOpcUa::ModellingRule_t::Optional ||
+                                findIterator.operator*()->ModellingRule == ModelOpcUa::ModellingRule_t::OptionalPlaceholder) {
+                                    LOG(INFO) << "Changed modellingRule from " << findIterator.operator*()->ModellingRule << " to " << structureNode->ModellingRule;
+                                    node.SpecifiedChildNodes.erase(findIterator++);
+                                    node.SpecifiedChildNodes.emplace_back(structureNode);
+                                }
+                            } else {
+                                node.SpecifiedChildNodes.emplace_back(structureNode);
+                            }
                         }
                     }
                 }
