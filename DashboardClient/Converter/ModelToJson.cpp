@@ -32,8 +32,12 @@ namespace Umati
 					{
 					    auto value = getValue(pNode);
 					    if(value.dump(0) != "null") {
-					        LOG(INFO) << "++++ " << value.dump(0);
-                            m_json["value"] = value;
+					        LOG(INFO) << "++++ " << value.dump(0); // todo ! remove me
+                            if(nestAsChildren) {
+                                m_json["value"] = value;
+                            } else {
+                                m_json = value;
+                            }
                         }
 					}
 

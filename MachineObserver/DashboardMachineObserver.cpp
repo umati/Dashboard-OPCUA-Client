@@ -1,13 +1,7 @@
 #include "DashboardMachineObserver.hpp"
-
 #include <easylogging++.h>
-
-
-
 #include "MachineCacheJsonFile.hpp"
-
 #include "Exceptions/MachineInvalidException.hpp"
-
 #include <Exceptions/OpcUaException.hpp>
 #include <TypeDefinition/UmatiTypeNodeIds.hpp>
 
@@ -90,7 +84,6 @@ namespace Umati {
 				std::string fair = "offsite";
                 std::string manufacturer;
                 std::string machine_name;
-                std::string heyJson;
                 std::vector<ModelOpcUa::QualifiedName_t> identifierIds;
 
 
@@ -102,9 +95,7 @@ namespace Umati {
                     UaReferenceDescriptions referenceDescriptions;
                     std::vector<nlohmann::json> identificationListValues;
                     browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
-                    if(!identificationListValues.empty()) {
-                        heyJson = identificationValuesToJsonString(referenceDescriptions, identificationListValues, fair,manufacturer,machine_name);
-                    }
+                    // todo make more generic
                 }
 
 				auto findFairListIterator = publishData.find(fair);
@@ -114,14 +105,14 @@ namespace Umati {
 				}
 				auto fairList = publishData.find(fair);
 
-                if(!heyJson.empty()) {
-                    fairList->second.push_back(heyJson);
-                }
+//                if(!heyJson.empty()) {
+//                    fairList->second.push_back("machineIdentification");
+//                }
 			}
 
 			for (const auto& fairList : publishData) {
 				std::stringstream stream;
-				m_pPublisher->Publish("/umati/emo/machineList", fairList.second);
+				m_pPublisher->Publish("/umati/emo/machineList", fairList.second.dump(0));
 			}
 		}
 
@@ -153,7 +144,6 @@ namespace Umati {
                 browseContext.nodeClassMask = 0; // ALL
                 browseContext.resultMask = OpcUa_BrowseResultMask_All;
 
-                //m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
                 m_pDataClient->browseUnderStartNode(startFromMachineNodeId, machineComponentsReferenceDescriptions, browseContext);
 
 
@@ -218,9 +208,6 @@ namespace Umati {
 			}
 		}
 
-		/*
-		* searches for the node id i=6001 in the namespace of the machine
-		**/
 		bool DashboardMachineObserver::isOnline(ModelOpcUa::BrowseResult_t machine)
 		{
 		    // todo get the identification type here and browse all of its elements
@@ -238,55 +225,15 @@ namespace Umati {
                     std::string fair;
                     std::string manufacturer;
                     std::string machine_name;
-                    std::string heyJson = identificationValuesToJsonString(referenceDescriptions,
-                                                                           identificationListValues, fair, manufacturer,
-                                                                           machine_name);
-
 
                     bool online = true;
                     std::string payload = nlohmann::json(online).dump(2);
-                    m_pPublisher->Publish("/umati/emo/machineIsOnline", payload);
-                    m_pPublisher->Publish("/umati/emo/topic4", heyJson);
-
+                    //m_pPublisher->Publish("/umati/emo/machineIsOnline", payload); // todo to machine list
                 return true;
                 }
             }
 			return false;
 		}
-
-
-        std::string
-        DashboardMachineObserver::identificationValuesToJsonString(const UaReferenceDescriptions &referenceDescriptions,
-                                                                   const std::vector<nlohmann::json> &identificationListValues,
-                                                                   std::string &fair, std::string &manufacturer,
-                                                                   std::string &machine_name) const {
-            fair= "offsite";
-            std::stringstream jsonstream;
-            jsonstream << '{';
-            for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
-                ModelOpcUa::BrowseResult_t browseResult = m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
-                std::string s;
-                if (identificationListValues.at(i)["value"].is_string()) {
-                    s =  identificationListValues.at(i)["value"].get<std::string>();
-                }
-                if (identificationListValues.at(i)["value"].is_structured()){
-                    s =  identificationListValues.at(i)["value"]["text"].get<std::string>();
-                }
-                if (!s.empty()) {
-                    LOG(INFO) << browseResult.BrowseName.Name << ", " << s;
-                    jsonstream << '"' << browseResult.BrowseName.Name << '"'<<':'<<'"' << s << '"' << ','  ;
-                }
-                if(browseResult.BrowseName.Name == "Manufacturer") {
-                    manufacturer = s;
-                }
-                if(browseResult.BrowseName.Name == "Model") {
-                    machine_name = s;
-                }
-            }
-            jsonstream.seekp(-1,  std::ios_base::end);
-            jsonstream << "}";
-            return jsonstream.str();
-        }
 
         void DashboardMachineObserver::browseIdentificationValues(std::list<ModelOpcUa::BrowseResult_t> &identification,
                                                                   int namespaceIndex,

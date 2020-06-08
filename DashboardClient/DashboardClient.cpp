@@ -3,8 +3,6 @@
 #include <easylogging++.h>
 #include <Exceptions/OpcUaException.hpp>
 #include "Converter/ModelToJson.hpp"
-#include "Exceptions/UmatiException.hpp"
-#include "../../_install-Debug/include/easylogging++.h"
 
 
 namespace Umati {

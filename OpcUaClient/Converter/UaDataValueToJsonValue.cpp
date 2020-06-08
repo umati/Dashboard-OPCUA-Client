@@ -17,9 +17,6 @@ namespace Umati {
 
             void UaDataValueToJsonValue::setValueFromDataValue(const UaDataValue &dataValue) {
 
-                auto &jsonValue = m_value["value"];
-                jsonValue = nullptr;
-
                 auto variant = UaVariant(UaVariant::clone(*(dataValue.value())), OpcUa_True);
                 if (variant.type() == OpcUaType_Null) {
                     return;
@@ -29,18 +26,15 @@ namespace Umati {
                     LOG(ERROR) << "Only scalar values are supported.";
                 }
 
-                //auto &jsonValue = m_value["value"];
-                //jsonValue = nullptr;
-
                 switch (variant.type()) {
                     case OpcUaType_Null: {
-                        jsonValue = nullptr;
                         break;
                     }
 
                     case OpcUaType_Boolean: {
                         OpcUa_Boolean v;
                         variant.toBool(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = static_cast<bool>(v);
                         break;
                     }
@@ -48,6 +42,7 @@ namespace Umati {
                     case OpcUaType_SByte: {
                         OpcUa_SByte v;
                         variant.toSByte(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -55,6 +50,7 @@ namespace Umati {
                     case OpcUaType_Byte: {
                         OpcUa_Byte v;
                         variant.toByte(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -62,6 +58,7 @@ namespace Umati {
                     case OpcUaType_Int16: {
                         OpcUa_Int16 v;
                         variant.toInt16(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -69,6 +66,7 @@ namespace Umati {
                     case OpcUaType_UInt16: {
                         OpcUa_UInt16 v;
                         variant.toUInt16(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -76,6 +74,7 @@ namespace Umati {
                     case OpcUaType_Int32: {
                         OpcUa_Int32 v;
                         variant.toInt32(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -83,6 +82,7 @@ namespace Umati {
                     case OpcUaType_UInt32: {
                         OpcUa_UInt32 v;
                         variant.toUInt32(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -90,6 +90,7 @@ namespace Umati {
                     case OpcUaType_Int64: {
                         OpcUa_Int64 v;
                         variant.toInt64(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -97,6 +98,7 @@ namespace Umati {
                     case OpcUaType_UInt64: {
                         OpcUa_UInt64 v;
                         variant.toUInt64(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -104,6 +106,7 @@ namespace Umati {
                     case OpcUaType_Float: {
                         OpcUa_Float v;
                         variant.toFloat(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
@@ -111,11 +114,13 @@ namespace Umati {
                     case OpcUaType_Double: {
                         OpcUa_Double v;
                         variant.toDouble(v);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = v;
                         break;
                     }
 
                     case OpcUaType_String: {
+                        auto &jsonValue = m_value["value"];
                         jsonValue = variant.toString().toUtf8();
                         break;
                     }
@@ -123,6 +128,7 @@ namespace Umati {
                     case OpcUaType_DateTime: {
                         UaDateTime dateTime;
                         variant.toDateTime(dateTime);
+                        auto &jsonValue = m_value["value"];
                         jsonValue = dateTime.toString().toUtf8();
 
                         break;
@@ -166,16 +172,16 @@ namespace Umati {
                     case OpcUaType_LocalizedText: {
                         UaLocalizedText localText;
                         variant.toLocalizedText(localText);
-                        jsonValue = {};
-                        jsonValue["locale"] = UaString(localText.locale()).toUtf8();
-                        jsonValue["text"] = UaString(localText.text()).toUtf8();
+                        auto &jsonValue1 = m_value["locale"];
+                        auto &jsonValue2 = m_value["text"];
+                        jsonValue1 = UaString(localText.locale()).toUtf8();
+                        jsonValue2 = UaString(localText.text()).toUtf8();
                         break;
                     }
 
                     case OpcUaType_ExtensionObject: {
                         UaExtensionObject exObj;
                         variant.toExtensionObject(exObj);
-                        jsonValue = {};
 
                         if (exObj.dataTypeId().namespaceIndex() != 0) {
                             LOG(ERROR)
@@ -186,8 +192,10 @@ namespace Umati {
                         switch (exObj.dataTypeId().identifierNumeric()) {
                             case OpcUaId_Range: {
                                 UaRange range(exObj);
-                                jsonValue["low"] = range.getLow();
-                                jsonValue["high"] = range.getHigh();
+                                auto &jsonValue1 = m_value["low"];
+                                auto &jsonValue2 = m_value["high"];
+                                jsonValue1 = range.getLow();
+                                jsonValue2 = range.getHigh();
                                 break;
                             }
 
