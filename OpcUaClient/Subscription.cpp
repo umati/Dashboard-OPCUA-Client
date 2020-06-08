@@ -99,7 +99,7 @@ namespace Umati {
 					continue;
 				}
 
-				auto value = Converter::UaDataValueToJsonValue(UaDataValue(dataNotifications[i].Value)).getValue();
+				auto value = Converter::UaDataValueToJsonValue(UaDataValue(dataNotifications[i].Value), false).getValue();
 				it->second(value);
 			}
 		}

@@ -1,5 +1,3 @@
-/// \TODO Kopfkommentar
-
 #pragma once
 
 #include "ModelDefinition.hpp"

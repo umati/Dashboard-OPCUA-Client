@@ -4,7 +4,6 @@
 #include <list>
 #include <memory>
 #include <sstream>
-/// \todo split into two files, one for the type/ structure information, one for the instances
 
 namespace ModelOpcUa {
 

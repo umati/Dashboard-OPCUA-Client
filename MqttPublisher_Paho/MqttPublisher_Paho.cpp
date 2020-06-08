@@ -5,8 +5,8 @@
 namespace Umati {
 	namespace MqttPublisher_Paho {
 
-		MqttPublisher_Paho::MqttPublisher_Paho(std::string host, std::uint16_t port, std::string onlineTopic, std::string username, std::string password)
-			: m_cli(host, getClientId(), 100, nullptr), OnlineTopic(onlineTopic), m_callbacks(this)
+		MqttPublisher_Paho::MqttPublisher_Paho(std::string host, std::uint16_t port, std::string username, std::string password)
+			: m_cli(host, getClientId(), 100, nullptr), m_callbacks(this)
 		{
 			m_cli.set_callback(m_callbacks);
 			mqtt::connect_options opts_conn;
@@ -26,7 +26,7 @@ namespace Umati {
 			}
 			
 			mqtt::will_options opts_will;
-			opts_will.set_topic(onlineTopic);
+			opts_will.set_topic(OnlineTopic);
 			opts_will.set_payload(std::string("0"));
 			opts_will.set_retained(true);
 			
@@ -46,8 +46,6 @@ namespace Umati {
 		{
 			try {
 				m_cli.publish(channel, message, 0, true);
-				/*mqtt::topic top(m_cli, channel, 0, true);
-				top.publish(message);*/
 			}
 			catch (const mqtt::exception& ex)
 			{
@@ -60,7 +58,7 @@ namespace Umati {
 		std::string MqttPublisher_Paho::getClientId()
 		{
 			std::stringstream ss;
-			ss << "Dashboad Paho Client ";
+			ss << "Dashboard Paho Client ";
 
 			std::random_device rd;
 			std::mt19937 gen(rd());

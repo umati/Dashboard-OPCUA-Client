@@ -58,12 +58,12 @@ namespace Umati {
 
         void DashboardClient::Publish()
 		{
-			// todo only publish dataset when machine is online. Add like a bool that will be toggled
-			//  in the lamdba callback when new data is there
 			for (auto &pDataSetStorage : m_dataSets)
 			{
 			    std::string jsonPayload = getJson(pDataSetStorage);
-				m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
+			    if(!jsonPayload.empty() && jsonPayload != "null") {
+                    m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
+                }
 			}
 		}
 
@@ -76,7 +76,7 @@ namespace Umati {
 				{
 					return nullptr;
 				}
-				return it->second;
+                return it->second;
 			};
 
 			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback).getJson().dump(2);
@@ -88,13 +88,11 @@ namespace Umati {
 		)
 		{
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
-			for (auto & pChild : pTypeDefinition->SpecifiedChildNodes) //todo what is specifiedTypeNodes and what is specifiedTypeNodeId
+			for (auto & pChild : pTypeDefinition->SpecifiedChildNodes)
 			{
 				switch (pChild->ModellingRule)
 				{
-				case ModelOpcUa::ModellingRule_t::Optional: {
-				    continue;  // todo ! handle
-				}
+				case ModelOpcUa::ModellingRule_t::Optional:
 				case ModelOpcUa::ModellingRule_t::Mandatory:
 				{
                     bool should_break = OptionalAndMandatoryTransformToNodeId(startNode, foundChildNodes, pChild);
@@ -102,15 +100,16 @@ namespace Umati {
                         break;
                     }
 				}
-				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder: {
-				    continue; // todo ! handle
-				}
+				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
 				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
 				{
                     bool should_break = OptionalAndMandatoryPlaceholderTransformToNodeId(startNode, foundChildNodes, pChild);
                     if (should_break) {
                         break;
                     }
+				}
+				case ModelOpcUa::ModellingRule_t::None: {
+				    LOG(INFO) << "modelling rule is none";
 				}
 				default:
 					LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
@@ -133,32 +132,54 @@ namespace Umati {
 		bool DashboardClient::OptionalAndMandatoryTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                     std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
                                                                     const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
-            auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
-            if (childNodeId.isNull())
-            {
-                LOG(INFO) << "Could not find '"
-                          << static_cast<std::string>(startNode)
-                          << "'->'"
-                          << static_cast<std::string>(pChild->SpecifiedBrowseName)
-                          << "'";
+		    try{
+                auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
+                if (childNodeId.isNull())
+                {
+                    TransformToNodeIdNodeNotFoundLog(startNode, pChild);
+                    return false;
+                }
+                foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
+            }
+            catch(std::exception &ex){
+                TransformToNodeIdNodeNotFoundLog(startNode, pChild);
+                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
+                if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional) {
+                    throw ex;
+                }
                 return false;
             }
-            foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
-
             return true;
 		}
+
+        void DashboardClient::TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
+                                                               const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) const {
+            LOG(INFO) << "Could not find '"
+              << static_cast<std::string>(startNode)
+              << "'->'"
+              << static_cast<std::string>(pChild->SpecifiedBrowseName)
+              << "'";
+        }
 
         bool DashboardClient::OptionalAndMandatoryPlaceholderTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                                std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
                                                                                const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
-            auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::StructurePlaceholderNode>(pChild);
-            if (!pPlaceholderChild)
-            {
-                LOG(ERROR) << "Placeholder error, instance not a placeholder." << std::endl;
-                return true;
+		    try {
+                auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::StructurePlaceholderNode>(pChild);
+                if (!pPlaceholderChild) {
+                    LOG(ERROR) << "Placeholder error, instance not a placeholder." << std::endl;
+                    return true;
+                }
+                auto placeholderNode = BrowsePlaceholder(startNode, pPlaceholderChild);
+                foundChildNodes.push_back(placeholderNode);
             }
-            auto placeholderNode = BrowsePlaceholder(startNode, pPlaceholderChild);
-            foundChildNodes.push_back(placeholderNode);
+		    catch(std::exception &ex) {
+                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
+                if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::OptionalPlaceholder) {
+                    throw ex;
+                }
+                return false;
+		    }
             return true;
         }
 
@@ -303,6 +324,7 @@ namespace Umati {
             LOG(INFO) << "SubscribeValue " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
+                LOG(INFO) << "Callback" << value.dump(2);
                 valueMap[pNode] = value;
             };
             // subscribedValue's type is std::shared_ptr<IDashboardDataClient::ValueSubscriptionHandle>

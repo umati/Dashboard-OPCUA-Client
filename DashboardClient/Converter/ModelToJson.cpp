@@ -9,9 +9,8 @@ namespace Umati
 		{
 			ModelToJson::ModelToJson(
 				const std::shared_ptr<const ModelOpcUa::Node> pNode,
-				getValue_t getValue)
+				getValue_t getValue, bool serializeNodeInformation, bool nestAsChildren)
 			{
-				m_json["nodeClass"] = nodeClassToString(pNode->NodeClass);
 
 				switch (pNode->ModellingRule)
 				{
@@ -24,24 +23,36 @@ namespace Umati
 						LOG(ERROR) << "Simple node error, instance not a simple node." << std::endl;
 						break;
 					}
-					
-					m_json["nodeId"] = static_cast<std::string> (pSimpleNode->NodeId);
-					m_json["specifiedTypeNodeId"] = static_cast<std::string> (pSimpleNode->SpecifiedTypeNodeId);
+					if(serializeNodeInformation) {
+                        m_json["nodeId"] = static_cast<std::string> (pSimpleNode->NodeId);
+                        m_json["specifiedTypeNodeId"] = static_cast<std::string> (pSimpleNode->SpecifiedTypeNodeId);
+                    }
 
 					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
 					{
-						m_json["value"] = getValue(pNode);
+					    auto value = getValue(pNode);
+					    if(value.dump(0) != "null") {
+					        LOG(INFO) << "++++ " << value.dump(0);
+                            m_json["value"] = value;
+                        }
 					}
 
 					nlohmann::json children;
 
 					for (const auto &pChild : pSimpleNode->ChildNodes)
 					{
-						children[pChild->SpecifiedBrowseName.Name] = (ModelToJson(pChild, getValue).getJson());
+					    auto json = (ModelToJson(pChild, getValue, false).getJson());
+                        if (json.dump(0) != "null"){
+                            children[pChild->SpecifiedBrowseName.Name] = json;
+                        }
 					}
 					if (!children.empty())
 					{
-						m_json["children"] = children;
+					    if(nestAsChildren) {
+					        m_json["children"] = children;
+					    } else {
+                            m_json = children;
+                        }
 					}
 					
 					break;
@@ -62,19 +73,24 @@ namespace Umati
 
 					for (const auto &pPlaceholderElement : placeholderElements)
 					{
-						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue).getJson());
+						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue, false).getJson());
 					}
-					m_json["placeholderElements"] = placeholderJsonElements;
-					break;
-				}
-                    case ModelOpcUa::ModellingRule_t::None: {
-                        break;
+					if (serializeNodeInformation) {
+                        m_json["placeholderElements"] = placeholderJsonElements;
                     }
-				default:
-					LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
 					break;
 				}
-			}
+				case ModelOpcUa::ModellingRule_t::None: {
+
+				}
+                    default:
+					LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
+					return;
+				}
+				if (serializeNodeInformation) {
+                    m_json["nodeClass"] = nodeClassToString(pNode->NodeClass);
+                }
+            }
 
 			std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass)
 			{
@@ -82,13 +98,11 @@ namespace Umati
 				{
 				case ModelOpcUa::Object:
 					return "Object";
-					break;
 				case ModelOpcUa::Variable:
 					return "Variable";
-					break;
 				default:
+				    LOG(INFO) << "ModelToJson does not handle " << nodeClass;
 					return "Unknown";
-					break;
 				}
 			}
 		}

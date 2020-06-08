@@ -7,8 +7,7 @@ find_package(UaSdkCpp REQUIRED)
 set(CLIENT_SRC
 	"MachineObserver.cpp"
 	"DashboardMachineObserver.cpp"
-	"PublishTopicFactory.cpp"
-	"MachineCacheJsonFile.cpp"
+        "MachineCacheJsonFile.cpp"
 	"IMachineCache.cpp"
 )
 message("### opcua_dashboardclient/MachineObserver: collecting source file list for library: ${CLIENT_SRC}")

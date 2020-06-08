@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MachineObserver.hpp"
-#include "PublishTopicFactory.hpp"
 #include <DashboardClient.hpp>
 #include <atomic>
 #include <thread>
@@ -17,9 +16,6 @@ namespace Umati {
 		class DashboardMachineObserver : public MachineObserver {
 		public:
 			const int PublishMachinesListResetValue = 30; // in seconds
-			const std::string MachinesListTopic1 = std::string("/umati/");
-			const std::string MachinesListTopic2 = std::string("/config/machines/list");
-
 
 			DashboardMachineObserver(
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
@@ -50,7 +46,6 @@ namespace Umati {
 				std::string DisplayName;
 				std::string DisplayManufacturer;
 				std::string NamespaceURI;
-				std::string TopicPrefix;
 				std::string LocationPlant;
 				std::string LocationMachine;
 
@@ -60,15 +55,12 @@ namespace Umati {
 					ret["DisplayName"] = DisplayName;
 					ret["DisplayManufacturer"] = DisplayManufacturer;
 					ret["NamespaceURI"] = NamespaceURI;
-					ret["TopicPrefix"] = TopicPrefix;
 					ret["LocationPlant"] = LocationPlant;
 					ret["LocationMachine"] = LocationMachine;
 
 					return ret;
 				}
 			};
-
-			void updateMachinesMachineData(MachineInformation_t &machineInfo);
 
 			std::string  getValueFromValuesList(std::vector<nlohmann::json, std::allocator<nlohmann::json>>& valuesList, std::string valueName, int valueIndex, ModelOpcUa::NodeId_t startNodeId);
 			int m_publishMachinesOnline = 0;
@@ -82,7 +74,6 @@ namespace Umati {
 			std::map<ModelOpcUa::NodeId_t, std::shared_ptr<Umati::Dashboard::DashboardClient>> m_dashboardClients;
 			std::map < ModelOpcUa::NodeId_t, MachineInformation_t> m_onlineMachines;
 
-			PublishTopicFactory m_pubTopicFactory;
 
             void browseIdentificationValues(std::list<ModelOpcUa::BrowseResult_t> &identification, int namespaceIndex,
                                             UaReferenceDescriptions &referenceDescriptions,
@@ -92,8 +83,6 @@ namespace Umati {
                                                          const std::vector<nlohmann::json> &identificationListValues,
                                                          std::string &fair, std::string &manufacturer,
                                                          std::string &machine_name) const;
-
-            std::string getMachineIsOnlineTopic(const std::string &fair, std::string &manufacturer, std::string &machine_name) const;
-        };
+		};
 	}
 }

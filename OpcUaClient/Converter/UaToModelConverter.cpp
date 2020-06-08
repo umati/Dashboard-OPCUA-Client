@@ -23,7 +23,6 @@ namespace Umati {
 				auto it = m_idToUri.find(nsIndex);
 				if (it == m_idToUri.end())
 				{
-					/// \todo errror handling
 					LOG(ERROR) << "Could not find nsIndex: " << nsIndex << std::endl;
 					return std::string();
 				}

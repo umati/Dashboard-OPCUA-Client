@@ -9,6 +9,5 @@ TEST(MachineCache, ReadFile)
 
 	auto pEntry = machCache.GetEntry("http://umati.info");
 	ASSERT_NE(pEntry, nullptr);
-	EXPECT_EQ(pEntry->TopicPrefix, "UmatiTopic");
 
 }

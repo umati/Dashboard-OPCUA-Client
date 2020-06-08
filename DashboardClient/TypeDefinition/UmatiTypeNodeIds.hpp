@@ -8,15 +8,9 @@ namespace Umati
 	{
 		namespace TypeDefinition
 		{
-
-            /**
-            * Defines the types in the umati namespace, also see the opcua_dashboardclient/Tools/umati.xml
-            */
 			namespace NodeIds
 			{
-
-				const ModelOpcUa::NodeId_t MachineToolIdentificationType {"http://opcfoundation.org/UA/MachineTool/", "i=1012" }; // todo read dynamically from typemap + namespace list
-
+				const ModelOpcUa::NodeId_t MachineToolIdentificationType {"http://opcfoundation.org/UA/MachineTool/", "i=1012" };
 			}
 		}
 	}

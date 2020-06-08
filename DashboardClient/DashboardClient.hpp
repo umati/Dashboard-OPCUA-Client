@@ -102,6 +102,9 @@ namespace Umati {
             bool OptionalAndMandatoryPlaceholderTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                   std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
                                                                   const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild);
+
+            void TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
+                                                  const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) const;
         };
 	}
 }

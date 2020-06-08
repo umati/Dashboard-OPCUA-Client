@@ -20,7 +20,6 @@ namespace Umati {
 			MqttPublisher_Paho(
 				std::string host,
 				std::uint16_t port,
-				std::string onlineTopic,
 				std::string username = std::string(),
 				std::string password = std::string()
 			);
@@ -29,7 +28,7 @@ namespace Umati {
 			// Inherit from IPublisher
 			void Publish(std::string channel, std::string message) override;
 
-			const std::string OnlineTopic;
+			const std::string OnlineTopic = "/umati/emo/topic0";
 
 		private:
 

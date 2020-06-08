@@ -10,7 +10,6 @@ namespace Umati {
 		public:
 
 			const std::string JsonKey_Uri = std::string("Uri");
-			const std::string JsonKey_TopicPrefix = std::string("TopicPrefix");
 
 			MachineCacheJsonFile(std::string cacheFilename, bool autosave=true);
 

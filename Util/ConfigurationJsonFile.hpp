@@ -33,7 +33,6 @@ namespace Umati
 			const std::string JsonKey_Mqtt_Port = std::string("Port");
 			const std::string JsonKey_Mqtt_Username = std::string("Username");
 			const std::string JsonKey_Mqtt_Password = std::string("Password");
-			const std::string JsonKey_Mqtt_TopicPrefix = std::string("TopicPrefix");
 
 		protected:
 			nlohmann::json getValueOrException(nlohmann::json json, std::string key);

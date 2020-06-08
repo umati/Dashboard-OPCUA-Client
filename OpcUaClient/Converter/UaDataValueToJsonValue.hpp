@@ -12,7 +12,7 @@ namespace Umati
 			class UaDataValueToJsonValue
 			{
 			public:
-				UaDataValueToJsonValue(const UaDataValue &dataValue);
+				UaDataValueToJsonValue(const UaDataValue &dataValue, bool serializeStatusInformation = false);
 
 				nlohmann::json getValue() {
 					return m_value;

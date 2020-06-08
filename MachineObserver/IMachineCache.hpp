@@ -12,7 +12,6 @@ namespace Umati {
 
 			struct MachineCacheEntry_t {
 				std::string NamespaceUri;
-				std::string TopicPrefix;
 			};
 
 			virtual std::shared_ptr<MachineCacheEntry_t> GetEntry(std::string NamespaceURI) = 0;

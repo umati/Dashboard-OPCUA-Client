@@ -94,16 +94,6 @@ namespace Umati {
 				}
 				entry.NamespaceUri = jsonNamespaceUri.get<std::string>();
 
-				auto jsonTopicPrefix = getValueOrException(el, JsonKey_TopicPrefix);
-				if (!jsonTopicPrefix.is_string())
-				{
-					std::stringstream ss;
-					ss << "Key '" << JsonKey_Uri << "' is not of type " << "string" << "in " << el << std::endl;
-					LOG(ERROR) << ss.str();
-					throw Util::Exception::ConfigurationException(ss.str().c_str());
-				}
-				entry.TopicPrefix = jsonTopicPrefix.get<std::string>();
-
 				m_cache.insert(std::make_pair(entry.NamespaceUri, entry));
 			}
 		}
@@ -117,7 +107,6 @@ namespace Umati {
 			{
 				nlohmann::json entryJson;
 				entryJson[JsonKey_Uri] = entry.second.NamespaceUri;
-				entryJson[JsonKey_TopicPrefix] = entry.second.TopicPrefix;
 
 				cacheJson.push_back(entryJson);
 			}

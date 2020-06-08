@@ -1,21 +1,11 @@
 #include "OpcUaClient/OpcUaClient.hpp"
 #include <DashboardClient.hpp>
-
-
-
-#if defined(PUBLISHER_MQTT_PAHO)
 #include <MqttPublisher_Paho.hpp>
-#endif
-
-
 #include <signal.h>
-
 #include <easylogging++.h>
-
 #include <thread>
 #include <chrono>
 #include <atomic>
-
 #include <ConfigureLogger.hpp>
 #include <ConfigurationJsonFile.hpp>
 #include <Exceptions/ConfigurationException.hpp>
@@ -74,26 +64,11 @@ int main(int argc, char* argv[])
 		opcUaWrapper
 		);
 
-	std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher;
-
-#if defined(PUBLISHER_MQTT_MOSQUITTO)
-	pPublisher = std::make_shared <Umati::MqttPublisher::MqttPublisher>(
+	auto pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
 		config->Mqtt().Hostname,
 		config->Mqtt().Port,
-		pubTopics.ClientOnline,
 		config->Mqtt().Username,
 		config->Mqtt().Password);
-
-#elif defined(PUBLISHER_MQTT_PAHO)
-	pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
-		config->Mqtt().Hostname,
-		config->Mqtt().Port,
-		"/umati/emo/ISW/ExampleMachine/Dashboard_Client_online",
-		config->Mqtt().Username,
-		config->Mqtt().Password);
-#else
-#error "No publisher defined"
-#endif
 
 	Umati::MachineObserver::DashboardMachineObserver dashboardMachineObserv(
 		pClient,
@@ -106,7 +81,7 @@ int main(int argc, char* argv[])
 		++i;
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		if ((i % 10) == 0)
+		if ((i % 50) == 0)
 		{
 			dashboardMachineObserv.PublishAll();
 		}

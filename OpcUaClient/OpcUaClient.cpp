@@ -297,12 +297,21 @@ namespace Umati {
             }
 
 
-                std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
-                UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
-                auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
-                UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode,
-                                                                          m_uriToIndexCache).getNodeId();
-                browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, nullptr); // todo uncomment
+            std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
+            UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
+            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}; // todo back to http://opcfoundation.org/UA/; i=58
+            // auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
+
+            const ModelOpcUa::BrowseResult_t browseResult{
+                ModelOpcUa::NodeClass_t::ObjectType,
+                basicObjectTypeNode,
+                ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}, //TypeDefinition;
+                ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}, //ReferenceTypeId;
+                ModelOpcUa::QualifiedName_t{"http://opcfoundation.org/UA/MachineTool/","MachineToolType"} // BrowseName
+            };
+            auto startType = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
+            browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, startType);
 
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
@@ -356,7 +365,7 @@ namespace Umati {
                 UaNodeId nextUaNodeId = Converter::ModelNodeIdToUaNodeId(browseResult.NodeId, m_uriToIndexCache).getNodeId();
                 ModelOpcUa::ModellingRule_t modellingRule = browseModellingRule(nextUaNodeId);
                 // LOG(INFO) << "currently at " << startUaNodeId.toFullString().toUtf8();
-                auto current = handleBrowseTypeResult(bidirectionalTypeMap, startUaNodeId, referenceDescriptions, i, browseResult, parent, modellingRule);
+                auto current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule);
                 browseTypes(bidirectionalTypeMap, browseContext, nextUaNodeId, current);
             }
         }
@@ -368,7 +377,7 @@ namespace Umati {
             /// begin browse modelling rule
             UaClientSdk::BrowseContext browseContext2 = prepareObjectTypeContext();
             browseContext2.referenceTypeId = UaNodeId(OpcUaId_HasModellingRule);
-            ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::None;
+            ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Optional;
 
             auto uaResult2 = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, uaNodeId,
                                                            browseContext2,
@@ -394,9 +403,6 @@ namespace Umati {
 		}
 
         std::shared_ptr<ModelOpcUa::StructureBiNode> OpcUaClient::handleBrowseTypeResult(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap,
-                                            const UaNodeId &startUaNodeId,
-                                            const UaReferenceDescriptions &referenceDescriptions,
-                                            OpcUa_UInt32 i,
                                             const ModelOpcUa::BrowseResult_t &entry,
                                             const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule) {
             UaNodeId currentUaNodeId = Converter::ModelNodeIdToUaNodeId(entry.NodeId, m_uriToIndexCache).getNodeId();
@@ -738,7 +744,7 @@ namespace Umati {
 			for (uint i = 0; i < readValues.length(); ++i)
 			{
 				auto value = readValues[i];
-				auto valu = Converter::UaDataValueToJsonValue(value);
+				auto valu = Converter::UaDataValueToJsonValue(value, false);
 				auto val = valu.getValue();
 				ret.push_back(val);
 			}

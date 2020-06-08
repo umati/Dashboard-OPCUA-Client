@@ -150,7 +150,6 @@ namespace ModelOpcUa {
     std::shared_ptr<StructureNode> StructureBiNode::toStructureNode() {
 
         if(this->SpecifiedBiChildNodes.size() > 0) {
-            // todo transform BiChild to child;
             for(auto childIterator = this->SpecifiedBiChildNodes.begin(); childIterator != this->SpecifiedBiChildNodes.end(); childIterator++) {
                 auto innerChild = childIterator.operator*();
                 std::shared_ptr<StructureNode> innerChildStructureNode = innerChild->toStructureNode();

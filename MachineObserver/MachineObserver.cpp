@@ -4,7 +4,6 @@
 
 #include "Exceptions/MachineInvalidException.hpp"
 #include "Exceptions/MachineOfflineException.hpp"
-#include "Exceptions/NoPublishTopicSet.hpp"
 #include <Exceptions/OpcUaException.hpp>
 #include <Exceptions/ClientNotConnected.hpp>
 
@@ -208,11 +207,6 @@ namespace Umati {
 			{
 				LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.second.NodeId);
 				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterOffline));
-			}
-			catch (const Exceptions::NoPublishTopicSet&)
-			{
-				LOG(INFO) << "PublishTopic not set: " << static_cast<std::string>(newMachine.second.NodeId);
-				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
 			}
 		}
     }
