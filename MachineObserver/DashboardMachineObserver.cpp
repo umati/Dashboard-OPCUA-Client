@@ -9,7 +9,7 @@
 #include "Exceptions/MachineInvalidException.hpp"
 
 #include <Exceptions/OpcUaException.hpp>
-#include <TypeDefinition/UmatiTypeDefinition.hpp>
+#include <TypeDefinition/UmatiTypeNodeIds.hpp>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -96,7 +96,7 @@ namespace Umati {
 
                 ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
                 int namespaceIndex = 5;// todo ! change
-                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first, ModelOpcUa::NodeId_t{"", OpcUaId_HasComponent});
+                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first, ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)});
                 if(!identification.empty()) {
 
                     UaReferenceDescriptions referenceDescriptions;
@@ -227,10 +227,10 @@ namespace Umati {
 		bool DashboardMachineObserver::isOnline(ModelOpcUa::BrowseResult_t machine)
 		{
 		    // todo get the identification type here and browse all of its elements
-            ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType; // todo ! change
+            ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
             std::vector<ModelOpcUa::QualifiedName_t> identifierIds;
 
-            std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machine.NodeId, ModelOpcUa::NodeId_t{"", OpcUaId_HasComponent} ,type);
+            std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machine.NodeId, ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)} ,type);
             int namespaceIndex = 5;// todo ! change
             if(!identification.empty()) {
 
