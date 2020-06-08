@@ -28,7 +28,7 @@ namespace Umati {
 			// Inherit from IPublisher
 			void Publish(std::string channel, std::string message) override;
 
-			const std::string OnlineTopic = "/umati/emo/topic0";
+			const std::string OnlineTopic = "/umati/emo/opcToMqttOnline";
 
 		private:
 

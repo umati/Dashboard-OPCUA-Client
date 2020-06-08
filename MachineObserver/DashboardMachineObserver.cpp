@@ -96,14 +96,14 @@ namespace Umati {
 
                 ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
                 int namespaceIndex = 5;// todo ! change
-                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first, ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)});
+                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineOnline.first, ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)}, type);
                 if(!identification.empty()) {
 
                     UaReferenceDescriptions referenceDescriptions;
                     std::vector<nlohmann::json> identificationListValues;
                     browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
                     if(!identificationListValues.empty()) {
-                        //heyJson = identificationValuesToJsonString(referenceDescriptions, identificationListValues, fair,manufacturer,machine_name);
+                        heyJson = identificationValuesToJsonString(referenceDescriptions, identificationListValues, fair,manufacturer,machine_name);
                     }
                 }
 
@@ -121,13 +121,10 @@ namespace Umati {
 
 			for (const auto& fairList : publishData) {
 				std::stringstream stream;
-				m_pPublisher->Publish("/umati/emo/topic1", fairList.second.dump(2));
+				m_pPublisher->Publish("/umati/emo/machineList", fairList.second);
 			}
 		}
 
-		/**
-		* looks for the node 5005 (list of stacklights) 5024 (Tools), 5007 (StateMOde) and more
-		*/
 		void DashboardMachineObserver::addMachine(ModelOpcUa::BrowseResult_t machine)
 		{
 			try {
@@ -168,7 +165,7 @@ namespace Umati {
                 pDashClient->addDataSet(
                         {nsUri, machine.NodeId.Id},
                         p_type,
-                        "/umati/emo/topic2"
+                        "/umati/emo/dataSetOfMachineTopic"
                 );
 
 
@@ -248,7 +245,7 @@ namespace Umati {
 
                     bool online = true;
                     std::string payload = nlohmann::json(online).dump(2);
-                    m_pPublisher->Publish("/umati/emo/machineList", payload);
+                    m_pPublisher->Publish("/umati/emo/machineIsOnline", payload);
                     m_pPublisher->Publish("/umati/emo/topic4", heyJson);
 
                 return true;

@@ -1,5 +1,4 @@
 #include "MachineObserver.hpp"
-#include <TypeDefinition/UmatiTypeDefinition.hpp>
 #include <easylogging++.h>
 
 #include "Exceptions/MachineInvalidException.hpp"
