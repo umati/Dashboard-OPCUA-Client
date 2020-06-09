@@ -19,7 +19,7 @@ namespace Umati
 				};
 			protected:
 
-				void setValueFromDataValue(const UaDataValue &dataValue);
+				void setValueFromDataValue(const UaDataValue &dataValue, bool serializeStatusInformation = false);
 				void setStatusCodeFromDataValue(const UaDataValue &dataValue);
 
 				nlohmann::json m_value;
