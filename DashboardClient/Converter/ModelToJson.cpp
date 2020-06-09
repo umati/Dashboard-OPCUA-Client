@@ -31,14 +31,14 @@ namespace Umati
 					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
 					{
 					    auto value = getValue(pNode);
-					    if(value.dump(0) != "null") {
+					    //if(value.dump(0) != "null") {
 					        LOG(INFO) << "++++ " << value.dump(0); // todo ! remove me
                             if(nestAsChildren) {
                                 m_json["value"] = value;
                             } else {
                                 m_json = value;
                             }
-                        }
+                        //}
 					}
 
 					nlohmann::json children;

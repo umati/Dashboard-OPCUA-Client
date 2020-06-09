@@ -1,6 +1,5 @@
 #include "DashboardMachineObserver.hpp"
 #include <easylogging++.h>
-#include "MachineCacheJsonFile.hpp"
 #include "Exceptions/MachineInvalidException.hpp"
 #include <Exceptions/OpcUaException.hpp>
 #include <TypeDefinition/UmatiTypeNodeIds.hpp>
@@ -80,7 +79,6 @@ namespace Umati {
 			std::map<std::string, nlohmann::json> publishData;
 			for (auto &machineOnline : m_onlineMachines)
 			{
-
 				std::string fair = "offsite";
                 std::string manufacturer;
                 std::string machine_name;
@@ -95,7 +93,7 @@ namespace Umati {
                     UaReferenceDescriptions referenceDescriptions;
                     std::vector<nlohmann::json> identificationListValues;
                     browseIdentificationValues(identification, namespaceIndex, referenceDescriptions, identificationListValues);
-                    // todo make more generic
+                    // todo ! make more generic
                 }
 
 				auto findFairListIterator = publishData.find(fair);
