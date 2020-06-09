@@ -299,16 +299,16 @@ namespace Umati {
 
             std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
             UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
-            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}; // todo back to http://opcfoundation.org/UA/; i=58
-            // auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+            //auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}; // todo back to http://opcfoundation.org/UA/; i=58
+            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
             UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
 
             const ModelOpcUa::BrowseResult_t browseResult{
                 ModelOpcUa::NodeClass_t::ObjectType,
                 basicObjectTypeNode,
-                ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}, //TypeDefinition;
-                ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}, //ReferenceTypeId;
-                ModelOpcUa::QualifiedName_t{"http://opcfoundation.org/UA/MachineTool/","MachineToolType"} // BrowseName
+                ModelOpcUa::NodeId_t{"",""}, //TypeDefinition;
+                ModelOpcUa::NodeId_t{"",""}, //ReferenceTypeId;
+                ModelOpcUa::QualifiedName_t{basicObjectTypeNode.Uri,""} // BrowseName
             };
             auto startType = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
             browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, startType);
@@ -331,7 +331,23 @@ namespace Umati {
                                                    const std::string &namespaceURI, std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap) {
             auto it = find (notFoundObjectTypeNamespaces.begin(), notFoundObjectTypeNamespaces.end(), namespaceURI);
             if (it != notFoundObjectTypeNamespaces.end()) {
-                m_availableObjectTypeNamespaces[static_cast<uint16_t>(i)] = namespaceURI;
+                NamespaceInformation_t information;
+
+                std::vector<std::string> resultContainer;
+                split(namespaceURI, resultContainer, '/');
+
+                information.Namespace = resultContainer.back();
+                information.NamespaceUri = namespaceURI;
+
+                std::stringstream typeName;
+                std::stringstream identificationTypeName;
+                typeName << information.Namespace << "Type";
+                identificationTypeName << information.Namespace << "IdentificationType";
+
+                information.NamespaceType = typeName.str();
+                information.NamespaceIdentificationType = identificationTypeName.str();
+
+                m_availableObjectTypeNamespaces[static_cast<uint16_t>(i)] = information;
                 notFoundObjectTypeNamespaces.erase(it);// todo or does it need to be it++?
                 LOG(INFO) << "Expected object type namespace " << namespaceURI << " found at index " << std::to_string(i);
                 createTypeMap(bidirectionalTypeMap, m_typeMap, i);
@@ -852,6 +868,26 @@ namespace Umati {
                 LOG(INFO) << std::endl << bloodlineStringStream.str() << ModelOpcUa::StructureNode::printType(shared, "");
                 std::pair <std::string, ModelOpcUa::StructureNode> newType(typeName, node);
                 typeMap->insert(newType);
+            }
+        }
+
+        void OpcUaClient::split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter)
+        {
+            std::size_t current_char_position, previous_char_position = 0;
+            current_char_position = inputString.find(delimiter);
+            while (current_char_position != std::string::npos) {
+                updateResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
+                previous_char_position = current_char_position + 1;
+                current_char_position = inputString.find(delimiter, previous_char_position);
+            }
+            updateResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
+        }
+
+        void
+        OpcUaClient::updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer, size_t current_char_position, size_t previous_char_position) const {
+            std::string substr = inputString.substr(previous_char_position, current_char_position - previous_char_position);
+            if(!substr.empty()){
+                resultContainer.push_back(substr);
             }
         }
     }

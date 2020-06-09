@@ -145,10 +145,8 @@ namespace Umati {
 				// Machine known
 				try {
 					// Check if machine is still online. If so, remove it from the removed machines. If it is not on there, it must be a new machine
-
-					// todo ! create namespaceToIdentificationType method
-                    ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
-                    if (isOnline(machineTool, type))
+                    nlohmann::json identificationAsJson;
+                    if (isOnline(machineTool.NodeId, identificationAsJson))
 					{
 						if (it != toBeRemovedMachines.end())
 						{

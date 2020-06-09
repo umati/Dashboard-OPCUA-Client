@@ -128,6 +128,11 @@ namespace Umati {
             void createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::shared_ptr<std::map<std::string, ModelOpcUa::StructureNode>> sharedPtr, uint16_t namespaceIndex);
 
             ModelOpcUa::ModellingRule_t browseModellingRule(UaNodeId uaNodeId);
+
+            void split(const std::string &inputString, std::vector<std::string> &resultContainer, char delimiter);
+
+            void updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer,
+                                       size_t current_char_position, size_t previous_char_position) const;
         };
 	}
 }

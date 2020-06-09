@@ -45,7 +45,7 @@ namespace Umati {
 
             mqtt::async_client m_cli;
             MqttCallbacks m_callbacks;
-            const std::string m_onlineTopic = "/umati/emo/opcToMqttOnline";
+            const std::string m_onlineTopic = "/umati/opcToMqttOnline";
         };
 	}
 }

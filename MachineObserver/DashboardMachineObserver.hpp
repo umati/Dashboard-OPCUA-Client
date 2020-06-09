@@ -5,6 +5,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <zconf.h>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -29,18 +30,17 @@ namespace Umati {
 
 			void publishMachinesList();
 
-
 			// Inherit from MachineObserver
 			void addMachine(ModelOpcUa::BrowseResult_t machine) override;
 			void removeMachine(ModelOpcUa::BrowseResult_t machine) override;
-			bool isOnline(const ModelOpcUa::BrowseResult_t& machine, const ModelOpcUa::NodeId_t& type) override;
+			bool isOnline(const ModelOpcUa::NodeId_t& machineNodeId, nlohmann::json &identificationAsJson) override;
 
 			struct MachineInformation_t
 			{
 				ModelOpcUa::NodeId_t StartNodeId;
 				std::string NamespaceURI;
 				std::string Fair;
-                nlohmann::json IdentificationJson;
+				std::string MachineName;
 			};
 
 			int m_publishMachinesOnline = 0;
@@ -53,11 +53,15 @@ namespace Umati {
 			std::mutex m_dashboardClients_mutex;
 			std::map<ModelOpcUa::NodeId_t, std::shared_ptr<Umati::Dashboard::DashboardClient>> m_dashboardClients;
 			std::map <ModelOpcUa::NodeId_t, MachineInformation_t> m_onlineMachines;
+			std::map <ModelOpcUa::NodeId_t, std::string> m_machineNames;
 
+            void browseIdentificationValues( ModelOpcUa::NodeId_t machineNodeId, std::list<ModelOpcUa::BrowseResult_t> &identification,
+                                            UaReferenceDescriptions &referenceDescriptions, nlohmann::json &identificationAsJson) const;
 
-            void browseIdentificationValues(std::list<ModelOpcUa::BrowseResult_t> &identification, int namespaceIndex,
-                                            UaReferenceDescriptions &referenceDescriptions,
-                                            std::vector<nlohmann::json> &identificationListValues) const;
-		};
+            std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(ModelOpcUa::NodeId_t  nodeId) const;
+            std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const;
+
+            uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) const;
+        };
 	}
 }

@@ -43,7 +43,7 @@ namespace Umati
 					for (const auto &pChild : pSimpleNode->ChildNodes)
 					{
 					    auto json = (ModelToJson(pChild, getValue).getJson());
-                        if (publishNullValues && json.dump(0) != "null"){
+                        if (publishNullValues || json.dump(0) != "null"){
                             children[pChild->SpecifiedBrowseName.Name] = json;
                         }
 					}
