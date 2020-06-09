@@ -36,7 +36,6 @@ namespace Umati {
 				std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
 				std::string channel);
 
-			/// \TODO rename
 			void Publish();
 
 

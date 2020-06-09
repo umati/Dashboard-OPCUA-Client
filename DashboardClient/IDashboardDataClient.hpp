@@ -31,7 +31,7 @@ namespace Umati {
 				ModelOpcUa::QualifiedName_t browseName
 			) = 0;
             std::shared_ptr<std::map <std::string, ModelOpcUa::StructureNode>> m_typeMap = std::make_shared<std::map <std::string,ModelOpcUa::StructureNode>>();
-            std::shared_ptr<std::map <ModelOpcUa::QualifiedName_t, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map <ModelOpcUa::QualifiedName_t, ModelOpcUa::NodeId_t>>();
+            std::shared_ptr<std::map <std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map <std::string, ModelOpcUa::NodeId_t>>();
 
             struct NamespaceInformation_t
             {

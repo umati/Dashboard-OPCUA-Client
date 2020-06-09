@@ -21,7 +21,6 @@ namespace Umati {
 				auto it = m_uriToID.find(uri);
 				if (it == m_uriToID.end())
 				{
-					/// \todo errror handling
 					LOG(ERROR) << "Could not find uri: " << uri << std::endl;
 					return 0;
 				}

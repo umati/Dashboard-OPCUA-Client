@@ -14,8 +14,8 @@ namespace Umati {
 	     */
 		class ValueSubscriptionHandle : public Dashboard::IDashboardDataClient::ValueSubscriptionHandle {
 		public:
-			/// \todo reduce to one parameter
-			ValueSubscriptionHandle(Subscription *pSubscription, OpcUa_UInt32 monItemId, OpcUa_UInt32 clientHandle)
+
+ 			ValueSubscriptionHandle(Subscription *pSubscription, OpcUa_UInt32 monItemId, OpcUa_UInt32 clientHandle)
 			: m_monitoredItemId(monItemId), m_clientHandle(clientHandle), m_pClientSubscription(pSubscription)
 			{
 

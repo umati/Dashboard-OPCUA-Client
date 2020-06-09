@@ -146,7 +146,7 @@ namespace Umati {
 			UaDataValues readResult;
 
 			UaDiagnosticInfos diagInfo;
-// todo this is failing
+
 			auto uaResult = m_opcUaWrapper->SessionRead(
 				m_defaultServiceSettings,
 				100.0,
@@ -434,6 +434,8 @@ namespace Umati {
                     current->isType = true;
                     std::pair <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>> newType(typeName, current);
                     bidirectionalTypeMap->insert(newType);
+                    std::pair <std::string, ModelOpcUa::NodeId_t> newNameMapping(typeName, entry.NodeId);
+                    m_nameToId->insert(newNameMapping);
                     if((bidirectionalTypeMap->size()%50) == 0){
                         LOG(INFO) << "Current size BiDirectionalTypeMap: " << bidirectionalTypeMap->size();
                     }

@@ -199,26 +199,22 @@ namespace Umati {
         DashboardMachineObserver::isOnline(const ModelOpcUa::NodeId_t &machineNodeId, nlohmann::json &identificationAsJson) {
 
             std::shared_ptr<ModelOpcUa::StructureNode> p_type = getIdentificationTypeOfNamespace(machineNodeId);
-            ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
-            std::string typeName = machineNodeId.Uri;
 
-            std::stringstream identificationTypeName;
-            identificationTypeName << "MachineTool" << "IdentificationType";
-            auto typePair = m_pDataClient->m_typeMap->find(identificationTypeName.str());
+            auto typeIt = m_pDataClient->m_nameToId->find(p_type->SpecifiedBrowseName.Name);
 
+            if (typeIt != m_pDataClient->m_nameToId->end()) {
+                ModelOpcUa::NodeId_t type = typeIt->second;
+                auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
 
-            auto hasComponents = ModelOpcUa::NodeId_t{"",std::to_string(OpcUaId_HasComponent)};
-            //auto childNodeId = m_pDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
-
-            std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId, hasComponents, type);
-            if (!identification.empty()) {
-                UaReferenceDescriptions referenceDescriptions;
-                browseIdentificationValues(machineNodeId,identification, referenceDescriptions, identificationAsJson);
-                if (!identificationAsJson.empty()) {
-                    return true;
+                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId,hasComponents, type);
+                if (!identification.empty()) {
+                    UaReferenceDescriptions referenceDescriptions;
+                    browseIdentificationValues(machineNodeId, identification, referenceDescriptions,identificationAsJson);
+                    if (!identificationAsJson.empty()) {
+                        return true;
+                    }
                 }
             }
-
             return false;
         }
 

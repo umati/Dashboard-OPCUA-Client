@@ -117,7 +117,7 @@ namespace Umati {
 
 			auto pNode = std::make_shared<ModelOpcUa::SimpleNode>(
 				startNode,
-				pTypeDefinition->SpecifiedTypeNodeId, /// <\TODO set
+				pTypeDefinition->SpecifiedTypeNodeId,
 				*pTypeDefinition,
 				foundChildNodes
 				);
