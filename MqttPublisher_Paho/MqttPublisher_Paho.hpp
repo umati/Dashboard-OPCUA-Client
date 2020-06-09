@@ -18,21 +18,20 @@ namespace Umati {
 		{
 		public:
 			MqttPublisher_Paho(
-				std::string host,
+				const std::string& host,
 				std::uint16_t port,
-				std::string username = std::string(),
-				std::string password = std::string()
+				const std::string& username = std::string(),
+				const std::string& password = std::string()
 			);
 			virtual ~MqttPublisher_Paho();
 
 			// Inherit from IPublisher
 			void Publish(std::string channel, std::string message) override;
 
-			const std::string OnlineTopic = "/umati/emo/opcToMqttOnline";
-
 		private:
-
-			static static static std::string getClientId();
+			static std::string getClientId();
+            mqtt::will_options getLastWill() const;
+            static mqtt::connect_options getOptions(const std::string &username, const std::string &password);
 
 			class MqttCallbacks : public mqtt::callback
 			{
@@ -44,8 +43,9 @@ namespace Umati {
 				MqttPublisher_Paho * m_mqttPublisher_paho;
 			};
 
-			mqtt::async_client m_cli;
-			MqttCallbacks m_callbacks;
-		};
+            mqtt::async_client m_cli;
+            MqttCallbacks m_callbacks;
+            const std::string m_onlineTopic = "/umati/emo/opcToMqttOnline";
+        };
 	}
 }

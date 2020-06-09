@@ -721,7 +721,7 @@ namespace Umati {
 
 			if (uaBrowsePathResults[0].NoOfTargets != 1)
 			{
-				LOG(ERROR) << "Expect 1 traget, got " << uaBrowsePathResults[0].NoOfTargets << " for node: '" << static_cast<std::string>(startNode)
+				LOG(ERROR) << "Expect 1 target, got " << uaBrowsePathResults[0].NoOfTargets << " for node: '" << static_cast<std::string>(startNode)
 					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::UmatiException("Number of targets mismatch.");
 			}

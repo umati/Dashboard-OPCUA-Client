@@ -11,7 +11,8 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include <ModelOpcUa/ModelOpcUa.hpp>
+#include "ModelOpcUa/ModelDefinition.hpp"
+#include "ModelOpcUa/ModelInstance.hpp"
 
 #include "Subscription.hpp"
 #include "OpcUaInterface.hpp"
