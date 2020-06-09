@@ -325,7 +325,7 @@ namespace Umati {
                 LOG(INFO) << "Callback" << value.dump(2);
                 valueMap[pNode] = value;
             };
-            // subscribedValue's type is std::shared_ptr<IDashboardDataClient::ValueSubscriptionHandle>
+
             auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
             m_subscribedValues.push_back(subscribedValue);
         }

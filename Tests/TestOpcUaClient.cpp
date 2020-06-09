@@ -150,36 +150,4 @@ TEST(OpcUaClient, Browse)
 	ModelOpcUa::NodeId_t hierarchicalReferenceTypeNodeId{ "", "i=33" };
 
 	auto resultBrowse = client.Browse(startNodeId, hierarchicalReferenceTypeNodeId, folderTypeNodeId);
-
-/*	EXPECT_EQ(resultBrowse.size(), 3);
-
-	ModelOpcUa::QualifiedName_t BuildingAutomation{ "urn:UnifiedAutomation:CppDemoServer:BuildingAutomation", "BuildingAutomation" };
-	ModelOpcUa::QualifiedName_t Demo{ "http://www.unifiedautomation.com/DemoServer/", "Demo" };
-	ModelOpcUa::QualifiedName_t DemoXml{ "urn:UnifiedAutomation:CppDemoServer:UANodeSetXmlImport", "Demo" };
-	std::list<ModelOpcUa::QualifiedName_t> ExpectedBrowseNames{ BuildingAutomation, Demo, DemoXml };
-	for (auto &browseEntry : resultBrowse)
-	{
-		EXPECT_NE(
-			std::find(ExpectedBrowseNames.begin(), ExpectedBrowseNames.end(), browseEntry.BrowseName),
-			ExpectedBrowseNames.end()
-		);
-
-	}*/
-
 }
-/*
-TEST(OpcUaClient, ReadValue)
-{
-	ModelOpcUa::NodeId_t scalarStringNodeId{ "http://www.unifiedautomation.com/DemoServer/", "s=Demo.Static.Scalar.String" };
-	Umati::Util::ConfigureLogger("OpcUaClient.Read");
-	Umati::OpcUa::OpcUaClient client(OPCUA_TEST_SERVER_URL);
-	ASSERT_TRUE(client.isConnected());
-
-	auto valueList = client.readValues(std::list<ModelOpcUa::NodeId_t>{scalarStringNodeId});
-
-	ASSERT_EQ(1, valueList.size());
-
-	EXPECT_EQ(valueList.front()["value"], "Hello world");
-}
-
-*/

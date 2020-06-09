@@ -32,7 +32,7 @@ namespace Umati {
 
 		private:
 
-			std::string getClientId();
+			static static static std::string getClientId();
 
 			class MqttCallbacks : public mqtt::callback
 			{

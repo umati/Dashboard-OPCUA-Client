@@ -262,7 +262,6 @@ namespace Umati {
 				LOG(ERROR) << ss.str();
 				throw Exceptions::MachineInvalidException(ss.str());
 			}
-			//LOG(INFO) << valueName << ": " << valuesList.at(valueIndex)["value"].get<std::string>();
 			return valuesList.at(valueIndex)["value"].get<std::string>();
 		}
 	}

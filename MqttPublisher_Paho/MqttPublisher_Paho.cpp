@@ -47,12 +47,9 @@ namespace Umati {
 			try {
 				m_cli.publish(channel, message, 0, true);
 			}
-			catch (const mqtt::exception& ex)
-			{
-
+			catch (const mqtt::exception& ex) {
 				LOG(ERROR) << "Paho Exception:" << ex.what();
 			}
-			
 		}
 
 		std::string MqttPublisher_Paho::getClientId()
@@ -76,12 +73,10 @@ namespace Umati {
 			m_cli.disconnect();
 		}
 
-		MqttPublisher_Paho::MqttCallbacks::MqttCallbacks(MqttPublisher_Paho * mqttPublisher_paho)
-			: m_mqttPublisher_paho(mqttPublisher_paho)
-		{
-		}
+		MqttPublisher_Paho::MqttCallbacks::MqttCallbacks(MqttPublisher_Paho *mqttPublisher_paho) : m_mqttPublisher_paho(mqttPublisher_paho)
+		{}
 
-		void MqttPublisher_Paho::MqttCallbacks::connected(const std::string & cause)
+		void MqttPublisher_Paho::MqttCallbacks::connected(const std::string &cause)
 		{
 			LOG(ERROR) << "Mqtt Connected: " << cause;
 			m_mqttPublisher_paho->Publish(m_mqttPublisher_paho->OnlineTopic, "1");

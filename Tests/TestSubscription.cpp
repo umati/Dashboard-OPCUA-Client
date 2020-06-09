@@ -72,26 +72,3 @@ TEST(Subscription, deleteSubscription_mPSubscriptionNull_notCalled)
     subscription.setSubscriptionWrapper(&mockOpcUaSubscriptionWrapper);
     subscription.deleteSubscription(pMockSession);
 }
-
-/*
-TEST(Subscription, deleteSubscription_mPSubscriptionNotNull_Called)
-{
-    Umati::Util::ConfigureLogger("Subscription.createSubscription");
-    UaPlatformLayer::init();
-
-    auto* mockSession = new UaClientSdk::MockUaSession();
-    std::shared_ptr<UaClientSdk::UaSession> pMockSession(mockSession);
-
-    Umati::OpcUa::MockOpcUaSubscriptionWrapper mockOpcUaSubscriptionWrapper;
-    UaStatus uaStatus1(OpcUa_Good);
-    EXPECT_CALL(mockOpcUaSubscriptionWrapper, SessionDeleteSubscription).Times(1).WillOnce(Return(uaStatus1));
-    std::map<std::string, uint16_t> uriToIndexCache;
-    std::map<uint16_t, std::string> indexToUriCache;
-    ModelOpcUa::NodeId_t nodeId;
-    Umati::Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback;
-    Umati::OpcUa::Subscription subscription(uriToIndexCache, indexToUriCache);
-    subscription.setSubscriptionWrapper(&mockOpcUaSubscriptionWrapper);
-    subscription.Subscribe(nodeId, callback);
-    subscription.deleteSubscription(pMockSession);
-}
-*/
