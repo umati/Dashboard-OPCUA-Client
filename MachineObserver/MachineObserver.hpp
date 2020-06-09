@@ -4,7 +4,6 @@
 #include <map>
 #include <mutex>
 #include <vector>
-#include "IMachineCache.hpp"
 
 namespace Umati {
 	namespace MachineObserver {
@@ -32,13 +31,13 @@ namespace Umati {
 
 			void removeOfflineMachines(std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines);
 
-			bool canBrowsemachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList);
+			bool canBrowseMachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList);
 
 			void findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t>& machineList, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& toBeRemovedMachines, std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t>& newMachines);
 
 			virtual void addMachine(ModelOpcUa::BrowseResult_t machine) = 0;
 			virtual void removeMachine(ModelOpcUa::BrowseResult_t machine) = 0;
-			virtual bool isOnline(ModelOpcUa::BrowseResult_t machine) = 0;
+			virtual bool isOnline(const ModelOpcUa::BrowseResult_t& machine, const ModelOpcUa::NodeId_t& type) = 0;
 
 			std::shared_ptr<Dashboard::IDashboardDataClient> m_pDataClient;
 			std::map <ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> m_knownMachines;
@@ -48,7 +47,7 @@ namespace Umati {
 			/// The value is decremented each time the machine would be checked and will only be added, when it reaches 0 again.
 			std::map< ModelOpcUa::NodeId_t, int> m_invalidMachines;
 
-            static void logMachinesChanging(std::string text,
+            static void logMachinesChanging(const std::string& text,
                     const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines) ;
         };
 	}

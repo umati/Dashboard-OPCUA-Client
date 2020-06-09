@@ -1,5 +1,4 @@
 {
-  "MachineCacheFile": "MachineCache.json",
   "OpcUa": {
     "Endpoint": "opc.tcp://localhost:4840",
     "User": "",

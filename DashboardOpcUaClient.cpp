@@ -72,8 +72,7 @@ int main(int argc, char* argv[])
 
 	Umati::MachineObserver::DashboardMachineObserver dashboardMachineObserv(
 		pClient,
-		pPublisher,
-		config->MachineCacheFile());
+		pPublisher);
 
 	int i = 0;
 	while (running)

@@ -39,8 +39,6 @@ namespace Umati
 				std::uint8_t Security = 1;
 			};
 
-			inline virtual std::string MachineCacheFile() = 0;
-
 			inline virtual std::vector<std::string> ObjectTypeNamespacesVector() = 0;
 			
 			inline virtual MqttConfig Mqtt() = 0;

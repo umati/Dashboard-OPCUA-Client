@@ -46,16 +46,7 @@ namespace Umati {
             }
             parseConfigurationOpcUa(jsonOpcUa);
 
-            auto jsonMachineCacheFile = getValueOrException(json, JsonKey_MachineCacheFile);
 
-
-            if (!jsonMachineCacheFile.is_string()) {
-                std::stringstream ss;
-                ss << "Key '" << JsonKey_MachineCacheFile << "' is not of type " << "string" << std::endl;
-                throw Exception::ConfigurationException(ss.str().c_str());
-            }
-
-            m_machineCacheFile = jsonMachineCacheFile.get<std::string>();
 
             if (json.find(JsonKey_ObjectTypeNamespacesVector) != json.end()) {
                 auto jsonObjectTypeNamespacesVector = getValueOrException(json, JsonKey_ObjectTypeNamespacesVector);
@@ -150,10 +141,6 @@ namespace Umati {
             }
 
             m_opcUa.Security = jsonSecurity.get<std::uint8_t>();
-        }
-
-        std::string ConfigurationJsonFile::MachineCacheFile() {
-            return m_machineCacheFile;
         }
 
         std::vector<std::string> ConfigurationJsonFile::ObjectTypeNamespacesVector() {

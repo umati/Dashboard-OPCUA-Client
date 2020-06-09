@@ -322,7 +322,7 @@ namespace Umati {
             LOG(INFO) << "SubscribeValue " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
-                LOG(INFO) << "Callback" << value.dump(2);
+                LOG(INFO) << "Value Update" << value.dump(2);
                 valueMap[pNode] = value;
             };
 

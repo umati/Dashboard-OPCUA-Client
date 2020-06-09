@@ -8,8 +8,8 @@ namespace Umati
 		namespace Converter
 		{
 			ModelToJson::ModelToJson(
-				const std::shared_ptr<const ModelOpcUa::Node> pNode,
-				getValue_t getValue, bool serializeNodeInformation, bool nestAsChildren)
+				const std::shared_ptr<const ModelOpcUa::Node>& pNode,
+				const getValue_t& getValue, bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
 			{
 
 				switch (pNode->ModellingRule)
@@ -31,22 +31,19 @@ namespace Umati
 					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
 					{
 					    auto value = getValue(pNode);
-					    //if(value.dump(0) != "null") {
-					        LOG(INFO) << "++++ " << value.dump(0); // todo ! remove me
-                            if(nestAsChildren) {
-                                m_json["value"] = value;
-                            } else {
-                                m_json = value;
-                            }
-                        //}
+                        if (nestAsChildren) {
+                            m_json["value"] = value;
+                        } else {
+                            m_json = value;
+                        }
 					}
 
 					nlohmann::json children;
 
 					for (const auto &pChild : pSimpleNode->ChildNodes)
 					{
-					    auto json = (ModelToJson(pChild, getValue, false).getJson());
-                        if (json.dump(0) != "null"){
+					    auto json = (ModelToJson(pChild, getValue).getJson());
+                        if (publishNullValues && json.dump(0) != "null"){
                             children[pChild->SpecifiedBrowseName.Name] = json;
                         }
 					}
@@ -77,7 +74,7 @@ namespace Umati
 
 					for (const auto &pPlaceholderElement : placeholderElements)
 					{
-						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue, false).getJson());
+						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue).getJson());
 					}
 					if (serializeNodeInformation) {
                         m_json["placeholderElements"] = placeholderJsonElements;

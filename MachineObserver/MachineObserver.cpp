@@ -5,6 +5,8 @@
 #include "Exceptions/MachineOfflineException.hpp"
 #include <Exceptions/OpcUaException.hpp>
 #include <Exceptions/ClientNotConnected.hpp>
+#include <TypeDefinition/UmatiTypeNodeIds.hpp>
+#include <utility>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -12,7 +14,7 @@ namespace Umati {
 		MachineObserver::MachineObserver(
 			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient
 		)
-			: m_pDataClient(pDataClient)
+			: m_pDataClient(std::move(pDataClient))
 		{
 		}
 
@@ -34,7 +36,7 @@ namespace Umati {
 			/**
 			* Browses the machineList and fills the list if possible
 			*/
-			if (!canBrowsemachineList(machineList)) {
+			if (!canBrowseMachineList(machineList)) {
 				return;
 			}
 
@@ -78,7 +80,7 @@ namespace Umati {
 			LOG(WARNING) << "Lists differ, recreating known machine tools map" ;
 			removeOfflineMachines(m_knownMachineToolsMap);
 			m_knownMachineToolsMap.clear();
-			for (auto machineTool : machineList) {
+			for (const auto& machineTool : machineList) {
 				m_knownMachineToolsMap.insert(std::make_pair(machineTool.NodeId, machineTool));
 			}
 		}
@@ -101,7 +103,7 @@ namespace Umati {
 			return false;
 		}
 
-		bool MachineObserver::canBrowsemachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList)
+		bool MachineObserver::canBrowseMachineList(std::list<ModelOpcUa::BrowseResult_t>& machineList)
 		{
             try {
                 LOG(INFO) << "Searching for machines";
@@ -134,7 +136,7 @@ namespace Umati {
 		{
             LOG(INFO) << "Checking which machines are online / offline";
 
-            for (auto machineTool : machineList)
+            for (const auto& machineTool : machineList)
 			{
 
 				// Check if Machine is known as online machine
@@ -143,7 +145,10 @@ namespace Umati {
 				// Machine known
 				try {
 					// Check if machine is still online. If so, remove it from the removed machines. If it is not on there, it must be a new machine
-					if (isOnline(machineTool))
+
+					// todo ! create namespaceToIdentificationType method
+                    ModelOpcUa::NodeId_t type = Dashboard::TypeDefinition::NodeIds::MachineToolIdentificationType;// todo ! change
+                    if (isOnline(machineTool, type))
 					{
 						if (it != toBeRemovedMachines.end())
 						{
@@ -166,8 +171,7 @@ namespace Umati {
             logMachinesChanging("New / Staying machines: ", newMachines);
         }
 
-        void MachineObserver::logMachinesChanging(std::string text,
-                const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &machines) {
+        void MachineObserver::logMachinesChanging(const std::string& text, const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &machines) {
             std::stringstream machinesStringStream;
             for(auto& machine : machines)
             {

@@ -15,7 +15,6 @@ namespace Umati
 
 			// Inherit from Configuration
 			OpcUaConfig OpcUa() override;
-			std::string MachineCacheFile() override;
 			MqttConfig Mqtt() override;
             std::vector<std::string> ObjectTypeNamespacesVector() override;
 
@@ -25,7 +24,6 @@ namespace Umati
 			const std::string JsonKey_OpcUa_Password = std::string("Password");
 			const std::string JsonKey_OpcUa_Security = std::string("Security");
 
-			const std::string JsonKey_MachineCacheFile = std::string("MachineCacheFile");
 			const std::string JsonKey_ObjectTypeNamespacesVector = std::string("ObjectTypeNamespaces");
 
 			const std::string JsonKey_Mqtt = std::string("Mqtt");
@@ -42,7 +40,6 @@ namespace Umati
 			virtual void parseConfigurationOpcUa(nlohmann::json json);
 
 			OpcUaConfig m_opcUa;
-			std::string m_machineCacheFile;
             std::vector<std::string> m_ObjectTypeNamespacesVector;
 			MqttConfig m_mqtt;
 
