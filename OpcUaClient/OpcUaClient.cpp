@@ -365,7 +365,7 @@ namespace Umati {
             // BrowseName: Readable Name and namespace index
             auto uaResult = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, startUaNodeId, browseContext, continuationPoint, referenceDescriptions);
             if (uaResult.isBad()) {
-                LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8();
+                LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8() << " for node " << startUaNodeId.toFullString().toUtf8();
                 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
             }
         }

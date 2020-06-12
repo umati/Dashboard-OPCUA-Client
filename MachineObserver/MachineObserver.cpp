@@ -110,9 +110,11 @@ namespace Umati {
                 machineList.empty();
                 UaReferenceDescriptions referenceDescriptions;
 
-                ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/Machinery/","i=1001"};
+                std::string startNodeNamespaceUri = "http://opcfoundation.org/UA/Machinery/";
+                ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{startNodeNamespaceUri,"i=1001"};
                 auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
-                startNodeId.setNamespaceIndex(3);
+                uint namespaceIndex = m_pDataClient->m_uriToIndexCache[startNodeNamespaceUri];
+                startNodeId.setNamespaceIndex(namespaceIndex);
 
                 m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
 

@@ -134,6 +134,9 @@ namespace Umati {
 
             std::string typeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceType;
             auto typePair = m_pDataClient->m_typeMap->find(typeName);
+            if(typePair == m_pDataClient->m_typeMap->end()) {
+                LOG(ERROR) << "Unable to find " << typeName << " in typeMap";
+            }
             ModelOpcUa::StructureNode type = typePair->second;
             p_type = std::make_shared<ModelOpcUa::StructureNode>(type);
             return p_type;
@@ -147,6 +150,9 @@ namespace Umati {
 
             std::string identificationTypeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
             auto typePair = m_pDataClient->m_typeMap->find(identificationTypeName);
+            if(typePair == m_pDataClient->m_typeMap->end()) {
+                LOG(ERROR) << "Unable to find " << identificationTypeName << " in typeMap";
+            }
             ModelOpcUa::StructureNode type = typePair->second;
             p_type = std::make_shared<ModelOpcUa::StructureNode>(type);
             return p_type;
