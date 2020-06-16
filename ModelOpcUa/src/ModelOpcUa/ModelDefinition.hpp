@@ -176,8 +176,12 @@ namespace ModelOpcUa {
 		/// \TODO what is used in case of an Placeholder, use a different Type for non placeholder elements?
 		std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
 
-		static std::string printType(std::shared_ptr<const StructureNode> node, std::string parentTree);
-	};
+		static std::string printType(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree);
+
+        static std::string printJson(const std::shared_ptr<const StructureNode> &node);
+	private:
+        static std::string printJsonIntern(const std::shared_ptr<const StructureNode> &node, const std::string &parentTree, int tabs);
+    };
 
 	/**
 	 * Bidirectional node holding a shared_ptr to the parent

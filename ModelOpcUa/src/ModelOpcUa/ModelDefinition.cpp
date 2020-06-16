@@ -53,12 +53,12 @@ namespace ModelOpcUa {
 
             }
 
-    std::string StructureNode::printType(std::shared_ptr<const StructureNode> node, std::string parentTree) {
+    std::string StructureNode::printType(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree) {
         std::stringstream ss;
         std::stringstream ss_self;
 
-        std::string modellingRule = "";
-        std::string nodeClass = "";
+        std::string modellingRule;
+        std::string nodeClass;
         if (node->ModellingRule == ModellingRule_t::Optional) {
             modellingRule = "Optional";
         } else if (node->ModellingRule == ModellingRule_t::Mandatory) {
@@ -87,12 +87,48 @@ namespace ModelOpcUa {
             nodeClass = "View";
         }
 
-        ss_self << parentTree << "->" << node->SpecifiedBrowseName.Name << " (" << nodeClass << (modellingRule == "" ? "" : "|" ) << modellingRule << ")";
+        ss_self << parentTree << "->" << node->SpecifiedBrowseName.Name << " (" << nodeClass << (modellingRule.empty() ? "" : "|" ) << modellingRule << ")";
         ss << ss_self.str() << std::endl;
 
 
         for (auto childNodesIterator = node->SpecifiedChildNodes.begin(); childNodesIterator != node->SpecifiedChildNodes.end(); childNodesIterator++) {
             ss << printType(childNodesIterator.operator*(), ss_self.str());
+        }
+
+        return ss.str();
+    }
+
+    std::string StructureNode::printJson(const std::shared_ptr<const StructureNode>& node) {
+        std::stringstream ss;
+        ss << "{" << std::endl << printJsonIntern(node, "", 0) << "}" << std::endl;
+        return ss.str();
+    }
+
+    std::string StructureNode::printJsonIntern(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree, int tabs) {
+        std::stringstream ss_self;
+        std::stringstream ss;
+        std::stringstream tabsstream;
+        for(int i = 0; i < tabs; i++) {
+            tabsstream << "\t";
+        }
+        std::string tabsString = tabsstream.str();
+
+        ss_self << tabsString << "\"" << node->SpecifiedBrowseName.Name << "\":";
+        if(node->SpecifiedChildNodes.empty()) {
+            ss << ss_self.str() <<  " null";
+        } else {
+            ss << ss_self.str() << std::endl;
+            for (auto childNodesIterator = node->SpecifiedChildNodes.begin(); childNodesIterator != node->SpecifiedChildNodes.end(); childNodesIterator++) {
+                if (childNodesIterator == node->SpecifiedChildNodes.begin()) {
+                    ss << tabsString << "{" << std::endl;
+                }
+                ss << printJsonIntern(childNodesIterator.operator*(), ss_self.str(), tabs + 1);
+                if ((childNodesIterator != node->SpecifiedChildNodes.end()) && (childNodesIterator != --node->SpecifiedChildNodes.end())) {
+                    ss << "," << std::endl;
+                } else {
+                    ss << std::endl << tabsString << "}";
+                }
+            }
         }
 
         return ss.str();

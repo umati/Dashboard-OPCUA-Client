@@ -867,7 +867,8 @@ namespace Umati {
 
 
 
-                LOG(INFO) << std::endl << bloodlineStringStream.str() << ModelOpcUa::StructureNode::printType(shared, "");
+                // LOG(INFO) << std::endl << bloodlineStringStream.str() << ModelOpcUa::StructureNode::printType(shared, "");
+                LOG(INFO) << std::endl << ModelOpcUa::StructureNode::printJson(shared);
                 std::pair <std::string, ModelOpcUa::StructureNode> newType(typeName, node);
                 typeMap->insert(newType);
             }
