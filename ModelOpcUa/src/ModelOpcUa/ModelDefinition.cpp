@@ -59,15 +59,10 @@ namespace ModelOpcUa {
 
         std::string modellingRule;
         std::string nodeClass;
-        if (node->ModellingRule == ModellingRule_t::Optional) {
-            modellingRule = "Optional";
-        } else if (node->ModellingRule == ModellingRule_t::Mandatory) {
-            modellingRule = "Mandatory";
-        } else if (node->ModellingRule == ModellingRule_t::MandatoryPlaceholder) {
-            modellingRule = "MandatoryPlaceholder";
-        } else if (node->ModellingRule == ModellingRule_t::OptionalPlaceholder) {
-            modellingRule = "OptionalPlaceholder";
-        }
+        if (node->ModellingRule == ModellingRule_t::Optional) {modellingRule = "Optional"; }
+        else if (node->ModellingRule == ModellingRule_t::Mandatory) { modellingRule = "Mandatory";}
+        else if (node->ModellingRule == ModellingRule_t::MandatoryPlaceholder) { modellingRule = "MandatoryPlaceholder"; }
+        else if (node->ModellingRule == ModellingRule_t::OptionalPlaceholder) { modellingRule = "OptionalPlaceholder"; }
 
         if(node->NodeClass == NodeClass_t::Object) {
             nodeClass = "Object";

@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 		++i;
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		if ((i % 50) == 0)
+		if ((i % 10) == 0)
 		{
 			dashboardMachineObserv.PublishAll();
 		}

@@ -25,9 +25,11 @@ namespace Umati {
                 pDashClient.second->Publish();
             }
 
-            m_publishMachinesOnline = m_publishMachinesOnline + 1;
-            if (m_publishMachinesOnline % 5 == 0) {
+            if (m_publishMachinesOnline >= 30) {
                 this->publishMachinesList();
+                m_publishMachinesOnline = 0;
+            } else {
+                m_publishMachinesOnline = m_publishMachinesOnline + 1;
             }
         }
 
