@@ -60,7 +60,15 @@ namespace Umati {
 			{
 			    std::string jsonPayload = getJson(pDataSetStorage);
 			    if(!jsonPayload.empty() && jsonPayload != "null") {
-                    m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
+                    auto it = m_latestMessages.find(pDataSetStorage->channel);
+			        if (it == m_latestMessages.end()) {
+                        m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
+                        std::pair <std::string, std::string> currentMessage(pDataSetStorage->channel, jsonPayload);
+                        m_latestMessages.insert(currentMessage);
+                    } else if (jsonPayload != it->second) {
+                        m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
+                        it->second = jsonPayload;
+                    }
                 }
 			}
 		}

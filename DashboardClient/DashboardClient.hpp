@@ -70,6 +70,7 @@ namespace Umati {
 			std::shared_ptr<IPublisher> m_pPublisher;
 
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
+			std::map<std::string, std::string> m_latestMessages;
 
             bool isMandatoryOrOptional(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 
