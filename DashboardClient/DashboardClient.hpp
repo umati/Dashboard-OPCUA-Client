@@ -40,6 +40,12 @@ namespace Umati {
 
 
 		protected:
+
+            struct LastMessage_t {
+                std::string payload;
+                time_t lastSent;
+            };
+
 			struct DataSetStorage_t
 			{
 				ModelOpcUa::NodeId_t startNodeId;
@@ -70,7 +76,7 @@ namespace Umati {
 			std::shared_ptr<IPublisher> m_pPublisher;
 
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
-			std::map<std::string, std::string> m_latestMessages;
+			std::map<std::string, LastMessage_t> m_latestMessages;
 
             bool isMandatoryOrOptional(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 
