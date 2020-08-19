@@ -100,16 +100,13 @@ namespace Umati {
                 machineInformation.StartNodeId = machine.NodeId;
                 machineInformation.MachineName = machine.BrowseName.Name;
 
+
                 std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(machine.NodeId);
+                machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
                 std::stringstream topic;
-                std::string specificationSubtopic = "none/";
-                try {
-                    specificationSubtopic = p_type->SpecifiedBrowseName.Name + "/";
-                } catch (const std::exception &ex) {
-                    LOG(ERROR) << "Unknown p_type browse name";
-                }
-                topic << "/umati/" << specificationSubtopic << machineInformation.MachineName;
+
+                topic << "/umati/" << machineInformation.Specification << machineInformation.MachineName;
                 pDashClient->addDataSet(
                         {machineInformation.NamespaceURI, machine.NodeId.Id},
                         p_type,
@@ -241,6 +238,9 @@ namespace Umati {
             m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
 
 
+            std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(identification.front().NodeId);
+            std::string specification = p_type->SpecifiedBrowseName.Name;
+
             std::list<ModelOpcUa::NodeId_t> identificationNodes;
             std::vector<std::string> identificationValueKeys;
             for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
@@ -260,7 +260,7 @@ namespace Umati {
             std::stringstream path;
             auto it = m_machineNames.find(machineNodeId);
             if (it != m_machineNames.end()) {
-                path << "/offsite/" << it->second;
+                path << "/" << specification << "/" << it->second;
                 identificationAsJson["Path"] = path.str();
             }
         }
