@@ -39,7 +39,7 @@ namespace Umati {
 			{
 				ModelOpcUa::NodeId_t StartNodeId;
 				std::string NamespaceURI;
-				std::string Fair;
+				std::string Specification;
 				std::string MachineName;
 			};
 

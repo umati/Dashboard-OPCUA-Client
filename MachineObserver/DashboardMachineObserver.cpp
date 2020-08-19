@@ -68,23 +68,23 @@ namespace Umati {
                 nlohmann::json identificationAsJson;
                 isOnline(machineOnline.first, identificationAsJson);
 
-                std::string fair = machineOnline.second.Fair;
-                auto findFairListIterator = publishData.find(fair);
-                if (findFairListIterator == publishData.end()) {
-                    publishData.insert(std::make_pair(fair, nlohmann::json::array()));
+                std::string specification = machineOnline.second.Specification;
+                auto findSpecListIterator = publishData.find(specification);
+                if (findSpecListIterator == publishData.end()) {
+                    publishData.insert(std::make_pair(specification, nlohmann::json::array()));
                 }
 
-                auto fairList = publishData.find(fair);
+                auto specList = publishData.find(specification);
 
                 if (!identificationAsJson.empty()) {
-                    fairList->second.push_back(identificationAsJson);
+                    specList->second.push_back(identificationAsJson);
                 }
             }
 
-            for (const auto &fairList : publishData) {
+            for (const auto specList : publishData) {
                 std::stringstream stream;
-                stream << "/umati/" << fairList.first << "/machineList";
-                m_pPublisher->Publish(stream.str(), fairList.second.dump(0));
+                stream << "/umati/" << specList.first << "/machineList";
+                m_pPublisher->Publish(stream.str(), specList.second.dump(0));
             }
         }
 
@@ -99,12 +99,17 @@ namespace Umati {
                 machineInformation.NamespaceURI = machine.NodeId.Uri;
                 machineInformation.StartNodeId = machine.NodeId;
                 machineInformation.MachineName = machine.BrowseName.Name;
-                machineInformation.Fair = "offsite";
 
                 std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(machine.NodeId);
 
                 std::stringstream topic;
-                topic << "/umati/" << machineInformation.Fair << "/" << machineInformation.MachineName;
+                std::string specificationSubtopic = "none/";
+                try {
+                    specificationSubtopic = p_type->SpecifiedBrowseName.Name + "/";
+                } catch (const std::exception &ex) {
+                    LOG(ERROR) << "Unknown p_type browse name";
+                }
+                topic << "/umati/" << specificationSubtopic << machineInformation.MachineName;
                 pDashClient->addDataSet(
                         {machineInformation.NamespaceURI, machine.NodeId.Id},
                         p_type,
