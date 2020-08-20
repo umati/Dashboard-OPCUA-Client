@@ -134,6 +134,68 @@ namespace Umati {
             m_opcUaWrapper->SubscriptionCreateSubscription(m_pSession);
         }
 
+        std::string OpcUaClient::getTypeName(const ModelOpcUa::NodeId_t &nodeId){
+		    return readNodeBrowseName(nodeId);
+		}
+
+        std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
+        {
+		    auto nodeId = Converter::ModelNodeIdToUaNodeId(_nodeId, m_uriToIndexCache).getNodeId();
+
+            checkConnection();
+
+            UaReadValueIds readValueIds;
+            readValueIds.create(1);
+            nodeId.copyTo(&readValueIds[0].NodeId);
+            readValueIds[0].AttributeId = OpcUa_Attributes_BrowseName;
+
+            UaDataValues readResult;
+
+            UaDiagnosticInfos diagInfo;
+
+            auto uaResult = m_opcUaWrapper->SessionRead(
+                    m_defaultServiceSettings,
+                    100.0,
+                    OpcUa_TimestampsToReturn_Neither,
+                    readValueIds,
+                    readResult,
+                    diagInfo
+            );
+
+            if (uaResult.isBad())
+            {
+                LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.toXmlString().toUtf8()
+                           << "' with " << uaResult.toString().toUtf8();
+                throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+            }
+
+            if (readResult.length() != 1)
+            {
+                LOG(ERROR) << "readResult.length() expect 1  got:" << readResult.length();
+                throw Exceptions::UmatiException("Length mismatch");
+            }
+
+            UaStatusCode uaResultElement(readResult[0].StatusCode);
+            if (uaResultElement.isBad())
+            {
+                LOG(ERROR) << "Bad value status code failed for node: '" << nodeId.toFullString().toUtf8()
+                           << "' with " << uaResultElement.toString().toUtf8();
+                throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
+            }
+
+            UaVariant value(readResult[0].Value);
+            if (value.type() != OpcUaType_QualifiedName)
+            {
+                LOG(ERROR) << "Expect Type Int32, got '" << value.type();
+                throw Exceptions::UmatiException("Type mismatch");
+            }
+            OpcUa_QualifiedName qualifiedName;
+
+            //value.toQualifiedName(qualifiedName);
+
+            return value.toString().toUtf8();
+        }
+
         OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
 		{
 			checkConnection();
@@ -325,6 +387,7 @@ namespace Umati {
             for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
             }
+            LOG(INFO) << "Updated typemap";
 		}
 
         void OpcUaClient::findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
@@ -806,7 +869,7 @@ namespace Umati {
         }
 
         void OpcUaClient::createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::shared_ptr<std::map<std::string, ModelOpcUa::StructureNode>> typeMap, uint16_t namespaceIndex) {
-            for ( auto typeIterator = bidirectionalTypeMap->begin(); typeIterator != bidirectionalTypeMap->end(); typeIterator++ ) {
+		    for ( auto typeIterator = bidirectionalTypeMap->begin(); typeIterator != bidirectionalTypeMap->end(); typeIterator++ ) {
                 if(typeIterator->second->namespaceIndex != namespaceIndex) {
                     continue;
                 }

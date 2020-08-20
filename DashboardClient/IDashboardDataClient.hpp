@@ -58,6 +58,8 @@ namespace Umati {
 			private:
 				bool m_unsubscribed = false;
 			};
+            virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId)= 0;
+            virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId)= 0;
 
 			virtual std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 

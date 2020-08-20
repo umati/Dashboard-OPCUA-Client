@@ -40,7 +40,8 @@ namespace Umati {
             virtual ModelOpcUa::BrowseResult_t ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) override;
             std::vector<nlohmann::json> readValues(std::list< ModelOpcUa::NodeId_t> nodeIds) override;
             UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
-
+            std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId);
+            std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId);
 		protected:
 			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
 
@@ -133,6 +134,7 @@ namespace Umati {
 
             void updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer,
                                        size_t current_char_position, size_t previous_char_position) const;
+
         };
 	}
 }

@@ -77,6 +77,10 @@ namespace Umati {
             m_pPublisher->Publish(stream.str(), publishData.dump(0));
         }
 
+        std::string DashboardMachineObserver::getTypeName(const ModelOpcUa::NodeId_t &nodeId) {
+            return m_pDataClient->readNodeBrowseName(const_cast<ModelOpcUa::NodeId_t &>(nodeId));
+        }
+
         void DashboardMachineObserver::addMachine(ModelOpcUa::BrowseResult_t machine) {
             try {
                 LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
@@ -150,6 +154,9 @@ namespace Umati {
             p_type = std::make_shared<ModelOpcUa::StructureNode>(type);
             return p_type;
         }
+
+
+
 
         uint DashboardMachineObserver::getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) const {
             UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
