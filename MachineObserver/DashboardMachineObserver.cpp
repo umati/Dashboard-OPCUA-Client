@@ -2,7 +2,6 @@
 #include <easylogging++.h>
 #include "Exceptions/MachineInvalidException.hpp"
 #include <Exceptions/OpcUaException.hpp>
-#include <TypeDefinition/UmatiTypeNodeIds.hpp>
 
 namespace Umati {
     namespace MachineObserver {
@@ -62,30 +61,20 @@ namespace Umati {
         }
 
         void DashboardMachineObserver::publishMachinesList() {
-            std::map<std::string, nlohmann::json> publishData;
+            nlohmann::json publishData = nlohmann::json::array();
             for (auto &machineOnline : m_onlineMachines) {
 
                 nlohmann::json identificationAsJson;
                 isOnline(machineOnline.first, identificationAsJson);
 
-                std::string specification = machineOnline.second.Specification;
-                auto findSpecListIterator = publishData.find(specification);
-                if (findSpecListIterator == publishData.end()) {
-                    publishData.insert(std::make_pair(specification, nlohmann::json::array()));
-                }
-
-                auto specList = publishData.find(specification);
-
                 if (!identificationAsJson.empty()) {
-                    specList->second.push_back(identificationAsJson);
+                    publishData.push_back(identificationAsJson);
                 }
             }
 
-            for (const auto specList : publishData) {
-                std::stringstream stream;
-                stream << "/umati/" << specList.first << "/machineList";
-                m_pPublisher->Publish(stream.str(), specList.second.dump(0));
-            }
+            std::stringstream stream;
+            stream << "/umati/list/machineList";
+            m_pPublisher->Publish(stream.str(), publishData.dump(0));
         }
 
         void DashboardMachineObserver::addMachine(ModelOpcUa::BrowseResult_t machine) {
@@ -106,7 +95,7 @@ namespace Umati {
 
                 std::stringstream topic;
 
-                topic << "/umati/" << machineInformation.Specification << machineInformation.MachineName;
+                topic << "/umati" << this->getMachineSubtopic(p_type, machineInformation.MachineName);
                 pDashClient->addDataSet(
                         {machineInformation.NamespaceURI, machine.NodeId.Id},
                         p_type,
@@ -239,7 +228,6 @@ namespace Umati {
 
 
             std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(identification.front().NodeId);
-            std::string specification = p_type->SpecifiedBrowseName.Name;
 
             std::list<ModelOpcUa::NodeId_t> identificationNodes;
             std::vector<std::string> identificationValueKeys;
@@ -260,9 +248,16 @@ namespace Umati {
             std::stringstream path;
             auto it = m_machineNames.find(machineNodeId);
             if (it != m_machineNames.end()) {
-                path << "/" << specification << "/" << it->second;
+                path << this->getMachineSubtopic(p_type, it->second);
                 identificationAsJson["Path"] = path.str();
             }
+        }
+
+        std::string DashboardMachineObserver::getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode>& p_type, const std::string& machineName) const {
+            std::string specification = p_type->SpecifiedBrowseName.Name;
+            std::stringstream subtopic;
+            subtopic << "/" << specification << "/" << machineName;
+            return subtopic.str();
         }
     }
 }

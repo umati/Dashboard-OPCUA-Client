@@ -111,6 +111,11 @@ namespace Umati {
 
             void TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
                                                   const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) const;
+
+            std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfChild(ModelOpcUa::NodeId_t nodeId) const;
+
+            std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) const;
+            ModelOpcUa::ModellingRule_t getModellingRule(const ModelOpcUa::NodeId_t &nodeId) const;;
         };
 	}
 }

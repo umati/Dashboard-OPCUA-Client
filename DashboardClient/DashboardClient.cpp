@@ -139,12 +139,81 @@ namespace Umati {
 			return pNode;
 		}
 
+
+        std::string DashboardClient::getTypeName(const ModelOpcUa::NodeId_t &nodeId) const {
+            UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
+            auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(nodeId.Id.c_str()));
+            uint machineNamespaceIndex = m_pDashboardDataClient->m_uriToIndexCache[nodeId.Uri];
+            startFromMachineNodeId.setNamespaceIndex(machineNamespaceIndex);
+
+            UaClientSdk::BrowseContext browseContext;
+            browseContext.referenceTypeId = OpcUaId_HasTypeDefinition;
+            browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
+            browseContext.includeSubtype = OpcUa_True;
+            browseContext.maxReferencesToReturn = 0;
+            browseContext.nodeClassMask = 0; // ALL
+            browseContext.resultMask = OpcUa_BrowseResultMask_All;
+            m_pDashboardDataClient->browseUnderStartNode(startFromMachineNodeId, machineTypeDefinitionReferenceDescriptions, browseContext);
+            std::string typeName;
+            for (OpcUa_UInt32 i = 0; i < machineTypeDefinitionReferenceDescriptions.length(); i++) {
+                ModelOpcUa::BrowseResult_t browseResults = m_pDashboardDataClient->ReferenceDescriptionToBrowseResult(machineTypeDefinitionReferenceDescriptions[i]);
+                typeName = browseResults.BrowseName.Name;
+            }
+            return typeName;
+        }
+
+        ModelOpcUa::ModellingRule_t DashboardClient::getModellingRule(const ModelOpcUa::NodeId_t &nodeId) const {
+            UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
+            auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(nodeId.Id.c_str()));
+            uint machineNamespaceIndex = m_pDashboardDataClient->m_uriToIndexCache[nodeId.Uri];
+            startFromMachineNodeId.setNamespaceIndex(machineNamespaceIndex);
+
+            UaClientSdk::BrowseContext browseContext;
+            browseContext.referenceTypeId = OpcUaId_HasModellingRule;
+            browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
+            browseContext.includeSubtype = OpcUa_True;
+            browseContext.maxReferencesToReturn = 0;
+            browseContext.nodeClassMask = 0; // ALL
+            browseContext.resultMask = OpcUa_BrowseResultMask_All;
+            m_pDashboardDataClient->browseUnderStartNode(startFromMachineNodeId, machineTypeDefinitionReferenceDescriptions, browseContext);
+            std::string typeName;
+            for (OpcUa_UInt32 i = 0; i < machineTypeDefinitionReferenceDescriptions.length(); i++) {
+                ModelOpcUa::BrowseResult_t browseResult = m_pDashboardDataClient->ReferenceDescriptionToBrowseResult(machineTypeDefinitionReferenceDescriptions[i]);
+                if (browseResult.BrowseName.Name == "Mandatory") {
+                    return ModelOpcUa::Mandatory;
+                } else if (browseResult.BrowseName.Name == "Optional") {
+                    return ModelOpcUa::Optional;
+                } else if (browseResult.BrowseName.Name == "MandatoryPlaceholder") {
+                    return ModelOpcUa::MandatoryPlaceholder;
+                } else if (browseResult.BrowseName.Name == "OptionalPlaceholder") {
+                    return ModelOpcUa::OptionalPlaceholder;
+                }
+            }
+            return ModelOpcUa::None;
+        }
+
+        std::shared_ptr<ModelOpcUa::StructureNode> DashboardClient::getTypeOfChild(ModelOpcUa::NodeId_t nodeId) const {
+            std::shared_ptr<ModelOpcUa::StructureNode> p_type;
+
+            std::string typeName = getTypeName(nodeId);
+
+            auto typePair = m_pDashboardDataClient->m_typeMap->find(typeName);
+            if(typePair == m_pDashboardDataClient->m_typeMap->end()) {
+                LOG(ERROR) << "Unable to find " << typeName << " in typeMap";
+                return nullptr;
+            }
+            ModelOpcUa::StructureNode type = typePair->second;
+            p_type = std::make_shared<ModelOpcUa::StructureNode>(type);
+            return p_type;
+        }
+
 		/**
 		 * @return if the switch case should break
 		 */
 		bool DashboardClient::OptionalAndMandatoryTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                     std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
                                                                     const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
+		    bool tryingPChild = false;
 		    try{
                 auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
                 if (childNodeId.isNull())
@@ -152,15 +221,31 @@ namespace Umati {
                     TransformToNodeIdNodeNotFoundLog(startNode, pChild);
                     return false;
                 }
-                foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
+                auto type = getTypeOfChild(childNodeId);
+                if(type != nullptr) {
+                    auto nodeIds = TransformToNodeIds(childNodeId, type);
+                    foundChildNodes.push_back(nodeIds);
+                } else {
+                    tryingPChild = true;
+                    foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
+                }
             }
             catch(std::exception &ex){
                 TransformToNodeIdNodeNotFoundLog(startNode, pChild);
-                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
-                if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional) {
-                    throw ex;
+//                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
+//                if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional) {
+//                    throw ex;
+//                }
+                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will currently not be forwarded if child node was mandatory";
+                if(!tryingPChild) {
+                    auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
+
+                    foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
+
                 }
-                return false;
+                else {
+                    return false;
+                }
             }
             return true;
 		}
