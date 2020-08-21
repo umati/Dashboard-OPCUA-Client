@@ -231,8 +231,10 @@ namespace Umati {
                 std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
                 const std::list<ModelOpcUa::BrowseResult_t> &browseResults) {
             for (auto &browseResult : browseResults)
-            {
-                std::string typeName = m_pDashboardDataClient->getTypeName(pStructurePlaceholder->SpecifiedTypeNodeId);
+            {   // todo check if placeholder has subtype that we use
+                // use actually used subtype std::string typeName = m_pDashboardDataClient->getTypeName(browseResult.TypeDefinition);
+                std::string typeName = m_pDashboardDataClient->getTypeName(pStructurePlaceholder->SpecifiedTypeNodeId); // use basic subtype
+
                 auto possibleType = m_pDashboardDataClient->m_typeMap->find(typeName);
                 if(possibleType != m_pDashboardDataClient->m_typeMap->end()) {
                     auto sharedPossibleType = std::make_shared<ModelOpcUa::StructureNode>(possibleType->second);
@@ -244,7 +246,7 @@ namespace Umati {
                 }
                 else  {
                     LOG(WARNING) << "Could not find a possible type for :" << static_cast<std::string>(browseResult.TypeDefinition) << ". Continuing without a candidate.";
-                    LOG(WARNING) << "Pointer shows to end()";
+                    //LOG(WARNING) << "Pointer shows to end()";
                 }
             }
         }
