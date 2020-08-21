@@ -68,8 +68,7 @@ namespace Umati {
 
 			void subscribeValues(
 				const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
-				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-				std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren
+				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 			);
 
 			std::vector<std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>> m_subscribedValues;
@@ -79,22 +78,19 @@ namespace Umati {
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
 			std::map<std::string, LastMessage_t> m_latestMessages;
 
-            bool isMandatoryOrOptional(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
+            bool isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 
             void handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
-                                           std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-                                           std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren);
+                                           std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
             bool handleSubscribePlaceholderChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
-                                                     std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-                                                     std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren);
+                                                     std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
             void subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
                                 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
             bool handleSubscribeChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
-                                          std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-                                          std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren);
+                                          std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
             void preparePlaceholderNodesTypeId(
                     const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pStructurePlaceholder,

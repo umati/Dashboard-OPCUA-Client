@@ -129,6 +129,19 @@ namespace ModelOpcUa {
         return ss.str();
     }
 
+    StructureNode::StructureNode(const StructureNode *structureNode,
+                                 std::list<std::shared_ptr<const StructureNode>> childNodes)
+            :
+            NodeDefinition(
+                    structureNode->NodeClass,
+                    structureNode->ModellingRule,
+                    structureNode->ReferenceType,
+                    structureNode->SpecifiedTypeNodeId,
+                    structureNode->SpecifiedBrowseName
+            ),
+            SpecifiedChildNodes(childNodes) {
+    }
+
     StructurePlaceholderNode::StructurePlaceholderNode(
 		NodeClass_t nodeClass,
 		ModellingRule_t modellingRule,
@@ -151,6 +164,11 @@ namespace ModelOpcUa {
 	{
 		assert(modellingRule == ModellingRule_t::MandatoryPlaceholder ||
 			modellingRule == ModellingRule_t::OptionalPlaceholder);
+	}
+
+
+    StructurePlaceholderNode::StructurePlaceholderNode(const std::shared_ptr<const StructureNode> sharedPtr)
+    : StructureNode(sharedPtr->NodeClass,sharedPtr->ModellingRule,sharedPtr->ReferenceType, sharedPtr->SpecifiedTypeNodeId,sharedPtr->SpecifiedBrowseName,sharedPtr->SpecifiedChildNodes) {
 	}
 
     StructureBiNode::StructureBiNode(BrowseResult_t browseResult,
@@ -186,7 +204,6 @@ namespace ModelOpcUa {
                 std::shared_ptr<StructureNode> innerChildStructureNode = innerChild->toStructureNode();
                 this->structureNode->SpecifiedChildNodes.emplace_back(innerChildStructureNode);
             }
-
         }
         return this->structureNode;
     }

@@ -45,6 +45,8 @@ namespace Umati
 					    auto json = (ModelToJson(pChild, getValue).getJson());
                         if (publishNullValues || json.dump(0) != "null"){
                             children[pChild->SpecifiedBrowseName.Name] = json;
+                        } else {
+                            LOG(INFO) << "JSON for " << pChild->SpecifiedBrowseName.Name << " of type " << pChild->SpecifiedTypeNodeId.Uri << ";" << pChild->SpecifiedTypeNodeId.Id << " is null";
                         }
 					}
 					if (!children.empty())
@@ -54,7 +56,9 @@ namespace Umati
 					    } else {
                             m_json = children;
                         }
-					}
+					} else {
+                        // LOG(INFO) << "Children for " << pSimpleNode->NodeId.Uri  << ";" << pSimpleNode->NodeId.Id << " of type " << pSimpleNode->TypeNodeId.Uri << ";" << pSimpleNode->TypeNodeId.Id << " are empty";
+                    }
 					
 					break;
 				}
@@ -78,7 +82,9 @@ namespace Umati
 					}
 					if (serializeNodeInformation) {
                         m_json["placeholderElements"] = placeholderJsonElements;
-                    }
+                    } else {
+					    m_json = placeholderJsonElements;
+					}
 					break;
 				}
 				case ModelOpcUa::ModellingRule_t::None: {

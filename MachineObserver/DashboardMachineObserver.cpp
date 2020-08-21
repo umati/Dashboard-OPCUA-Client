@@ -155,9 +155,6 @@ namespace Umati {
             return p_type;
         }
 
-
-
-
         uint DashboardMachineObserver::getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) const {
             UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
             auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(nodeId.Id.c_str()));

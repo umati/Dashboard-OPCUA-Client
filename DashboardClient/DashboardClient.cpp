@@ -34,8 +34,7 @@ namespace Umati {
 		{
 		    try {
                 std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition, channel);
-                std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren;
-                subscribeValues(pDataSetStorage->node, pDataSetStorage->values, specifiedChildren);
+                subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
                 m_dataSets.push_back(pDataSetStorage);
             }
 		    catch(const Umati::Exceptions::OpcUaException &ex) {
@@ -77,7 +76,9 @@ namespace Umati {
                         it->second.payload = jsonPayload;
                         it->second.lastSent = now;
                     }
-                }
+                } else {
+			        LOG(INFO) << "pdatasetstorage for " << pDataSetStorage->startNodeId.Uri << ";" << pDataSetStorage->startNodeId.Id << " is empty";
+			    }
 			}
 		}
 
@@ -88,6 +89,7 @@ namespace Umati {
 				auto it = pDataSetStorage->values.find(pNode);
 				if (it == pDataSetStorage->values.end())
 				{
+				    LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
 					return nullptr;
 				}
                 return it->second;
@@ -102,28 +104,27 @@ namespace Umati {
 		)
 		{
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
-
 			for (auto & pChild : pTypeDefinition->SpecifiedChildNodes)
 			{
-                bool useTypePair = false;
-
 				switch (pChild->ModellingRule)
 				{
 				case ModelOpcUa::ModellingRule_t::Optional:
 				case ModelOpcUa::ModellingRule_t::Mandatory:
 				{
-                    bool should_break = OptionalAndMandatoryTransformToNodeId(startNode, foundChildNodes, pChild);
-                    if (should_break) {
-                        break;
+                    bool should_continue = OptionalAndMandatoryTransformToNodeId(startNode, foundChildNodes, pChild);
+                    if (should_continue) {
+                        continue;
                     }
+                    break;
 				}
 				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
 				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
 				{
-                    bool should_break = OptionalAndMandatoryPlaceholderTransformToNodeId(startNode, foundChildNodes,  pChild);
-                    if (should_break) {
-                        break;
+                    bool should_continue = OptionalAndMandatoryPlaceholderTransformToNodeId(startNode, foundChildNodes, pChild);
+                    if (should_continue) {
+                        continue;
                     }
+                    break;
 				}
 				case ModelOpcUa::ModellingRule_t::None: {
 				    LOG(INFO) << "modelling rule is none";
@@ -156,12 +157,14 @@ namespace Umati {
                     TransformToNodeIdNodeNotFoundLog(startNode, pChild);
                     return false;
                 }
-                foundChildNodes.push_back(TransformToNodeIds(childNodeId, pChild));
+                auto nodeIds = TransformToNodeIds(childNodeId, pChild);
+                foundChildNodes.push_back(nodeIds);
             }
             catch(std::exception &ex){
                 TransformToNodeIdNodeNotFoundLog(startNode, pChild);
                 LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
                 if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional) {
+                    LOG(ERROR) << "Forwarding exception";
                     throw ex;
                 }
                 return false;
@@ -182,16 +185,18 @@ namespace Umati {
                                                                                std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
                                                                                const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
 		    try {
-                auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::StructurePlaceholderNode>(pChild);
+                const ModelOpcUa::StructurePlaceholderNode structurePChild(pChild);
+                auto pPlaceholderChild = std::make_shared<const ModelOpcUa::StructurePlaceholderNode>(structurePChild);
+
                 if (!pPlaceholderChild) {
-                    LOG(ERROR) << "Placeholder error, instance not a placeholder." << std::endl;
+                    LOG(ERROR) << "Child " << pChild->SpecifiedBrowseName.Uri << ";" << pChild->SpecifiedBrowseName.Name << " of " << startNode.Uri << ";"<< startNode.Id << " caused a Placeholder error: instance not a placeholder." << std::endl;
                     return true;
                 }
                 auto placeholderNode = BrowsePlaceholder(startNode, pPlaceholderChild);
                 foundChildNodes.push_back(placeholderNode);
             }
 		    catch(std::exception &ex) {
-                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
+                LOG(ERROR) << "Child " << pChild->SpecifiedBrowseName.Uri << ";" << pChild->SpecifiedBrowseName.Name << " of " << startNode.Uri << ";"<< startNode.Id << " caused an exception: Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
                 if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::OptionalPlaceholder) {
                     throw ex;
                 }
@@ -227,64 +232,52 @@ namespace Umati {
                 const std::list<ModelOpcUa::BrowseResult_t> &browseResults) {
             for (auto &browseResult : browseResults)
             {
-                auto iteratorPossibleType = std::find_if(
-                        pStructurePlaceholder->PossibleTypes.begin(),
-                        pStructurePlaceholder->PossibleTypes.end(),
-                        [browseResult](const std::shared_ptr<const ModelOpcUa::StructureNode> &posType) -> bool
-                {
-                    return posType->SpecifiedTypeNodeId == browseResult.TypeDefinition;
+                std::string typeName = m_pDashboardDataClient->getTypeName(pStructurePlaceholder->SpecifiedTypeNodeId);
+                auto possibleType = m_pDashboardDataClient->m_typeMap->find(typeName);
+                if(possibleType != m_pDashboardDataClient->m_typeMap->end()) {
+                    auto sharedPossibleType = std::make_shared<ModelOpcUa::StructureNode>(possibleType->second);
+                    ModelOpcUa::PlaceholderElement plElement;
+                    plElement.BrowseName = browseResult.BrowseName;
+                    plElement.pNode = TransformToNodeIds(browseResult.NodeId, sharedPossibleType);
+
+                    pPlaceholderNode->addInstance(plElement);
                 }
-                );
-                if (iteratorPossibleType == pStructurePlaceholder->PossibleTypes.end())
-                {
+                else  {
                     LOG(WARNING) << "Could not find a possible type for :" << static_cast<std::string>(browseResult.TypeDefinition) << ". Continuing without a candidate.";
-                    LOG(WARNING) << "Pointer shows to pStructurePlaceholder->PossibleTypes.end()!";
+                    LOG(WARNING) << "Pointer shows to end()";
                 }
-
-                ModelOpcUa::PlaceholderElement plElement;
-                plElement.BrowseName = browseResult.BrowseName;
-                plElement.pNode = TransformToNodeIds(browseResult.NodeId, *iteratorPossibleType);
-
-                pPlaceholderNode->addInstance(plElement);
             }
         }
 
         void DashboardClient::subscribeValues(
 			const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
-			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-			std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren
+			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 		)
 		{
-		    LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;;
+		    LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             // Only Mandatory/Optional variables
-			if (isMandatoryOrOptional(pNode))
+			if (isMandatoryOrOptionalVariable(pNode))
 			{
                 subscribeValue(pNode, valueMap);
-            }
+            } else {
+			    LOG(INFO) << "Not subscribed " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name;
+			}
 
-            handleSubscribeChildNodes(pNode, valueMap, specifiedChildren);
+            handleSubscribeChildNodes(pNode, valueMap);
         }
 
         void DashboardClient::handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
-                                                        std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-                                                        std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren) {
-		    LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
-            for (auto &pChildNode : pNode->ChildNodes)
+                                                        std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
+		    LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;;
+            for (auto & pChildNode : pNode->ChildNodes)
             {
-                std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren;
-                std::string typeName = m_pDashboardDataClient->getTypeName(pChildNode->SpecifiedTypeNodeId);
-                auto typePair = m_pDashboardDataClient->m_typeMap->find(typeName);
-                if(typePair != m_pDashboardDataClient->m_typeMap->end()) {
-                    specifiedChildren = typePair->second.SpecifiedChildNodes;
-                }
-
                 switch (pChildNode->ModellingRule)
                 {
                 case ModelOpcUa::Mandatory:
                 case ModelOpcUa::Optional:
                 {
-                    bool should_break = handleSubscribeChildNode(pChildNode, valueMap, specifiedChildren);
+                    bool should_break = handleSubscribeChildNode(pChildNode, valueMap);
                     if (should_break) {
                         break;
                     }
@@ -292,7 +285,7 @@ namespace Umati {
                 case ModelOpcUa::MandatoryPlaceholder:
                 case ModelOpcUa::OptionalPlaceholder:
                 {
-                    bool should_break = handleSubscribePlaceholderChildNode(pChildNode, valueMap, specifiedChildren);
+                    bool should_break = handleSubscribePlaceholderChildNode(pChildNode, valueMap);
                     if (should_break) {
                         break;
                     }
@@ -302,47 +295,10 @@ namespace Umati {
                     break;
                 }
             }
-            for (auto &pChildNode : specifiedChildren)
-            {
-
-
-                // todo get simpleNode
-
-                std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> innerSpecifiedChildren;
-                std::string typeName = m_pDashboardDataClient->getTypeName(pChildNode->SpecifiedTypeNodeId);
-                auto typePair = m_pDashboardDataClient->m_typeMap->find(typeName);
-                if(typePair != m_pDashboardDataClient->m_typeMap->end()) {
-                    innerSpecifiedChildren = typePair->second.SpecifiedChildNodes;
-                }
-
-                switch (pChildNode->ModellingRule)
-                {
-                    case ModelOpcUa::Mandatory:
-                    case ModelOpcUa::Optional:
-                    {
-                        bool should_break = handleSubscribeChildNode(pSimpleChild, valueMap, innerSpecifiedChildren);
-                        if (should_break) {
-                            break;
-                        }
-                    }
-                    case ModelOpcUa::MandatoryPlaceholder:
-                    case ModelOpcUa::OptionalPlaceholder:
-                    {
-                        bool should_break = handleSubscribePlaceholderChildNode(pSimpleChild, valueMap, innerSpecifiedChildren);
-                        if (should_break) {
-                            break;
-                        }
-                    }
-                    default:
-                        LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
-                        break;
-                }
-            }
         }
         
         bool DashboardClient::handleSubscribeChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
-                                                       std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-                                                       std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren){
+                                                       std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap){
             LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
 
             auto pSimpleChild = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pChildNode);
@@ -352,14 +308,13 @@ namespace Umati {
                 return false;
             }
             // recursive call
-            subscribeValues(pSimpleChild, valueMap, specifiedChildren);
+            subscribeValues(pSimpleChild, valueMap);
             return true;
 		}
         
         // Returns if the caller should exit the loop (break;) or not
         bool DashboardClient::handleSubscribePlaceholderChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
-                                                                  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
-                                                                  std::list<std::shared_ptr<const ModelOpcUa::StructureNode>> specifiedChildren) {
+                                                                  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
             LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
             auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
             if (!pPlaceholderChild)
@@ -373,7 +328,7 @@ namespace Umati {
             for (const auto &pPlaceholderElement : placeholderElements)
             {
                 // recursive call
-                subscribeValues(pPlaceholderElement.pNode, valueMap, specifiedChildren);
+                subscribeValues(pPlaceholderElement.pNode, valueMap);
             }
             return true;
 		}
@@ -384,10 +339,10 @@ namespace Umati {
                                              * the input parameters of the lambda function is the nlohmann::json value and the body updates the value
                                              * at position pNode with the received json value.
                                              */
-            LOG(INFO) << "SubscribeValue " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+            LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
-                LOG(INFO) << "Value Update" << value.dump(2);
+                // LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
                 valueMap[pNode] = value;
             };
 
@@ -395,7 +350,7 @@ namespace Umati {
             m_subscribedValues.push_back(subscribedValue);
         }
 
-        bool DashboardClient::isMandatoryOrOptional(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode) {
+        bool DashboardClient::isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode) {
             return pNode->NodeClass == ModelOpcUa::NodeClass_t::Variable
                 &&  (
                         pNode->ModellingRule == ModelOpcUa::ModellingRule_t::Mandatory

@@ -164,6 +164,11 @@ namespace ModelOpcUa {
 				std::list<std::shared_ptr<const StructureNode>>()
 		);
 
+        StructureNode(const StructureNode *structureNode,
+                      std::list<std::shared_ptr<const StructureNode>> childNodes =
+                      std::list<std::shared_ptr<const StructureNode>>()
+        );
+
         StructureNode(BrowseResult_t browseResult,
                       std::list<std::shared_ptr<const StructureNode>> childNodes =
                       std::list<std::shared_ptr<const StructureNode>>()
@@ -230,7 +235,9 @@ namespace ModelOpcUa {
 			std::list<std::shared_ptr<const StructureNode>> possibleTypes
 		);
 
-		// All predefined subtypes that are handled separately
+        StructurePlaceholderNode(const std::shared_ptr<const StructureNode> sharedPtr);
+
+// All predefined subtypes that are handled separately
 		const std::list<std::shared_ptr<const StructureNode>> PossibleTypes;
 	};
 

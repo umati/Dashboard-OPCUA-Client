@@ -189,9 +189,6 @@ namespace Umati {
                 LOG(ERROR) << "Expect Type Int32, got '" << value.type();
                 throw Exceptions::UmatiException("Type mismatch");
             }
-            OpcUa_QualifiedName qualifiedName;
-
-            //value.toQualifiedName(qualifiedName);
 
             return value.toString().toUtf8();
         }
@@ -387,6 +384,16 @@ namespace Umati {
             for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
             }
+
+            for(auto mapIterator = m_typeMap->begin(); mapIterator != m_typeMap->end(); mapIterator++) {
+                for(auto childIterator = mapIterator->second.SpecifiedChildNodes.begin(); childIterator != mapIterator->second.SpecifiedChildNodes.end(); childIterator++) {
+                    std::string childTypeName = getTypeName(childIterator->get()->SpecifiedTypeNodeId);
+                    auto childType = m_typeMap->find(childTypeName);
+                    if(childType != m_typeMap->end()) {
+                        childIterator->operator=(std::make_shared<ModelOpcUa::StructureNode>(childIterator->get(),childType->second.SpecifiedChildNodes));
+                    }
+                }
+            }
             LOG(INFO) << "Updated typemap";
 		}
 
@@ -411,7 +418,7 @@ namespace Umati {
                 information.NamespaceIdentificationType = identificationTypeName.str();
 
                 m_availableObjectTypeNamespaces[static_cast<uint16_t>(i)] = information;
-                notFoundObjectTypeNamespaces.erase(it);// todo or does it need to be it++?
+                notFoundObjectTypeNamespaces.erase(it);
                 LOG(INFO) << "Expected object type namespace " << namespaceURI << " found at index " << std::to_string(i);
                 createTypeMap(bidirectionalTypeMap, m_typeMap, i);
                 LOG(INFO) << "Finished creatingTypeMap for " << namespaceURI;
@@ -892,8 +899,6 @@ namespace Umati {
                     for(auto childIterator = ancestor->SpecifiedBiChildNodes.begin(); childIterator != ancestor->SpecifiedBiChildNodes.end(); childIterator++) {
                         auto currentChild = childIterator.operator*();
                         if(!currentChild->isType){
-                            // todo update the specific node if it comes again
-                            // todo extract unittest
                             auto structureNode = currentChild->toStructureNode();
 
                             auto findIterator = std::find(node.SpecifiedChildNodes.begin(), node.SpecifiedChildNodes.end(), structureNode);
@@ -924,13 +929,8 @@ namespace Umati {
                         }
                     }
                 }
-                // todo
-
                 auto shared = std::make_shared<ModelOpcUa::StructureNode>(node);
 
-
-
-                // LOG(INFO) << std::endl << bloodlineStringStream.str() << ModelOpcUa::StructureNode::printType(shared, "");
                 LOG(INFO) << std::endl << ModelOpcUa::StructureNode::printJson(shared);
                 std::pair <std::string, ModelOpcUa::StructureNode> newType(typeName, node);
                 typeMap->insert(newType);
