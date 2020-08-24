@@ -349,11 +349,8 @@ namespace Umati {
             LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
-                LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
+                //LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
                 try{
-
-                    LOG(INFO) << "new: " << value.dump(0);
-                    LOG(INFO) << "before: " << valueMap[pNode].dump(0);
                     valueMap[pNode] = value;
                 } catch (std::exception &ex) {
                     LOG(ERROR) << ex.what();
