@@ -196,18 +196,23 @@ namespace Umati {
 
             monItemCreateReq = prepareMonItemCreateReq(nodeId, monItemCreateReq);
 
-            auto uaResult = m_pSubscription->createMonitoredItems(
-				servSettings,
-				OpcUa_TimestampsToReturn_Source,
-				monItemCreateReq,
-				monItemCreateResult
-			);
+            try {
+                auto uaResult = m_pSubscription->createMonitoredItems(
+                        servSettings,
+                        OpcUa_TimestampsToReturn_Source,
+                        monItemCreateReq,
+                        monItemCreateResult
+                );
 
-            validateMonitorItemResult(uaResult, monItemCreateResult);
+                validateMonitorItemResult(uaResult, monItemCreateResult, nodeId);
 
-			LOG(INFO) << "Created monItemCreateReq for with clientHandle " << monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
-			m_callbacks.insert(std::make_pair(monItemCreateReq[0].RequestedParameters.ClientHandle, callback));
-			return std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult[0].MonitoredItemId, monItemCreateReq[0].RequestedParameters.ClientHandle);
+                LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
+                m_callbacks.insert(std::make_pair(monItemCreateReq[0].RequestedParameters.ClientHandle, callback));
+                return std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult[0].MonitoredItemId,monItemCreateReq[0].RequestedParameters.ClientHandle);
+            }
+            catch (std::exception &ex) {
+                throw ex;
+            }
 		}
 
         UaMonitoredItemCreateRequests &Subscription::prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
@@ -224,24 +229,26 @@ namespace Umati {
             return monItemCreateReq;
         }
 
-        void Subscription::validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult) {
+        void Subscription::validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult, ModelOpcUa::NodeId_t nodeId) {
             if (uaResult.isBad())
             {
-                LOG(ERROR) << "Create Monitored items failed with: " << uaResult.toString().toUtf8();
+                LOG(ERROR) << "Create Monitored items for " << nodeId.Uri << ";" << nodeId.Uri << " failed with: " << uaResult.toString().toUtf8();
                 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
             }
 
             if (monItemCreateResult.length() != 1)
             {
-                LOG(ERROR) << "Expect monItemCreateResult.length() == 1, got:" << monItemCreateResult.length();
+                LOG(ERROR) << "Expect monItemCreateResult.length() == 1 for " << nodeId.Uri << ";" << nodeId.Uri << " , got:" << monItemCreateResult.length();
                 throw Exceptions::UmatiException("Length mismatch.");
             }
 
             auto uaResultMonItem = UaStatusCode(monItemCreateResult[0].StatusCode);
             if (uaResultMonItem.isBad())
             {
-                LOG(ERROR) << "Monitored Item status code bad: " << uaResultMonItem.toString().toUtf8();
-                throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultMonItem);
+                LOG(ERROR) << "Monitored Item status code bad for " << nodeId.Uri << ";" << nodeId.Uri << " : " << uaResultMonItem.toString().toUtf8();
+//                if(uaResultMonItem != OpcUa_BadNothingToDo){
+//                   throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultMonItem);
+//                }
             }
         }
     }

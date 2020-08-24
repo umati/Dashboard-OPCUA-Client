@@ -144,7 +144,6 @@ namespace Umati {
                         UaNodeId nodeId;
                         variant.toNodeId(nodeId);
                         jsonValue = nodeId.toString().toUtf8();
-                        //LOG(ERROR) << "Not implemented conversion to OpcUaType_NodeId. ";
                         break;
                     }
 

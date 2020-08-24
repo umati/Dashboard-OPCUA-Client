@@ -86,34 +86,36 @@ namespace Umati {
                 LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
                           << static_cast<std::string>(machine.NodeId);
 
-                auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher);
+              //  if(machine.BrowseName.Name.compare("FullMachineTool") != 0) {
+                    auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher);
 
-                MachineInformation_t machineInformation;
-                machineInformation.NamespaceURI = machine.NodeId.Uri;
-                machineInformation.StartNodeId = machine.NodeId;
-                machineInformation.MachineName = machine.BrowseName.Name;
+                    MachineInformation_t machineInformation;
+                    machineInformation.NamespaceURI = machine.NodeId.Uri;
+                    machineInformation.StartNodeId = machine.NodeId;
+                    machineInformation.MachineName = machine.BrowseName.Name;
 
 
-                std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(machine.NodeId);
-                machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
+                    std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(machine.NodeId);
+                    machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
-                std::stringstream topic;
+                    std::stringstream topic;
 
-                topic << "/umati" << this->getMachineSubtopic(p_type, machineInformation.MachineName);
-                pDashClient->addDataSet(
-                        {machineInformation.NamespaceURI, machine.NodeId.Id},
-                        p_type,
-                        topic.str()
-                );
+                    topic << "/umati" << this->getMachineSubtopic(p_type, machineInformation.MachineName);
+                    pDashClient->addDataSet(
+                            {machineInformation.NamespaceURI, machine.NodeId.Id},
+                            p_type,
+                            topic.str()
+                    );
 
-                LOG(INFO) << "Read model finished";
+                    LOG(INFO) << "Read model finished";
 
-                {
-                    std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
-                    m_dashboardClients.insert(std::make_pair(machine.NodeId, pDashClient));
-                    m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
-                    m_machineNames.insert(std::make_pair(machine.NodeId, machine.BrowseName.Name));
-                }
+                    {
+                        std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
+                        m_dashboardClients.insert(std::make_pair(machine.NodeId, pDashClient));
+                        m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
+                        m_machineNames.insert(std::make_pair(machine.NodeId, machine.BrowseName.Name));
+                    }
+               // }
             }
             catch (const Umati::Exceptions::OpcUaException &ex) {
                 LOG(ERROR) << "Could not add Machine " << machine.BrowseName.Name

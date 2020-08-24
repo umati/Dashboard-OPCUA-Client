@@ -9,7 +9,7 @@ namespace Umati
 		{
 			ModelToJson::ModelToJson(
 				const std::shared_ptr<const ModelOpcUa::Node>& pNode,
-				const getValue_t& getValue, bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
+				const getValue_t& getValue, std::string topicName, bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
 			{
 
 				switch (pNode->ModellingRule)
@@ -42,11 +42,11 @@ namespace Umati
 
 					for (const auto &pChild : pSimpleNode->ChildNodes)
 					{
-					    auto json = (ModelToJson(pChild, getValue).getJson());
+					    auto json = (ModelToJson(pChild, getValue, topicName, serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
                         if (publishNullValues || json.dump(0) != "null"){
                             children[pChild->SpecifiedBrowseName.Name] = json;
                         } else {
-                            LOG(INFO) << "JSON for " << pChild->SpecifiedBrowseName.Name << " of type " << pChild->SpecifiedTypeNodeId.Uri << ";" << pChild->SpecifiedTypeNodeId.Id << " is null";
+                            LOG(INFO) << "JSON for " << pChild->SpecifiedBrowseName.Name << " of type " << pChild->SpecifiedTypeNodeId.Uri << ";" << pChild->SpecifiedTypeNodeId.Id << " and machine with topic " << topicName << " is null";
                         }
 					}
 					if (!children.empty())
@@ -78,7 +78,7 @@ namespace Umati
 
 					for (const auto &pPlaceholderElement : placeholderElements)
 					{
-						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue).getJson());
+						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue, topicName, serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
 					}
 					if (serializeNodeInformation) {
                         m_json["placeholderElements"] = placeholderJsonElements;

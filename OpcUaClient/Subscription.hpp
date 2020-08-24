@@ -44,7 +44,7 @@ namespace Umati {
             prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
                                     UaMonitoredItemCreateRequests &monItemCreateReq) const;
 
-            void validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult);
+            void validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult,ModelOpcUa::NodeId_t nodeId);
         };
 
 	}

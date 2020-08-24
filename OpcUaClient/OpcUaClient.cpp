@@ -760,7 +760,7 @@ namespace Umati {
 
 			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName, m_uriToIndexCache).getQualifiedName();
-			LOG(INFO) << startUaNodeId.toString().toUtf8() << uaBrowseName.toString().toUtf8();
+			LOG(INFO) << "translateBrowsePathToNodeId: start from " << startUaNodeId.toString().toUtf8() << " and search " << uaBrowseName.toString().toUtf8();
 
 			UaRelativePathElements uaBrowsePathElements;
 			uaBrowsePathElements.create(1);

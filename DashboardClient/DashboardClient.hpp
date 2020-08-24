@@ -55,7 +55,7 @@ namespace Umati {
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> values;
 			};
 
-			static std::string getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage);
+			static std::string getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage, std::string topicName);
 
 			std::shared_ptr<const ModelOpcUa::SimpleNode> TransformToNodeIds(
 				ModelOpcUa::NodeId_t startNode,

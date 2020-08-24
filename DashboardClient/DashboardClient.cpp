@@ -58,7 +58,7 @@ namespace Umati {
 		{
 			for (auto &pDataSetStorage : m_dataSets)
 			{
-			    std::string jsonPayload = getJson(pDataSetStorage);
+			    std::string jsonPayload = getJson(pDataSetStorage, pDataSetStorage->channel);
 			    if(!jsonPayload.empty() && jsonPayload != "null") {
                     auto it = m_latestMessages.find(pDataSetStorage->channel);
                     time_t now;
@@ -82,7 +82,7 @@ namespace Umati {
 			}
 		}
 
-		std::string DashboardClient::getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage)
+		std::string DashboardClient::getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage, std::string topicName)
 		{
 			auto getValueCallback = [pDataSetStorage](const std::shared_ptr<const ModelOpcUa::Node> pNode) -> nlohmann::json
 			{
@@ -95,7 +95,7 @@ namespace Umati {
                 return it->second;
 			};
 
-			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback).getJson().dump(2);
+			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback, topicName, true).getJson().dump(2);
 		}
 
 		std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeIds(
@@ -232,11 +232,13 @@ namespace Umati {
                 const std::list<ModelOpcUa::BrowseResult_t> &browseResults) {
             for (auto &browseResult : browseResults)
             {   // todo check if placeholder has subtype that we use
-                // use actually used subtype std::string typeName = m_pDashboardDataClient->getTypeName(browseResult.TypeDefinition);
-                std::string typeName = m_pDashboardDataClient->getTypeName(pStructurePlaceholder->SpecifiedTypeNodeId); // use basic subtype
+
+                std::string typeName = m_pDashboardDataClient->getTypeName(browseResult.TypeDefinition); // use actually used subtype
+                //std::string typeName = m_pDashboardDataClient->getTypeName(pStructurePlaceholder->SpecifiedTypeNodeId); // use basic subtype
 
                 auto possibleType = m_pDashboardDataClient->m_typeMap->find(typeName);
                 if(possibleType != m_pDashboardDataClient->m_typeMap->end()) {
+                    LOG(INFO) << "Found type for " << typeName;
                     auto sharedPossibleType = std::make_shared<ModelOpcUa::StructureNode>(possibleType->second);
                     ModelOpcUa::PlaceholderElement plElement;
                     plElement.BrowseName = browseResult.BrowseName;
@@ -245,7 +247,7 @@ namespace Umati {
                     pPlaceholderNode->addInstance(plElement);
                 }
                 else  {
-                    LOG(WARNING) << "Could not find a possible type for :" << static_cast<std::string>(browseResult.TypeDefinition) << ". Continuing without a candidate.";
+                    LOG(WARNING) << "Could not find a possible type for " << typeName << ": " << static_cast<std::string>(browseResult.TypeDefinition) << ". Continuing without a candidate.";
                     //LOG(WARNING) << "Pointer shows to end()";
                 }
             }
@@ -344,12 +346,23 @@ namespace Umati {
             LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
-                // LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
-                valueMap[pNode] = value;
-            };
+                LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
+                try{
 
-            auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
+                    LOG(INFO) << "new: " << value.dump(0);
+                    LOG(INFO) << "before: " << valueMap[pNode].dump(0);
+                    valueMap[pNode] = value;
+                } catch (std::exception &ex) {
+                    LOG(ERROR) << ex.what();
+                }
+            };
+            try{
+                auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
             m_subscribedValues.push_back(subscribedValue);
+            } catch (std::exception &ex) {
+                LOG(ERROR) << "Subscribe thrown an error: " << ex.what();
+            }
+
         }
 
         bool DashboardClient::isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode) {
