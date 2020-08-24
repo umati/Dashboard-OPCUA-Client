@@ -46,7 +46,7 @@ namespace Umati
                         if (publishNullValues || json.dump(0) != "null"){
                             children[pChild->SpecifiedBrowseName.Name] = json;
                         } else {
-                            LOG(INFO) << "JSON for " << pChild->SpecifiedBrowseName.Name << " of type " << pChild->SpecifiedTypeNodeId.Uri << ";" << pChild->SpecifiedTypeNodeId.Id << " and machine with topic " << topicName << " is null";
+                           // LOG(INFO) << "JSON for " << pChild->SpecifiedBrowseName.Name << " of type " << pChild->SpecifiedTypeNodeId.Uri << ";" << pChild->SpecifiedTypeNodeId.Id << " and machine with topic " << topicName << " is null";
                         }
 					}
 					if (!children.empty())
