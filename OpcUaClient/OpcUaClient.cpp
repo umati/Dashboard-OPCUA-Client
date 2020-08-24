@@ -390,11 +390,12 @@ namespace Umati {
                     std::string childTypeName = getTypeName(childIterator->get()->SpecifiedTypeNodeId);
                     auto childType = m_typeMap->find(childTypeName);
                     if(childType != m_typeMap->end()) {
-                        childIterator->operator=(std::make_shared<ModelOpcUa::StructureNode>(childIterator->get(),childType->second.SpecifiedChildNodes));
+                        childIterator->operator=(std::make_shared<ModelOpcUa::StructureNode>(childIterator->get(),childType->second.SpecifiedChildNodes)); // todo 11 replace with real pointers
+                        LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
                     }
                 }
             }
-            LOG(INFO) << "Updated typemap";
+            LOG(INFO) << "Updated typeMap";
 		}
 
         void OpcUaClient::findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,

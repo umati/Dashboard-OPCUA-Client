@@ -161,7 +161,7 @@ namespace ModelOpcUa {
 			NodeId_t specifiedTypeNodeId,
 			QualifiedName_t specifiedBrowseName,
 			std::list<std::shared_ptr<const StructureNode>> childNodes =
-				std::list<std::shared_ptr<const StructureNode>>()
+				std::list<std::shared_ptr<const StructureNode>>() // todo 11 change to pointer
 		);
 
         StructureNode(const StructureNode *structureNode,

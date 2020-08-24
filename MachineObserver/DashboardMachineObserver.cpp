@@ -86,7 +86,6 @@ namespace Umati {
                 LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
                           << static_cast<std::string>(machine.NodeId);
 
-              //  if(machine.BrowseName.Name.compare("FullMachineTool") != 0) {
                     auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher);
 
                     MachineInformation_t machineInformation;
@@ -115,7 +114,6 @@ namespace Umati {
                         m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
                         m_machineNames.insert(std::make_pair(machine.NodeId, machine.BrowseName.Name));
                     }
-               // }
             }
             catch (const Umati::Exceptions::OpcUaException &ex) {
                 LOG(ERROR) << "Could not add Machine " << machine.BrowseName.Name
@@ -185,7 +183,7 @@ namespace Umati {
                       << static_cast<std::string>(machine.NodeId);
             auto it = m_dashboardClients.find(machine.NodeId);
             if (it != m_dashboardClients.end()) {
-                m_dashboardClients.erase(it); // todo or does it need to be it++ ?
+                m_dashboardClients.erase(it);
             } else {
                 LOG(INFO) << "Machine not known: '" << static_cast<std::string>(machine.NodeId) << "'";
             }
@@ -193,7 +191,7 @@ namespace Umati {
             auto itOnlineMachines = m_onlineMachines.find(machine.NodeId);
             if (itOnlineMachines != m_onlineMachines.end()) {
                 LOG(INFO) << "Erasing online machine";
-                m_onlineMachines.erase(itOnlineMachines); // todo or dies it need to be itOnlineMachines++?
+                m_onlineMachines.erase(itOnlineMachines);
                 LOG(INFO) << "Online machine erased";
             } else {
                 LOG(INFO) << "Machine was not online: '" << static_cast<std::string>(machine.NodeId) << "'";

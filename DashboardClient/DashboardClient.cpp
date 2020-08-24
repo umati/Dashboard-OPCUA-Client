@@ -95,7 +95,7 @@ namespace Umati {
                 return it->second;
 			};
 
-			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback, topicName, true).getJson().dump(2);
+			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback, topicName).getJson().dump(2);
 		}
 
 		std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeIds(
@@ -273,7 +273,10 @@ namespace Umati {
 
         void DashboardClient::handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
                                                         std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
-		    LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;;
+		    LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+		    if(pNode->ChildNodes.size() == 0) {
+		        LOG(INFO) << "No children found for "  << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+		    }
             for (auto & pChildNode : pNode->ChildNodes)
             {
                 switch (pChildNode->ModellingRule)
