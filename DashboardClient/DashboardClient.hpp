@@ -59,7 +59,7 @@ namespace Umati {
 
 			std::shared_ptr<const ModelOpcUa::SimpleNode> TransformToNodeIds(
 				ModelOpcUa::NodeId_t startNode,
-				const std::shared_ptr<const ModelOpcUa::StructureNode> &pTypeDefinition
+				const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition
 			);
 
 			std::shared_ptr<const ModelOpcUa::PlaceholderNode> BrowsePlaceholder(
@@ -103,14 +103,14 @@ namespace Umati {
 
             bool OptionalAndMandatoryTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                        std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
-                                                       const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild);
+                                                       const std::shared_ptr<ModelOpcUa::StructureNode> &pChild);
 
             bool OptionalAndMandatoryPlaceholderTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                   std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
-                                                                  const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild);
+                                                                  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild);
 
             void TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
-                                                  const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) const;
+                                                  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const;
         };
 	}
 }

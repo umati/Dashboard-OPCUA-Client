@@ -25,7 +25,7 @@ namespace ModelOpcUa {
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
 		QualifiedName_t specifiedBrowseName,
-		std::list<std::shared_ptr<const StructureNode>> childNodes
+        std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes
 	)
 		:
 		NodeDefinition(
@@ -40,20 +40,20 @@ namespace ModelOpcUa {
 	}
 
     StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult,
-                                 std::list<std::shared_ptr<const StructureNode>> childNodes):
+                                 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes):
             SpecifiedChildNodes(childNodes), NodeDefinition(browseResult.NodeClass, Optional, browseResult.ReferenceTypeId, browseResult.TypeDefinition, browseResult.BrowseName)
             {
 
             }
 
     StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult,
-                                 std::list<std::shared_ptr<const StructureNode>> childNodes, ModellingRule_t modellingRule):
+                                 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes, ModellingRule_t modellingRule):
             SpecifiedChildNodes(childNodes), NodeDefinition(browseResult.NodeClass, modellingRule, browseResult.ReferenceTypeId, browseResult.TypeDefinition, browseResult.BrowseName)
             {
 
             }
 
-    std::string StructureNode::printType(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree) {
+    std::string StructureNode::printType(const std::shared_ptr<StructureNode>& node, const std::string& parentTree) {
         std::stringstream ss;
         std::stringstream ss_self;
 
@@ -86,20 +86,20 @@ namespace ModelOpcUa {
         ss << ss_self.str() << std::endl;
 
 
-        for (auto childNodesIterator = node->SpecifiedChildNodes.begin(); childNodesIterator != node->SpecifiedChildNodes.end(); childNodesIterator++) {
+        for (auto childNodesIterator = node->SpecifiedChildNodes->begin(); childNodesIterator != node->SpecifiedChildNodes->end(); childNodesIterator++) {
             ss << printType(childNodesIterator.operator*(), ss_self.str());
         }
 
         return ss.str();
     }
 
-    std::string StructureNode::printJson(const std::shared_ptr<const StructureNode>& node) {
+    std::string StructureNode::printJson(const std::shared_ptr<StructureNode>& node) {
         std::stringstream ss;
         ss << "{" << std::endl << printJsonIntern(node, "", 0) << "}" << std::endl;
         return ss.str();
     }
 
-    std::string StructureNode::printJsonIntern(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree, int tabs) {
+    std::string StructureNode::printJsonIntern(const std::shared_ptr<StructureNode>& node, const std::string& parentTree, int tabs) {
         std::stringstream ss_self;
         std::stringstream ss;
         std::stringstream tabsstream;
@@ -109,16 +109,16 @@ namespace ModelOpcUa {
         std::string tabsString = tabsstream.str();
 
         ss_self << tabsString << "\"" << node->SpecifiedBrowseName.Name << "\":";
-        if(node->SpecifiedChildNodes.empty()) {
+        if(node->SpecifiedChildNodes->empty()) {
             ss << ss_self.str() <<  " null";
         } else {
             ss << ss_self.str() << std::endl;
-            for (auto childNodesIterator = node->SpecifiedChildNodes.begin(); childNodesIterator != node->SpecifiedChildNodes.end(); childNodesIterator++) {
-                if (childNodesIterator == node->SpecifiedChildNodes.begin()) {
+            for (auto childNodesIterator = node->SpecifiedChildNodes->begin(); childNodesIterator != node->SpecifiedChildNodes->end(); childNodesIterator++) {
+                if (childNodesIterator == node->SpecifiedChildNodes->begin()) {
                     ss << tabsString << "{" << std::endl;
                 }
                 ss << printJsonIntern(childNodesIterator.operator*(), ss_self.str(), tabs + 1);
-                if ((childNodesIterator != node->SpecifiedChildNodes.end()) && (childNodesIterator != --node->SpecifiedChildNodes.end())) {
+                if ((childNodesIterator != node->SpecifiedChildNodes->end()) && (childNodesIterator != --node->SpecifiedChildNodes->end())) {
                     ss << "," << std::endl;
                 } else {
                     ss << std::endl << tabsString << "}";
@@ -129,8 +129,8 @@ namespace ModelOpcUa {
         return ss.str();
     }
 
-    StructureNode::StructureNode(const StructureNode *structureNode,
-                                 std::list<std::shared_ptr<const StructureNode>> childNodes)
+    StructureNode::StructureNode(StructureNode *structureNode,
+                                 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes)
             :
             NodeDefinition(
                     structureNode->NodeClass,
@@ -148,7 +148,7 @@ namespace ModelOpcUa {
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
 		QualifiedName_t specifiedBrowseName,
-		std::list<std::shared_ptr<const StructureNode>> childNodes,
+        std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
 		std::list<std::shared_ptr<const StructureNode>> possibleTypes
 	)
 		:
@@ -167,19 +167,19 @@ namespace ModelOpcUa {
 	}
 
 
-    StructurePlaceholderNode::StructurePlaceholderNode(const std::shared_ptr<const StructureNode> sharedPtr)
+    StructurePlaceholderNode::StructurePlaceholderNode(const std::shared_ptr<StructureNode> sharedPtr)
     : StructureNode(sharedPtr->NodeClass,sharedPtr->ModellingRule,sharedPtr->ReferenceType, sharedPtr->SpecifiedTypeNodeId,sharedPtr->SpecifiedBrowseName,sharedPtr->SpecifiedChildNodes) {
 	}
 
     StructureBiNode::StructureBiNode(BrowseResult_t browseResult,
-                                         std::list<std::shared_ptr<const StructureNode>> childNodes,
+                                     std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                                          std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex)
                                          : structureNode(std::make_shared<StructureNode>(browseResult, childNodes)),
                                          parent(parent),
                                          namespaceIndex(namespaceIndex)  {}
 
     StructureBiNode::StructureBiNode(BrowseResult_t browseResult,
-                                         std::list<std::shared_ptr<const StructureNode>> childNodes,
+                                     std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                                          std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex,
                                          ModellingRule_t modellingRule)
                                          : structureNode(std::make_shared<StructureNode>(browseResult, childNodes, modellingRule)),
@@ -189,7 +189,7 @@ namespace ModelOpcUa {
 
     StructureBiNode::StructureBiNode(NodeClass_t nodeClass, ModellingRule_t modellingRule, NodeId_t referenceType,
                                          NodeId_t specifiedTypeNodeId, QualifiedName_t specifiedBrowseName,
-                                         std::list<std::shared_ptr<const StructureNode>> childNodes,
+                                     std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                                          std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex) :
             structureNode(std::make_shared<StructureNode>(nodeClass, modellingRule, referenceType, specifiedTypeNodeId, specifiedBrowseName,childNodes)),
             parent(parent),
@@ -198,11 +198,11 @@ namespace ModelOpcUa {
 
     std::shared_ptr<StructureNode> StructureBiNode::toStructureNode() {
 
-        if(this->SpecifiedBiChildNodes.size() > 0) {
-            for(auto childIterator = this->SpecifiedBiChildNodes.begin(); childIterator != this->SpecifiedBiChildNodes.end(); childIterator++) {
+        if(this->SpecifiedBiChildNodes->size() > 0) {
+            for(auto childIterator = this->SpecifiedBiChildNodes->begin(); childIterator != this->SpecifiedBiChildNodes->end(); childIterator++) {
                 auto innerChild = childIterator.operator*();
                 std::shared_ptr<StructureNode> innerChildStructureNode = innerChild->toStructureNode();
-                this->structureNode->SpecifiedChildNodes.emplace_back(innerChildStructureNode);
+                this->structureNode->SpecifiedChildNodes->emplace_back(innerChildStructureNode);
             }
         }
         return this->structureNode;

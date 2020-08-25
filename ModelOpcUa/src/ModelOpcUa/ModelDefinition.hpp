@@ -160,30 +160,30 @@ namespace ModelOpcUa {
 			NodeId_t referenceType,
 			NodeId_t specifiedTypeNodeId,
 			QualifiedName_t specifiedBrowseName,
-			std::list<std::shared_ptr<const StructureNode>> childNodes =
-				std::list<std::shared_ptr<const StructureNode>>() // todo 11 change to pointer
+                      std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
+                      std::make_shared<std::list<std::shared_ptr<StructureNode>>>()
 		);
 
-        StructureNode(const StructureNode *structureNode,
-                      std::list<std::shared_ptr<const StructureNode>> childNodes =
-                      std::list<std::shared_ptr<const StructureNode>>()
+        StructureNode(StructureNode *structureNode,
+                      std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
+                      std::make_shared<std::list<std::shared_ptr<StructureNode>>>()
         );
 
         StructureNode(BrowseResult_t browseResult,
-                      std::list<std::shared_ptr<const StructureNode>> childNodes =
-                      std::list<std::shared_ptr<const StructureNode>>()
+                      std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
+                      std::make_shared<std::list<std::shared_ptr<StructureNode>>>()
         );
 
-        StructureNode(BrowseResult_t browseResult, std::list<std::shared_ptr<const StructureNode>> childNodes,
+        StructureNode(BrowseResult_t browseResult, std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                       ModellingRule_t modellingRule);
 
-		std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
+        std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> SpecifiedChildNodes;
 
-		static std::string printType(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree);
+		static std::string printType(const std::shared_ptr<StructureNode>& node, const std::string& parentTree);
 
-        static std::string printJson(const std::shared_ptr<const StructureNode> &node);
+        static std::string printJson(const std::shared_ptr<StructureNode> &node);
 	private:
-        static std::string printJsonIntern(const std::shared_ptr<const StructureNode> &node, const std::string &parentTree, int tabs);
+        static std::string printJsonIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree, int tabs);
     };
 
 	/**
@@ -197,18 +197,18 @@ namespace ModelOpcUa {
                 NodeId_t referenceType,
         NodeId_t specifiedTypeNodeId,
                 QualifiedName_t specifiedBrowseName,
-        std::list<std::shared_ptr<const StructureNode>> childNodes =
-                std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
+                        std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
+                std::make_shared<std::list<std::shared_ptr<StructureNode>>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
         );
 
         StructureBiNode(BrowseResult_t browseResult,
-        std::list<std::shared_ptr<const StructureNode>> childNodes =
-                std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
+                        std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
+                        std::make_shared<std::list<std::shared_ptr<StructureNode>>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0
         );
 
         StructureBiNode(BrowseResult_t browseResult,
-                        std::list<std::shared_ptr<const StructureNode>> childNodes =
-                        std::list<std::shared_ptr<const StructureNode>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0, ModellingRule_t = Optional
+                        std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
+                        std::make_shared<std::list<std::shared_ptr<StructureNode>>>(), std::shared_ptr<StructureBiNode> parent = nullptr, uint16_t namespaceIndex = 0, ModellingRule_t = Optional
         );
 
         std::shared_ptr<StructureNode> toStructureNode();
@@ -217,7 +217,7 @@ namespace ModelOpcUa {
         std::shared_ptr<StructureBiNode> parent;
         uint16_t namespaceIndex;
         bool isType = false;
-        std::list<std::shared_ptr<StructureBiNode>> SpecifiedBiChildNodes = std::list<std::shared_ptr<StructureBiNode>>();
+        std::shared_ptr<std::list<std::shared_ptr<StructureBiNode>>> SpecifiedBiChildNodes = std::make_shared<std::list<std::shared_ptr<StructureBiNode>>>();
     };
 
 	class StructurePlaceholderNode : public StructureNode {
@@ -229,11 +229,11 @@ namespace ModelOpcUa {
 			NodeId_t referenceType,
 			NodeId_t specifiedTypeNodeId,
 			QualifiedName_t specifiedBrowseName,
-			std::list<std::shared_ptr<const StructureNode>> childNodes,
+            std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
 			std::list<std::shared_ptr<const StructureNode>> possibleTypes
 		);
 
-        StructurePlaceholderNode(const std::shared_ptr<const StructureNode> sharedPtr);
+        StructurePlaceholderNode(const std::shared_ptr<StructureNode> sharedPtr);
 
 // All predefined subtypes that are handled separately
 		const std::list<std::shared_ptr<const StructureNode>> PossibleTypes;

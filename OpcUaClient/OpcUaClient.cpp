@@ -355,10 +355,8 @@ namespace Umati {
                 LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
             }
 
-
             std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
             UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
-            //auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/MachineTool/","i=1014"}; // todo back to http://opcfoundation.org/UA/; i=58
             auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
             UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
 
@@ -372,7 +370,6 @@ namespace Umati {
             auto startType = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
             browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, startType);
 
-
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
                 auto uaNamespace = uaNamespaces[i];
                 auto uaNamespaceAsUaString = UaString(uaNamespace);
@@ -381,17 +378,17 @@ namespace Umati {
                 findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI, bidirectionalTypeMap);
             }
 
-            for(std::size_t i = 0; i < notFoundObjectTypeNamespaces.size(); ++i){
-                LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespaces[i];
+            for(auto & notFoundObjectTypeNamespace : notFoundObjectTypeNamespaces){
+                LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespace;
             }
 
             for(auto mapIterator = m_typeMap->begin(); mapIterator != m_typeMap->end(); mapIterator++) {
-                for(auto childIterator = mapIterator->second.SpecifiedChildNodes.begin(); childIterator != mapIterator->second.SpecifiedChildNodes.end(); childIterator++) {
+                for(auto childIterator = mapIterator->second->SpecifiedChildNodes->begin(); childIterator != mapIterator->second->SpecifiedChildNodes->end(); childIterator++) {
                     try{
                     std::string childTypeName = getTypeName(childIterator->get()->SpecifiedTypeNodeId);
                     auto childType = m_typeMap->find(childTypeName);
                     if(childType != m_typeMap->end()) {
-                        childIterator->operator=(std::make_shared<ModelOpcUa::StructureNode>(childIterator->get(),childType->second.SpecifiedChildNodes)); // todo 11 replace with real pointers
+                        childIterator->get()->SpecifiedChildNodes=childType->second->SpecifiedChildNodes;
                         // LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
                     }}catch (std::exception &ex) {
                         LOG(ERROR)<< "Unable to update type due to " << ex.what();
@@ -533,7 +530,7 @@ namespace Umati {
             uint16_t currentNamespaceIndex = currentUaNodeId.namespaceIndex();
             auto it = m_availableObjectTypeNamespaces.find(currentNamespaceIndex);
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
-            ModelOpcUa::StructureBiNode node(entry, std::list<std::shared_ptr<const ModelOpcUa::StructureNode>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule );
+            ModelOpcUa::StructureBiNode node(entry, std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureNode>>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule );
             auto current = std::make_shared<ModelOpcUa::StructureBiNode>(node);
 
             if (isObjectType) {
@@ -552,7 +549,7 @@ namespace Umati {
                 }
             }
             if (parent != nullptr) {
-                parent->SpecifiedBiChildNodes.emplace_back(current);
+                parent->SpecifiedBiChildNodes->emplace_back(current);
             }
             return current;
        }
@@ -743,7 +740,7 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::handleContinuationPoint(const UaByteString &continuationPoint) const {
+        void OpcUaClient::handleContinuationPoint(const UaByteString &/*continuationPoint*/) const {
 		    //todo handle continuation point
             LOG(INFO) << "Handling continuation point not yet implemented";
         }
@@ -780,7 +777,7 @@ namespace Umati {
             return browseContext;
         }
 
-        ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName, bool isMandatory)
+        ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName)
 		{
 			checkConnection();
 
@@ -798,7 +795,7 @@ namespace Umati {
 
 			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache).getNodeId();
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName, m_uriToIndexCache).getQualifiedName();
-			LOG(INFO) << "translateBrowsePathToNodeId: start from " << startUaNodeId.toString().toUtf8() << " and search " << uaBrowseName.toString().toUtf8();
+			// LOG(INFO) << "translateBrowsePathToNodeId: start from " << startUaNodeId.toString().toUtf8() << " and search " << uaBrowseName.toString().toUtf8();
 
 			UaRelativePathElements uaBrowsePathElements;
 			uaBrowsePathElements.create(1);
@@ -912,7 +909,7 @@ namespace Umati {
             return readValues;
         }
 
-        void OpcUaClient::createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::shared_ptr<std::map<std::string, ModelOpcUa::StructureNode>> typeMap, uint16_t namespaceIndex) {
+        void OpcUaClient::createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>> typeMap, uint16_t namespaceIndex) {
 		    for ( auto typeIterator = bidirectionalTypeMap->begin(); typeIterator != bidirectionalTypeMap->end(); typeIterator++ ) {
                 if(typeIterator->second->namespaceIndex != namespaceIndex) {
                     continue;
@@ -920,29 +917,29 @@ namespace Umati {
                 // go to highest parent and then down the ladder to add / update attributes;
                 // create a list of pointers till parent is null
                 // go backwards and add / update child nodes till the end
-                std::list<std::shared_ptr<ModelOpcUa::StructureBiNode>> bloodline;
+                std::shared_ptr<std::list<std::shared_ptr<ModelOpcUa::StructureBiNode>>> bloodline = std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
                 std::shared_ptr<ModelOpcUa::StructureBiNode> currentGeneration = typeIterator->second;
                 while(nullptr != currentGeneration) {
-                    bloodline.emplace_back(currentGeneration);
+                    bloodline->emplace_back(currentGeneration);
                     currentGeneration = currentGeneration->parent;
                 }
-                std::string typeName = bloodline.front()->structureNode->SpecifiedBrowseName.Uri +  ";" + bloodline.front()->structureNode->SpecifiedBrowseName.Name;
-                ModelOpcUa::StructureNode node = bloodline.front()->structureNode.operator*();
+                std::string typeName = bloodline->front()->structureNode->SpecifiedBrowseName.Uri +  ";" + bloodline->front()->structureNode->SpecifiedBrowseName.Name;
+                ModelOpcUa::StructureNode node = bloodline->front()->structureNode.operator*();
                 std::stringstream bloodlineStringStream;
-                for(auto bloodlineIterator = bloodline.end(); bloodlineIterator != bloodline.begin(); ){
+                for(auto bloodlineIterator = bloodline->end(); bloodlineIterator != bloodline->begin(); ){
                     --bloodlineIterator;
                     auto ancestor = bloodlineIterator.operator*();
                     bloodlineStringStream << "->" << ancestor->structureNode->SpecifiedBrowseName.Uri << ";" << ancestor->structureNode->SpecifiedBrowseName.Name;
-                    for(auto childIterator = ancestor->SpecifiedBiChildNodes.begin(); childIterator != ancestor->SpecifiedBiChildNodes.end(); childIterator++) {
+                    for(auto childIterator = ancestor->SpecifiedBiChildNodes->begin(); childIterator != ancestor->SpecifiedBiChildNodes->end(); childIterator++) {
                         auto currentChild = childIterator.operator*();
                         if(!currentChild->isType){
                             auto structureNode = currentChild->toStructureNode();
 
-                            auto findIterator = std::find(node.SpecifiedChildNodes.begin(), node.SpecifiedChildNodes.end(), structureNode);
+                            auto findIterator = std::find(node.SpecifiedChildNodes->begin(), node.SpecifiedChildNodes->end(), structureNode);
 
-                            bool found = findIterator != node.SpecifiedChildNodes.end();
+                            bool found = findIterator != node.SpecifiedChildNodes->end();
                             if (!found) {
-                                for(auto fIt = node.SpecifiedChildNodes.begin(); fIt !=  node.SpecifiedChildNodes.end();  fIt++) {
+                                for(auto fIt = node.SpecifiedChildNodes->begin(); fIt !=  node.SpecifiedChildNodes->end();  fIt++) {
                                     if (fIt.operator*()->SpecifiedBrowseName.Name == structureNode->SpecifiedBrowseName.Name &&
                                     fIt.operator*()->SpecifiedBrowseName.Uri == structureNode->SpecifiedBrowseName.Uri
                                     ) {
@@ -956,12 +953,12 @@ namespace Umati {
                             if (found) {
                                 if (findIterator.operator*()->ModellingRule == ModelOpcUa::ModellingRule_t::Optional ||
                                 findIterator.operator*()->ModellingRule == ModelOpcUa::ModellingRule_t::OptionalPlaceholder) {
-                                    LOG(INFO) << "Changed modellingRule from " << findIterator.operator*()->ModellingRule << " to " << structureNode->ModellingRule;
-                                    node.SpecifiedChildNodes.erase(findIterator++);
-                                    node.SpecifiedChildNodes.emplace_back(structureNode);
+                                    // LOG(INFO) << "Changed modellingRule from " << findIterator.operator*()->ModellingRule << " to " << structureNode->ModellingRule;
+                                    node.SpecifiedChildNodes->erase(findIterator++);
+                                    node.SpecifiedChildNodes->emplace_back(structureNode);
                                 }
                             } else {
-                                node.SpecifiedChildNodes.emplace_back(structureNode);
+                                node.SpecifiedChildNodes->emplace_back(structureNode);
                             }
                         }
                     }
@@ -969,7 +966,7 @@ namespace Umati {
                 auto shared = std::make_shared<ModelOpcUa::StructureNode>(node);
 
                 //LOG(INFO) << std::endl << ModelOpcUa::StructureNode::printJson(shared);
-                std::pair <std::string, ModelOpcUa::StructureNode> newType(typeName, node);
+                std::pair <std::string, std::shared_ptr<ModelOpcUa::StructureNode>> newType(typeName, shared);
                 typeMap->insert(newType);
             }
         }

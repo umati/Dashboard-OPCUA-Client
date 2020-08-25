@@ -206,7 +206,7 @@ namespace Umati {
 
                 validateMonitorItemResult(uaResult, monItemCreateResult, nodeId);
 
-                LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
+                // LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
                 m_callbacks.insert(std::make_pair(monItemCreateReq[0].RequestedParameters.ClientHandle, callback));
                 return std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult[0].MonitoredItemId,monItemCreateReq[0].RequestedParameters.ClientHandle);
             }

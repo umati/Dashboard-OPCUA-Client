@@ -119,7 +119,11 @@ namespace Umati {
                 m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
 
                 for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
-                    machineList.emplace_back(m_pDataClient->ReferenceDescriptionToBrowseResult(referenceDescriptions[i]));
+                    auto refDesc = referenceDescriptions[i];
+                    try {
+                        auto browseRes = m_pDataClient->ReferenceDescriptionToBrowseResult(refDesc);
+                        machineList.emplace_back(browseRes);
+                    } catch (std::exception &ex) { LOG(ERROR) << "unable to add machine: " << ex.what(); }
                 }
             }
             catch (const Umati::Exceptions::OpcUaException &ex) {

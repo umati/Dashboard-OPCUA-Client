@@ -103,11 +103,11 @@ namespace Umati {
 
 		std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeIds(
 			ModelOpcUa::NodeId_t startNode,
-			const std::shared_ptr<const ModelOpcUa::StructureNode> &pTypeDefinition
+			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition
 		)
 		{
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
-			for (auto & pChild : pTypeDefinition->SpecifiedChildNodes)
+			for (auto & pChild : *pTypeDefinition->SpecifiedChildNodes)
 			{
 				switch (pChild->ModellingRule)
 				{
@@ -152,9 +152,9 @@ namespace Umati {
 		 */
 		bool DashboardClient::OptionalAndMandatoryTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                     std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
-                                                                    const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
+                                                                    const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) {
 		    try{
-                auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName, pChild->ModellingRule == ModelOpcUa::ModellingRule_t::Mandatory);
+                auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
                 if (childNodeId.isNull())
                 {
                     TransformToNodeIdNodeNotFoundLog(startNode, pChild);
@@ -176,7 +176,7 @@ namespace Umati {
 		}
 
         void DashboardClient::TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
-                                                               const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) const {
+                                                               const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const {
             LOG(INFO) << "Could not find '"
               << static_cast<std::string>(startNode)
               << "'->'"
@@ -186,7 +186,7 @@ namespace Umati {
 
         bool DashboardClient::OptionalAndMandatoryPlaceholderTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
                                                                                std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
-                                                                               const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
+                                                                               const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) {
 		    try {
                 const ModelOpcUa::StructurePlaceholderNode structurePChild(pChild);
                 auto pPlaceholderChild = std::make_shared<const ModelOpcUa::StructurePlaceholderNode>(structurePChild);
@@ -230,19 +230,17 @@ namespace Umati {
 		}
 
         void DashboardClient::preparePlaceholderNodesTypeId(
-                const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pStructurePlaceholder,
+                const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &/*pStructurePlaceholder*/,
                 std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
                 const std::list<ModelOpcUa::BrowseResult_t> &browseResults) {
             for (auto &browseResult : browseResults)
-            {   // todo check if placeholder has subtype that we use
+            {
 
-                std::string typeName = m_pDashboardDataClient->getTypeName(browseResult.TypeDefinition); // use actually used subtype
-                //std::string typeName = m_pDashboardDataClient->getTypeName(pStructurePlaceholder->SpecifiedTypeNodeId); // use basic subtype
-
+                std::string typeName = m_pDashboardDataClient->getTypeName(browseResult.TypeDefinition); // use subtype
                 auto possibleType = m_pDashboardDataClient->m_typeMap->find(typeName);
                 if(possibleType != m_pDashboardDataClient->m_typeMap->end()) {
-                    LOG(INFO) << "Found type for " << typeName;
-                    auto sharedPossibleType = std::make_shared<ModelOpcUa::StructureNode>(possibleType->second);
+                    // LOG(INFO) << "Found type for " << typeName;
+                    auto sharedPossibleType = possibleType->second;
                     ModelOpcUa::PlaceholderElement plElement;
                     plElement.BrowseName = browseResult.BrowseName;
                     plElement.pNode = TransformToNodeIds(browseResult.NodeId, sharedPossibleType);
@@ -261,24 +259,22 @@ namespace Umati {
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 		)
 		{
-		    LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+		    // LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             // Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
 			{
                 subscribeValue(pNode, valueMap);
-            } else {
-			    LOG(INFO) << "Not subscribed " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name;
-			}
+            }
 
             handleSubscribeChildNodes(pNode, valueMap);
         }
 
         void DashboardClient::handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
                                                         std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
-		    LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+		    // LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 		    if(pNode->ChildNodes.size() == 0) {
-		        LOG(INFO) << "No children found for "  << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+		        // LOG(INFO) << "No children found for "  << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 		    }
             for (auto & pChildNode : pNode->ChildNodes)
             {
@@ -309,7 +305,7 @@ namespace Umati {
         
         bool DashboardClient::handleSubscribeChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
                                                        std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap){
-            LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
+            // LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
 
             auto pSimpleChild = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pChildNode);
             if (!pSimpleChild)
@@ -325,7 +321,7 @@ namespace Umati {
         // Returns if the caller should exit the loop (break;) or not
         bool DashboardClient::handleSubscribePlaceholderChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
                                                                   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
-            LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
+            // LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
             auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
             if (!pPlaceholderChild)
             {
@@ -349,7 +345,7 @@ namespace Umati {
                                              * the input parameters of the lambda function is the nlohmann::json value and the body updates the value
                                              * at position pNode with the received json value.
                                              */
-            LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+            // LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
                 //LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
