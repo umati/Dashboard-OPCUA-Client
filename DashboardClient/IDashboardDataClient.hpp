@@ -28,7 +28,7 @@ namespace Umati {
 
             virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(
 				ModelOpcUa::NodeId_t startNode,
-				ModelOpcUa::QualifiedName_t browseName
+				ModelOpcUa::QualifiedName_t browseName, bool isMandatory = false
 			) = 0;
             std::shared_ptr<std::map <std::string, ModelOpcUa::StructureNode>> m_typeMap = std::make_shared<std::map <std::string,ModelOpcUa::StructureNode>>();
             std::shared_ptr<std::map <std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map <std::string, ModelOpcUa::NodeId_t>>();

@@ -40,6 +40,9 @@ namespace Umati {
 		    catch(const Umati::Exceptions::OpcUaException &ex) {
 		        LOG(WARNING) << ex.what();
 		    }
+		    catch(std::exception &ex) {
+                LOG(ERROR) << ex.what();
+            }
 		}
 
         std::shared_ptr<DashboardClient::DataSetStorage_t>
@@ -151,7 +154,7 @@ namespace Umati {
                                                                     std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
                                                                     const std::shared_ptr<const ModelOpcUa::StructureNode> &pChild) {
 		    try{
-                auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName);
+                auto childNodeId = m_pDashboardDataClient->TranslateBrowsePathToNodeId(startNode, pChild->SpecifiedBrowseName, pChild->ModellingRule == ModelOpcUa::ModellingRule_t::Mandatory);
                 if (childNodeId.isNull())
                 {
                     TransformToNodeIdNodeNotFoundLog(startNode, pChild);

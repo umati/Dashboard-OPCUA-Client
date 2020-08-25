@@ -177,8 +177,6 @@ namespace ModelOpcUa {
         StructureNode(BrowseResult_t browseResult, std::list<std::shared_ptr<const StructureNode>> childNodes,
                       ModellingRule_t modellingRule);
 
-/// All child elements
-		/// \TODO what is used in case of an Placeholder, use a different Type for non placeholder elements?
 		std::list<std::shared_ptr<const StructureNode>> SpecifiedChildNodes;
 
 		static std::string printType(const std::shared_ptr<const StructureNode>& node, const std::string& parentTree);

@@ -129,7 +129,7 @@ namespace Umati {
 
             uint machineTypeNamespaceIndex = getImplementedNamespaceIndex(nodeId);
 
-            std::string typeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceType;
+            std::string typeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" + m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceType;
             auto typePair = m_pDataClient->m_typeMap->find(typeName);
             if(typePair == m_pDataClient->m_typeMap->end()) {
                 LOG(ERROR) << "Unable to find " << typeName << " in typeMap";
@@ -145,10 +145,11 @@ namespace Umati {
 
             uint machineTypeNamespaceIndex = getImplementedNamespaceIndex(nodeId);
 
-            std::string identificationTypeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
+            std::string identificationTypeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" + m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
             auto typePair = m_pDataClient->m_typeMap->find(identificationTypeName);
             if(typePair == m_pDataClient->m_typeMap->end()) {
-                LOG(ERROR) << "Unable to find " << identificationTypeName << " in typeMap";
+                LOG(ERROR) << "Unable to find " << identificationTypeName << "for namespace index " << machineTypeNamespaceIndex << " in typeMap";
+                throw Exceptions::MachineInvalidException("IdentificationType not found, probably because namesapce " + std::to_string(machineTypeNamespaceIndex) + " is not in the config");
             }
             ModelOpcUa::StructureNode type = typePair->second;
             p_type = std::make_shared<ModelOpcUa::StructureNode>(type);
@@ -200,23 +201,32 @@ namespace Umati {
 
         bool
         DashboardMachineObserver::isOnline(const ModelOpcUa::NodeId_t &machineNodeId, nlohmann::json &identificationAsJson) {
+            try {
+                std::shared_ptr<ModelOpcUa::StructureNode> p_type = getIdentificationTypeOfNamespace(machineNodeId);
 
-            std::shared_ptr<ModelOpcUa::StructureNode> p_type = getIdentificationTypeOfNamespace(machineNodeId);
+                auto typeIt = m_pDataClient->m_nameToId->find(
+                        p_type->SpecifiedBrowseName.Uri + ";" + p_type->SpecifiedBrowseName.Name);
 
-            auto typeIt = m_pDataClient->m_nameToId->find(p_type->SpecifiedBrowseName.Name);
+                if (typeIt != m_pDataClient->m_nameToId->end()) {
+                    ModelOpcUa::NodeId_t type = typeIt->second;
+                    auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
 
-            if (typeIt != m_pDataClient->m_nameToId->end()) {
-                ModelOpcUa::NodeId_t type = typeIt->second;
-                auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
-
-                std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId,hasComponents, type);
-                if (!identification.empty()) {
-                    UaReferenceDescriptions referenceDescriptions;
-                    browseIdentificationValues(machineNodeId, identification, referenceDescriptions,identificationAsJson);
-                    if (!identificationAsJson.empty()) {
-                        return true;
+                    std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId,
+                                                                                                 hasComponents, type);
+                    if (!identification.empty()) {
+                        UaReferenceDescriptions referenceDescriptions;
+                        browseIdentificationValues(machineNodeId, identification, referenceDescriptions,
+                                                   identificationAsJson);
+                        if (!identificationAsJson.empty()) {
+                            return true;
+                        }
                     }
+                } else {
+                    LOG(INFO) << "Unable to find type";
                 }
+            }
+            catch(std::exception &ex){
+                LOG(ERROR) << ex.what();
             }
             return false;
         }

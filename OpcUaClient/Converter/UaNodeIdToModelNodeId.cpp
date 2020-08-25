@@ -1,6 +1,5 @@
 
 #include "UaNodeIdToModelNodeId.hpp"
-#include <easylogging++.h>
 
 namespace Umati
 {
@@ -15,7 +14,6 @@ namespace Umati
 
 				std::string a = nodeId.toString().toUtf8();
 				std::string b = nodeId.toFullString().toUtf8();
-				int i = 0;
 			}
 		}
 	}

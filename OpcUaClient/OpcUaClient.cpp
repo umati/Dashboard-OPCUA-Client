@@ -190,7 +190,7 @@ namespace Umati {
                 throw Exceptions::UmatiException("Type mismatch");
             }
 
-            return value.toString().toUtf8();
+            return _nodeId.Uri+";"+value.toString().toUtf8();
         }
 
         OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
@@ -387,11 +387,14 @@ namespace Umati {
 
             for(auto mapIterator = m_typeMap->begin(); mapIterator != m_typeMap->end(); mapIterator++) {
                 for(auto childIterator = mapIterator->second.SpecifiedChildNodes.begin(); childIterator != mapIterator->second.SpecifiedChildNodes.end(); childIterator++) {
+                    try{
                     std::string childTypeName = getTypeName(childIterator->get()->SpecifiedTypeNodeId);
                     auto childType = m_typeMap->find(childTypeName);
                     if(childType != m_typeMap->end()) {
                         childIterator->operator=(std::make_shared<ModelOpcUa::StructureNode>(childIterator->get(),childType->second.SpecifiedChildNodes)); // todo 11 replace with real pointers
                         LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
+                    }}catch (std::exception &ex) {
+                        LOG(ERROR)<< "Unable to update type due to " << ex.what();
                     }
                 }
             }
@@ -500,7 +503,7 @@ namespace Umati {
             auto current = std::make_shared<ModelOpcUa::StructureBiNode>(node);
 
             if (isObjectType) {
-                std::string typeName = node.structureNode->SpecifiedBrowseName.Name;
+                std::string typeName = node.structureNode->SpecifiedBrowseName.Uri + ";" + node.structureNode->SpecifiedBrowseName.Name;
                 if(bidirectionalTypeMap->count(typeName) == 0) {
                     current->isType = true;
                     std::pair <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>> newType(typeName, current);
@@ -511,7 +514,7 @@ namespace Umati {
                         LOG(INFO) << "Current size BiDirectionalTypeMap: " << bidirectionalTypeMap->size();
                     }
                 } else {
-                    LOG(INFO) << "Found Type " << typeName << " again.";
+                    LOG(INFO) << "Found Type " << typeName << " again";
                 }
             }
             if (parent != nullptr) {
@@ -743,7 +746,7 @@ namespace Umati {
             return browseContext;
         }
 
-        ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName)
+        ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName, bool isMandatory)
 		{
 			checkConnection();
 
@@ -779,7 +782,7 @@ namespace Umati {
 			UaBrowsePathResults uaBrowsePathResults;
 			UaDiagnosticInfos uaDiagnosticInfos;
 
-			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
+            auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
 				m_defaultServiceSettings,
 				uaBrowsePaths,
 				uaBrowsePathResults,
@@ -803,8 +806,7 @@ namespace Umati {
 			UaStatusCode uaResultElement(uaBrowsePathResults[0].StatusCode);
 			if (uaResultElement.isBad())
 			{
-				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8() << " for node: '" << static_cast<std::string>(startNode)
-					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
+				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8() << " for node: '" << static_cast<std::string>(startNode) << "' with " << uaResult.toString().toUtf8() << " (BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
 			}
 
@@ -890,13 +892,13 @@ namespace Umati {
                     bloodline.emplace_back(currentGeneration);
                     currentGeneration = currentGeneration->parent;
                 }
-                std::string typeName = bloodline.front()->structureNode->SpecifiedBrowseName.Name;
+                std::string typeName = bloodline.front()->structureNode->SpecifiedBrowseName.Uri +  ";" + bloodline.front()->structureNode->SpecifiedBrowseName.Name;
                 ModelOpcUa::StructureNode node = bloodline.front()->structureNode.operator*();
                 std::stringstream bloodlineStringStream;
                 for(auto bloodlineIterator = bloodline.end(); bloodlineIterator != bloodline.begin(); ){
                     --bloodlineIterator;
                     auto ancestor = bloodlineIterator.operator*();
-                    bloodlineStringStream << "->" << ancestor->structureNode->SpecifiedBrowseName.Name;
+                    bloodlineStringStream << "->" << ancestor->structureNode->SpecifiedBrowseName.Uri << ";" << ancestor->structureNode->SpecifiedBrowseName.Name;
                     for(auto childIterator = ancestor->SpecifiedBiChildNodes.begin(); childIterator != ancestor->SpecifiedBiChildNodes.end(); childIterator++) {
                         auto currentChild = childIterator.operator*();
                         if(!currentChild->isType){

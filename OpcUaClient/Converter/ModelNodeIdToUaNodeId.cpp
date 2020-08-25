@@ -17,7 +17,6 @@ namespace Umati {
 				auto nsIndex = getNsIndexFromUri(modelNodeId.Uri);
 				m_nodeId.setNamespaceIndex(nsIndex);
 			}
-
 		}
 	}
 }
