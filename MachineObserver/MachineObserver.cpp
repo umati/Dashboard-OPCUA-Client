@@ -158,7 +158,9 @@ namespace Umati {
 						{
 							newMachines.insert(std::make_pair(machineTool.NodeId, machineTool));
 						}
-					}
+					} else {
+                        LOG(INFO) << "Machine " << machineTool.BrowseName.Name << " not identified as online";
+                    }
 				}
 				// Catch exceptions during CheckOnline, this will cause that the machine stay in the toBeRemovedMachines list
 				catch (const Umati::Exceptions::OpcUaException&)

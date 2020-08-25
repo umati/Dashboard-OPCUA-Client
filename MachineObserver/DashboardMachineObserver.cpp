@@ -144,12 +144,14 @@ namespace Umati {
             std::shared_ptr<ModelOpcUa::StructureNode> p_type;
 
             uint machineTypeNamespaceIndex = getImplementedNamespaceIndex(nodeId);
-
-            std::string identificationTypeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" + m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
+            std::string idType = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
+            std::string identificationTypeName = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" + idType;
             auto typePair = m_pDataClient->m_typeMap->find(identificationTypeName);
             if(typePair == m_pDataClient->m_typeMap->end()) {
-                LOG(ERROR) << "Unable to find " << identificationTypeName << "for namespace index " << machineTypeNamespaceIndex << " in typeMap";
+                LOG(ERROR) << "Unable to find " << identificationTypeName << " for namespace index " << machineTypeNamespaceIndex << " in typeMap";
                 throw Exceptions::MachineInvalidException("IdentificationType not found, probably because namesapce " + std::to_string(machineTypeNamespaceIndex) + " is not in the config");
+            } else {
+                LOG(INFO) << "Found " << identificationTypeName << " for namespace index " << machineTypeNamespaceIndex << " in typeMap";
             }
             ModelOpcUa::StructureNode type = typePair->second;
             p_type = std::make_shared<ModelOpcUa::StructureNode>(type);

@@ -392,7 +392,7 @@ namespace Umati {
                     auto childType = m_typeMap->find(childTypeName);
                     if(childType != m_typeMap->end()) {
                         childIterator->operator=(std::make_shared<ModelOpcUa::StructureNode>(childIterator->get(),childType->second.SpecifiedChildNodes)); // todo 11 replace with real pointers
-                        LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
+                        // LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
                     }}catch (std::exception &ex) {
                         LOG(ERROR)<< "Unable to update type due to " << ex.what();
                     }
@@ -413,13 +413,47 @@ namespace Umati {
                 information.Namespace = resultContainer.back();
                 information.NamespaceUri = namespaceURI;
 
-                std::stringstream typeName;
-                std::stringstream identificationTypeName;
-                typeName << information.Namespace << "Type";
-                identificationTypeName << information.Namespace << "IdentificationType";
+                std::string typeName;
+                std::string identificationTypeName;
 
-                information.NamespaceType = typeName.str();
-                information.NamespaceIdentificationType = identificationTypeName.str();
+                UaReferenceDescriptions referenceDescriptions;
+                std::string startNodeNamespaceUri = "http://opcfoundation.org/UA/Machinery/";
+                ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{startNodeNamespaceUri,"i=1012"};
+                auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
+                uint namespaceIndex = m_uriToIndexCache[startNodeNamespaceUri];
+                startNodeId.setNamespaceIndex(namespaceIndex);
+                browseUnderStartNode(startNodeId, referenceDescriptions);
+
+                if ( referenceDescriptions.length() > 0) {
+                    for (OpcUa_UInt32 j = 0; j < referenceDescriptions.length(); j++) {
+                        if(referenceDescriptions[j].BrowseName.NamespaceIndex == i){
+                            identificationTypeName = UaString(referenceDescriptions[j].BrowseName.Name).toUtf8();
+                            break;
+                        }
+                    }
+                } if(identificationTypeName.empty()) {
+                    identificationTypeName = information.Namespace + "IdentificationType";
+                }
+
+                UaReferenceDescriptions referenceDescriptions2;
+                auto startNode2 = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+                auto startNodeId2 = UaNodeId::fromXmlString(UaString(startNode2.Id.c_str()));
+                uint namespaceIndex2 = m_uriToIndexCache[startNodeNamespaceUri];
+                startNodeId.setNamespaceIndex(namespaceIndex2);
+                browseUnderStartNode(startNodeId2, referenceDescriptions2);
+                if ( referenceDescriptions2.length() > 0) {
+                    for (OpcUa_UInt32 j = 0; j < referenceDescriptions2.length(); j++) {
+                        if(referenceDescriptions2[j].BrowseName.NamespaceIndex == i && referenceDescriptions2[j].NodeId.NodeId.Identifier.Numeric == 1014){
+                            typeName = UaString(referenceDescriptions2[j].BrowseName.Name).toUtf8();
+                            break;
+                        }
+                    }
+                } if(typeName.empty()) {
+                        typeName = information.Namespace + "Type";
+                }
+
+                information.NamespaceType = typeName;
+                information.NamespaceIdentificationType = identificationTypeName;
 
                 m_availableObjectTypeNamespaces[static_cast<uint16_t>(i)] = information;
                 notFoundObjectTypeNamespaces.erase(it);
@@ -934,7 +968,7 @@ namespace Umati {
                 }
                 auto shared = std::make_shared<ModelOpcUa::StructureNode>(node);
 
-                LOG(INFO) << std::endl << ModelOpcUa::StructureNode::printJson(shared);
+                //LOG(INFO) << std::endl << ModelOpcUa::StructureNode::printJson(shared);
                 std::pair <std::string, ModelOpcUa::StructureNode> newType(typeName, node);
                 typeMap->insert(newType);
             }
