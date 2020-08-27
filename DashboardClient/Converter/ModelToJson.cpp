@@ -9,7 +9,7 @@ namespace Umati
 		{
 			ModelToJson::ModelToJson(
 				const std::shared_ptr<const ModelOpcUa::Node>& pNode,
-				const getValue_t& getValue, std::string topicName, bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
+				const getValue_t& getValue, const std::string& topicName, bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
 			{
 
 				switch (pNode->ModellingRule)
@@ -30,8 +30,11 @@ namespace Umati
 
 					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
 					{
+                        if(pSimpleNode->NodeId.Id=="i=54880" || pSimpleNode->NodeId.Id=="i=54881" ){
+                            LOG(INFO) << "hi " << pSimpleNode->NodeId.Id;
+                        }
 					    auto value = getValue(pNode);
-                        if (nestAsChildren) {
+                        if (nestAsChildren || isBaseDataVariableType(pSimpleNode) && !pSimpleNode->ChildNodes.empty()) {
                             m_json["value"] = value;
                         } else {
                             m_json = value;
@@ -53,7 +56,9 @@ namespace Umati
 					{
 					    if(nestAsChildren) {
 					        m_json["children"] = children;
-					    } else {
+					    } else if (isBaseDataVariableType(pSimpleNode)) {
+                            m_json["properties"] = children;
+                        } else {
                             m_json = children;
                         }
 					} else {
@@ -99,7 +104,10 @@ namespace Umati
                 }
             }
 
-			std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass)
+            bool ModelToJson::isBaseDataVariableType(
+                    const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) const { return pSimpleNode->SpecifiedTypeNodeId.Uri == "" && pSimpleNode->SpecifiedTypeNodeId.Id == "i=63"; }
+
+            std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass)
 			{
 				switch (nodeClass)
 				{

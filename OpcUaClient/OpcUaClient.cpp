@@ -356,19 +356,38 @@ namespace Umati {
             }
 
             std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
-            UaClientSdk::BrowseContext browseContext = prepareObjectTypeContext();
-            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
-            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
 
-            const ModelOpcUa::BrowseResult_t browseResult{
+
+            UaClientSdk::BrowseContext browseVariableTypeContext = prepareObjectAndVariableTypeContext();
+            auto basicVariableTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=63"};
+            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicVariableTypeNode, m_uriToIndexCache).getNodeId();
+
+            const ModelOpcUa::BrowseResult_t browseVariableTypeResult{
+                    ModelOpcUa::NodeClass_t::VariableType,
+                    basicVariableTypeNode,
+                    ModelOpcUa::NodeId_t{"",""}, //TypeDefinition;
+                    ModelOpcUa::NodeId_t{"",""}, //ReferenceTypeId;
+                    ModelOpcUa::QualifiedName_t{basicVariableTypeNode.Uri,""} // BrowseName
+            };
+            auto startVariableType = handleBrowseTypeResult(bidirectionalTypeMap, browseVariableTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
+            browseTypes(bidirectionalTypeMap, browseVariableTypeContext, startUaNodeId, startVariableType);
+
+            LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
+
+            UaClientSdk::BrowseContext browseObjectTypeContext = prepareObjectAndVariableTypeContext();
+            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+            UaNodeId startObjectTypeUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
+
+            const ModelOpcUa::BrowseResult_t browseObjectTypeResult{
                 ModelOpcUa::NodeClass_t::ObjectType,
                 basicObjectTypeNode,
                 ModelOpcUa::NodeId_t{"",""}, //TypeDefinition;
                 ModelOpcUa::NodeId_t{"",""}, //ReferenceTypeId;
                 ModelOpcUa::QualifiedName_t{basicObjectTypeNode.Uri,""} // BrowseName
             };
-            auto startType = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
-            browseTypes(bidirectionalTypeMap, browseContext, startUaNodeId, startType);
+            auto startObjectType = handleBrowseTypeResult(bidirectionalTypeMap, browseObjectTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
+            browseTypes(bidirectionalTypeMap, browseObjectTypeContext, startObjectTypeUaNodeId, startObjectType);
+            LOG(INFO) << "Browsing object types finished";
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
                 auto uaNamespace = uaNamespaces[i];
@@ -387,9 +406,10 @@ namespace Umati {
                     try{
                     std::string childTypeName = getTypeName(childIterator->get()->SpecifiedTypeNodeId);
                     auto childType = m_typeMap->find(childTypeName);
+
                     if(childType != m_typeMap->end()) {
                         childIterator->get()->SpecifiedChildNodes=childType->second->SpecifiedChildNodes;
-                        // LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
+                        //LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
                     }}catch (std::exception &ex) {
                         LOG(WARNING)<< "Unable to update type due to " << ex.what();
                     }
@@ -461,7 +481,7 @@ namespace Umati {
         }
 
         void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) {
-            browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectTypeContext());
+            browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectAndVariableTypeContext());
 		}
 
         void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) {
@@ -496,7 +516,7 @@ namespace Umati {
             UaReferenceDescriptions referenceDescriptions;
 
             /// begin browse modelling rule
-            UaClientSdk::BrowseContext browseContext2 = prepareObjectTypeContext();
+            UaClientSdk::BrowseContext browseContext2 = prepareObjectAndVariableTypeContext();
             browseContext2.referenceTypeId = UaNodeId(OpcUaId_HasModellingRule);
             ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Optional;
 
@@ -530,10 +550,11 @@ namespace Umati {
             uint16_t currentNamespaceIndex = currentUaNodeId.namespaceIndex();
             auto it = m_availableObjectTypeNamespaces.find(currentNamespaceIndex);
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
+            bool isVariableType = ModelOpcUa::VariableType == entry.NodeClass;
             ModelOpcUa::StructureBiNode node(entry, std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureNode>>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule );
             auto current = std::make_shared<ModelOpcUa::StructureBiNode>(node);
 
-            if (isObjectType) {
+            if (isObjectType || isVariableType) {
                 std::string typeName = node.structureNode->SpecifiedBrowseName.Uri + ";" + node.structureNode->SpecifiedBrowseName.Name;
                 if(bidirectionalTypeMap->count(typeName) == 0) {
                     current->isType = true;
@@ -554,7 +575,7 @@ namespace Umati {
             return current;
        }
 
-        UaClientSdk::BrowseContext OpcUaClient::prepareObjectTypeContext() const {
+        UaClientSdk::BrowseContext OpcUaClient::prepareObjectAndVariableTypeContext() {
             UaClientSdk::BrowseContext browseContext;
             browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
             browseContext.includeSubtype = OpcUa_True;

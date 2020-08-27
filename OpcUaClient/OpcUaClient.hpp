@@ -121,7 +121,7 @@ namespace Umati {
             BrowseWithContext(const ModelOpcUa::NodeId_t &startNode, const ModelOpcUa::NodeId_t &referenceTypeId,
                               const ModelOpcUa::NodeId_t &typeDefinition, UaClientSdk::BrowseContext &browseContext);
 
-            UaClientSdk::BrowseContext prepareObjectTypeContext() const;
+            static UaClientSdk::BrowseContext prepareObjectAndVariableTypeContext() ;
 
             std::shared_ptr<ModelOpcUa::StructureBiNode> handleBrowseTypeResult(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap,
                 const ModelOpcUa::BrowseResult_t &entry, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule);

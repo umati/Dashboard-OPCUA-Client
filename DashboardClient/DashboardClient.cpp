@@ -362,20 +362,18 @@ namespace Umati {
             // LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
             auto callback = [pNode, &valueMap](nlohmann::json value) {
-                //LOG(INFO) << "Value Update for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id << " :"<< value.dump(2);
                 try{
                     valueMap[pNode] = value;
                 } catch (std::exception &ex) {
                     LOG(ERROR) << ex.what();
                 }
             };
-            try{
+            try {
                 auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
-            m_subscribedValues.push_back(subscribedValue);
+                m_subscribedValues.push_back(subscribedValue);
             } catch (std::exception &ex) {
                 LOG(ERROR) << "Subscribe thrown an error: " << ex.what();
             }
-
         }
 
         bool DashboardClient::isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode) {
