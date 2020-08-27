@@ -844,7 +844,13 @@ namespace Umati {
 			{
 				LOG(WARNING) << "Continuing with index 0 - expected one target, got " << uaBrowsePathResults[0].NoOfTargets << " for node: '" << static_cast<std::string>(startNode) << "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
 				for(int target_id = 0; target_id < uaBrowsePathResults[0].NoOfTargets; target_id++) {
-                    LOG(WARNING) << "Target " << target_id << " | id: " << UaString(uaBrowsePathResults[0].Targets[target_id].TargetId.NamespaceUri).toUtf8() << ";" << UaString(uaBrowsePathResults[0].Targets[target_id].TargetId.NodeId).toUtf8();
+                    try{
+                        UaNodeId _targetNodeId(UaExpandedNodeId(uaBrowsePathResults[0].Targets[0].TargetId).nodeId());
+                        auto nodeId = Converter::UaNodeIdToModelNodeId(_targetNodeId, m_indexToUriCache).getNodeId();
+                        LOG(WARNING) << "Target " << target_id << " | id: " << nodeId.Uri << ";" << nodeId.Id;
+                    } catch (std::exception &ex) {
+                        LOG(ERROR) << "error  getting nodeId " << ex.what();
+                    }
                 }
 			}
 
