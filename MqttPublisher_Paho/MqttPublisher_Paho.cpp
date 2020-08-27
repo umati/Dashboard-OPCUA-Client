@@ -15,7 +15,7 @@ namespace Umati {
             opts_conn.set_will(opts_will);
 
 			try {
-				LOG(ERROR) << "Connect to " << host;
+				LOG(INFO) << "Connect to " << host;
 				m_cli.connect(opts_conn)->wait();
 			}
 			catch (const mqtt::exception& ex) {
@@ -86,7 +86,7 @@ namespace Umati {
 
 		void MqttPublisher_Paho::MqttCallbacks::connected(const std::string &cause)
 		{
-			LOG(ERROR) << "Mqtt Connected: " << cause;
+			LOG(INFO) << "Mqtt Connected: " << cause;
 			m_mqttPublisher_paho->Publish(m_mqttPublisher_paho->m_onlineTopic, "1");
 		}
 

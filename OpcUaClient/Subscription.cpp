@@ -189,7 +189,7 @@ namespace Umati {
 			Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback
 		)
 		{
-		    LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
+		    // LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
 			UaClientSdk::ServiceSettings servSettings;
 			UaMonitoredItemCreateRequests monItemCreateReq;
 			UaMonitoredItemCreateResults monItemCreateResult;

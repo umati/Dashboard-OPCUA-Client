@@ -198,25 +198,29 @@ namespace Umati {
             try {
                 std::shared_ptr<ModelOpcUa::StructureNode> p_type = getIdentificationTypeOfNamespace(machineNodeId);
 
-                auto typeIt = m_pDataClient->m_nameToId->find(
-                        p_type->SpecifiedBrowseName.Uri + ";" + p_type->SpecifiedBrowseName.Name);
+                std::string typeName = p_type->SpecifiedBrowseName.Uri + ";" + p_type->SpecifiedBrowseName.Name;
+                auto typeIt = m_pDataClient->m_nameToId->find(typeName);
 
                 if (typeIt != m_pDataClient->m_nameToId->end()) {
                     ModelOpcUa::NodeId_t type = typeIt->second;
                     auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
 
-                    std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId,
-                                                                                                 hasComponents, type);
+                    std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId, hasComponents, type);
                     if (!identification.empty()) {
+                        LOG(INFO) << "Found component of type " << type.Uri << ";" << type.Id << " in " << machineNodeId.Uri << ";" << machineNodeId.Id ;
                         UaReferenceDescriptions referenceDescriptions;
-                        browseIdentificationValues(machineNodeId, identification, referenceDescriptions,
-                                                   identificationAsJson);
+                        browseIdentificationValues(machineNodeId, identification, referenceDescriptions,identificationAsJson);
                         if (!identificationAsJson.empty()) {
                             return true;
+                        } else {
+                            LOG(INFO) << "Identification JSON empty";
                         }
+                    } else {
+                        LOG(INFO) << "Identification empty, couldn't find component of type " << type.Uri << ";" << type.Id << " in " << machineNodeId.Uri << ";" << machineNodeId.Id ;
                     }
-                } else {
-                    LOG(INFO) << "Unable to find type";
+                }
+                else {
+                    LOG(INFO) << "Unable to find type " << typeName << " in nameToId";
                 }
             }
             catch(std::exception &ex){

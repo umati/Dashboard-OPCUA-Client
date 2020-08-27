@@ -178,7 +178,7 @@ namespace Umati {
             UaStatusCode uaResultElement(readResult[0].StatusCode);
             if (uaResultElement.isBad())
             {
-                LOG(ERROR) << "Bad value status code failed for node: '" << nodeId.toFullString().toUtf8()
+                LOG(WARNING) << "Bad value status code failed for node: '" << nodeId.toFullString().toUtf8()
                            << "' with " << uaResultElement.toString().toUtf8();
                 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
             }
@@ -231,7 +231,7 @@ namespace Umati {
 			UaStatusCode uaResultElement(readResult[0].StatusCode);
 			if (uaResultElement.isBad())
 			{
-				LOG(ERROR) << "Bad value status code failed for node: '" << nodeId.toFullString().toUtf8()
+				LOG(WARNING) << "Bad value status code failed for node: '" << nodeId.toFullString().toUtf8()
 					<< "' with " << uaResultElement.toString().toUtf8();
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
 			}
@@ -391,7 +391,7 @@ namespace Umati {
                         childIterator->get()->SpecifiedChildNodes=childType->second->SpecifiedChildNodes;
                         // LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
                     }}catch (std::exception &ex) {
-                        LOG(ERROR)<< "Unable to update type due to " << ex.what();
+                        LOG(WARNING)<< "Unable to update type due to " << ex.what();
                     }
                 }
             }
@@ -741,8 +741,7 @@ namespace Umati {
         }
 
         void OpcUaClient::handleContinuationPoint(const UaByteString &/*continuationPoint*/) const {
-		    //todo handle continuation point
-            LOG(INFO) << "Handling continuation point not yet implemented";
+            LOG(DEBUG) << "Handling continuation point not yet implemented";
         }
 
         ModelOpcUa::BrowseResult_t OpcUaClient::ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescription) {
@@ -843,9 +842,10 @@ namespace Umati {
 
 			if (uaBrowsePathResults[0].NoOfTargets != 1)
 			{
-				LOG(ERROR) << "Expect 1 target, got " << uaBrowsePathResults[0].NoOfTargets << " for node: '" << static_cast<std::string>(startNode)
-					<< "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
-				throw Exceptions::UmatiException("Number of targets mismatch.");
+				LOG(WARNING) << "Continuing with index 0 - expected one target, got " << uaBrowsePathResults[0].NoOfTargets << " for node: '" << static_cast<std::string>(startNode) << "' with " << uaResult.toString().toUtf8() << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
+				for(int target_id = 0; target_id < uaBrowsePathResults[0].NoOfTargets; target_id++) {
+                    LOG(WARNING) << "Target " << target_id << " | id: " << UaString(uaBrowsePathResults[0].Targets[target_id].TargetId.NamespaceUri).toUtf8() << ";" << UaString(uaBrowsePathResults[0].Targets[target_id].TargetId.NodeId).toUtf8();
+                }
 			}
 
 			UaNodeId targetNodeId(UaExpandedNodeId(uaBrowsePathResults[0].Targets[0].TargetId).nodeId());

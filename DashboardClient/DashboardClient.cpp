@@ -34,7 +34,9 @@ namespace Umati {
 		{
 		    try {
                 std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition, channel);
+                LOG(INFO) << "DataSetStorage prepared for " << channel ;
                 subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
+                LOG(INFO) << "Values subscribed for  " << channel;
                 m_dataSets.push_back(pDataSetStorage);
             }
 		    catch(const Umati::Exceptions::OpcUaException &ex) {
@@ -42,7 +44,7 @@ namespace Umati {
 		    }
 		    catch(std::exception &ex) {
                 LOG(ERROR) << ex.what();
-            }
+             }
 		}
 
         std::shared_ptr<DashboardClient::DataSetStorage_t>
@@ -164,10 +166,17 @@ namespace Umati {
                 foundChildNodes.push_back(nodeIds);
             }
             catch(std::exception &ex){
-                TransformToNodeIdNodeNotFoundLog(startNode, pChild);
-                LOG(ERROR) << "Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
+                LOG(WARNING) << "Could not find '"
+                           << static_cast<std::string>(startNode)
+                           << "'->'"
+                           << static_cast<std::string>(pChild->SpecifiedBrowseName)
+                           << "'" << "Unknown ID caused exception: " << ex.what();
                 if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional) {
-                    LOG(ERROR) << "Forwarding exception";
+                    LOG(ERROR) << "Forwarding exception, cause:" << "Could not find '"
+                                                                      << static_cast<std::string>(startNode)
+                                                                      << "'->'"
+                                                                      << static_cast<std::string>(pChild->SpecifiedBrowseName)
+                                                                      << "'" << "Unknown ID caused exception: " << ex.what();
                     throw ex;
                 }
                 return false;
@@ -199,8 +208,13 @@ namespace Umati {
                 foundChildNodes.push_back(placeholderNode);
             }
 		    catch(std::exception &ex) {
-                LOG(ERROR) << "Child " << pChild->SpecifiedBrowseName.Uri << ";" << pChild->SpecifiedBrowseName.Name << " of " << startNode.Uri << ";"<< startNode.Id << " caused an exception: Unknown ID caused exception: " << ex.what() << ". Exception will be forwarded if child node was mandatory";
+                LOG(ERROR) << "Child " << pChild->SpecifiedBrowseName.Uri << ";" << pChild->SpecifiedBrowseName.Name << " of " << startNode.Uri << ";"<< startNode.Id << " caused an exception: Unknown ID caused exception: " << ex.what();
                 if(pChild->ModellingRule != ModelOpcUa::ModellingRule_t::OptionalPlaceholder) {
+                    LOG(ERROR) << "Forwarding exception, cause:" << "Could not find '"
+                               << static_cast<std::string>(startNode)
+                               << "'->'"
+                               << static_cast<std::string>(pChild->SpecifiedBrowseName)
+                               << "'" << "Unknown ID caused exception: " << ex.what();
                     throw ex;
                 }
                 return false;
