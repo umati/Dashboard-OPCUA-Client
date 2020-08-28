@@ -54,7 +54,6 @@ namespace Umati {
             auto pDataSetStorage = std::make_shared<DataSetStorage_t>();
             pDataSetStorage->startNodeId = startNodeId;
             pDataSetStorage->channel = channel;
-            pDataSetStorage->pTypeDefinition = pTypeDefinition;
             pDataSetStorage->node = TransformToNodeIds(startNodeId, pTypeDefinition);
             return pDataSetStorage;
         }

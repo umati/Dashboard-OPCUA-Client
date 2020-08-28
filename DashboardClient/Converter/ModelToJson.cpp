@@ -61,10 +61,7 @@ namespace Umati
                         } else {
                             m_json = children;
                         }
-					} else {
-                        // LOG(INFO) << "Children for " << pSimpleNode->NodeId.Uri  << ";" << pSimpleNode->NodeId.Id << " of type " << pSimpleNode->TypeNodeId.Uri << ";" << pSimpleNode->TypeNodeId.Id << " are empty";
-                    }
-					
+					}
 					break;
 				}
 				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:

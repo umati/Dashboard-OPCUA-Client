@@ -49,8 +49,7 @@ namespace Umati {
 			struct DataSetStorage_t
 			{
 				ModelOpcUa::NodeId_t startNodeId;
-				std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition;
-				std::string channel;
+                std::string channel;
 				std::shared_ptr<const ModelOpcUa::SimpleNode> node;
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> values;
 			};
@@ -67,7 +66,7 @@ namespace Umati {
 				std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStructurePlaceholder);
 
 			void subscribeValues(
-				const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
+				std::shared_ptr<ModelOpcUa::SimpleNode> pNode,
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 			);
 
