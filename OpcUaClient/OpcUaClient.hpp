@@ -113,7 +113,7 @@ namespace Umati {
 
             UaClientSdk::BrowseContext prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);
 
-            void browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, const UaClientSdk::BrowseContext& browseContext, const UaNodeId& startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent);
+            void browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, const UaClientSdk::BrowseContext& browseContext, const UaNodeId& startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, bool ofBaseDataVariableType);
 
             static void handleContinuationPoint(const UaByteString &continuationPoint) ;
 
@@ -128,7 +128,7 @@ namespace Umati {
             static UaClientSdk::BrowseContext prepareObjectAndVariableTypeBrowseContext() ;
 
             std::shared_ptr<ModelOpcUa::StructureBiNode> handleBrowseTypeResult(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap,
-                const ModelOpcUa::BrowseResult_t &entry, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule);
+                const ModelOpcUa::BrowseResult_t &entry, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule, bool ofBaseDataVariableType);
 
             static void createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, const std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>>& sharedPtr, uint16_t namespaceIndex);
 
@@ -140,7 +140,7 @@ namespace Umati {
 
             void fillNamespaceCache(const UaStringArray &uaNamespaces);
 
-            void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t &basicTypeNode, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap);
+            void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t &basicTypeNode, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, bool ofBaseDataVariableType);
 
             void updateTypeMap();
 		};

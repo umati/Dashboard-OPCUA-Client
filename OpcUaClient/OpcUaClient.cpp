@@ -348,10 +348,10 @@ namespace Umati {
 
             std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
 
-            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicVariableTypeNode, bidirectionalTypeMap);
+            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicVariableTypeNode, bidirectionalTypeMap, true);
             LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
 
-            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicObjectTypeNode, bidirectionalTypeMap);
+            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicObjectTypeNode, bidirectionalTypeMap, false);
             LOG(INFO) << "Browsing object types finished";
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
@@ -411,17 +411,17 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t& basicTypeNode, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap) {
+        void OpcUaClient::browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t& basicTypeNode, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, bool ofBaseDataVariableType) {
             // startBrowseTypeResult is needed to create a startVariableType
 		    const ModelOpcUa::BrowseResult_t startBrowseTypeResult{
                     ModelOpcUa::NodeClass_t::VariableType, basicTypeNode, m_emptyId, m_emptyId,
                     ModelOpcUa::QualifiedName_t{basicTypeNode.Uri,""} // BrowseName
             };
-            auto startVariableType = handleBrowseTypeResult(bidirectionalTypeMap, startBrowseTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
+            auto startVariableType = handleBrowseTypeResult(bidirectionalTypeMap, startBrowseTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory, ofBaseDataVariableType);
 
             UaClientSdk::BrowseContext browseTypeContext = prepareObjectAndVariableTypeBrowseContext();
             UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicTypeNode, m_uriToIndexCache).getNodeId();
-            browseTypes(bidirectionalTypeMap, browseTypeContext, startUaNodeId, startVariableType);
+            browseTypes(bidirectionalTypeMap, browseTypeContext, startUaNodeId, startVariableType, ofBaseDataVariableType);
         }
 
         void OpcUaClient::findObjectTypeNamespacesAndCreateTypeMap(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
@@ -501,7 +501,7 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, const UaClientSdk::BrowseContext& browseContext, const UaNodeId& startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent)  {
+        void OpcUaClient::browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, const UaClientSdk::BrowseContext& browseContext, const UaNodeId& startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, bool ofBaseDataVariableType)  {
 
             UaReferenceDescriptions referenceDescriptions;
             browseUnderStartNode(startUaNodeId, referenceDescriptions, browseContext);
@@ -512,8 +512,8 @@ namespace Umati {
                 UaNodeId nextUaNodeId = Converter::ModelNodeIdToUaNodeId(browseResult.NodeId, m_uriToIndexCache).getNodeId();
                 ModelOpcUa::ModellingRule_t modellingRule = browseModellingRule(nextUaNodeId);
                 // LOG(INFO) << "currently at " << startUaNodeId.toFullString().toUtf8();
-                auto current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule);
-                browseTypes(bidirectionalTypeMap, browseContext, nextUaNodeId, current);
+                auto current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule, ofBaseDataVariableType);
+                browseTypes(bidirectionalTypeMap, browseContext, nextUaNodeId, current, ofBaseDataVariableType);
             }
         }
 
@@ -551,7 +551,7 @@ namespace Umati {
 
         std::shared_ptr<ModelOpcUa::StructureBiNode> OpcUaClient::handleBrowseTypeResult(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap,
                                             const ModelOpcUa::BrowseResult_t &entry,
-                                            const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule) {
+                                            const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule, bool ofBaseDataVariableType) {
             UaNodeId currentUaNodeId = Converter::ModelNodeIdToUaNodeId(entry.NodeId, m_uriToIndexCache).getNodeId();
 
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
@@ -563,6 +563,7 @@ namespace Umati {
                 std::string typeName = node.structureNode->SpecifiedBrowseName.Uri + ";" + node.structureNode->SpecifiedBrowseName.Name;
                 if(bidirectionalTypeMap->count(typeName) == 0) {
                     current->isType = true;
+                    current->ofBaseDataVariableType = ofBaseDataVariableType;
                     std::pair <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>> newType(typeName, current);
                     bidirectionalTypeMap->insert(newType);
                     std::pair <std::string, ModelOpcUa::NodeId_t> newNameMapping(typeName, entry.NodeId);
@@ -946,6 +947,7 @@ namespace Umati {
                 }
                 std::string typeName = bloodline->front()->structureNode->SpecifiedBrowseName.Uri +  ";" + bloodline->front()->structureNode->SpecifiedBrowseName.Name;
                 ModelOpcUa::StructureNode node = bloodline->front()->structureNode.operator*();
+                node.ofBaseDataVariableType = bloodline->front()->ofBaseDataVariableType;
                 std::stringstream bloodlineStringStream;
                 for(auto bloodlineIterator = bloodline->end(); bloodlineIterator != bloodline->begin(); ){
                     --bloodlineIterator;

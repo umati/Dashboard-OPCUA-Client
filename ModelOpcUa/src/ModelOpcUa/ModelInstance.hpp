@@ -16,6 +16,7 @@ namespace ModelOpcUa {
 
 		/// All child elements
 		const std::list<std::shared_ptr<const Node>> ChildNodes;
+        bool ofBaseDataVariableType = false;
 	protected:
 	};
 

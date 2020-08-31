@@ -178,6 +178,7 @@ namespace ModelOpcUa {
                       ModellingRule_t modellingRule);
 
         std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> SpecifiedChildNodes;
+        bool ofBaseDataVariableType = false;
 
 		static std::string printType(const std::shared_ptr<StructureNode>& node, const std::string& parentTree);
 
@@ -217,6 +218,7 @@ namespace ModelOpcUa {
         std::shared_ptr<StructureBiNode> parent;
         uint16_t namespaceIndex;
         bool isType = false;
+        bool ofBaseDataVariableType = false;
         std::shared_ptr<std::list<std::shared_ptr<StructureBiNode>>> SpecifiedBiChildNodes = std::make_shared<std::list<std::shared_ptr<StructureBiNode>>>();
     };
 

@@ -1,4 +1,5 @@
 #include "ModelToJson.hpp"
+#include "../../ModelOpcUa/src/ModelOpcUa/ModelInstance.hpp"
 #include <easylogging++.h>
 
 namespace Umati
@@ -9,7 +10,7 @@ namespace Umati
 		{
 			ModelToJson::ModelToJson(
 				const std::shared_ptr<const ModelOpcUa::Node>& pNode,
-				const getValue_t& getValue, const std::string& topicName, bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
+				const getValue_t& getValue,  bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
 			{
 
 				switch (pNode->ModellingRule)
@@ -28,7 +29,7 @@ namespace Umati
                         m_json["specifiedTypeNodeId"] = static_cast<std::string> (pSimpleNode->SpecifiedTypeNodeId);
                     }
 
-					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
+					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable || pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::VariableType  )
 					{
 					    auto value = getValue(pNode);
                         if (nestAsChildren || (isBaseDataVariableType(pSimpleNode) && !pSimpleNode->ChildNodes.empty())) {
@@ -42,11 +43,9 @@ namespace Umati
 
 					for (const auto &pChild : pSimpleNode->ChildNodes)
 					{
-					    auto json = (ModelToJson(pChild, getValue, topicName, serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
+					    auto json = (ModelToJson(pChild, getValue,  serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
                         if (publishNullValues || json.dump(0) != "null"){
                             children[pChild->SpecifiedBrowseName.Name] = json;
-                        } else {
-                           // LOG(INFO) << "JSON for " << pChild->SpecifiedBrowseName.Name << " of type " << pChild->SpecifiedTypeNodeId.Uri << ";" << pChild->SpecifiedTypeNodeId.Id << " and machine with topic " << topicName << " is null";
                         }
 					}
 					if (!children.empty())
@@ -73,11 +72,11 @@ namespace Umati
 
 					auto placeholderElements = pPlaceholderNode->getInstances();
 					
-					std::list<nlohmann::json> placeholderJsonElements;
+					nlohmann::json placeholderJsonElements;
 
 					for (const auto &pPlaceholderElement : placeholderElements)
 					{
-						placeholderJsonElements.push_back(ModelToJson(pPlaceholderElement.pNode, getValue, topicName, serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
+						placeholderJsonElements[pPlaceholderElement.BrowseName.Name] = (ModelToJson(pPlaceholderElement.pNode, getValue,  serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
 					}
 					if (serializeNodeInformation) {
                         m_json["placeholderElements"] = placeholderJsonElements;
@@ -99,7 +98,10 @@ namespace Umati
             }
 
             bool ModelToJson::isBaseDataVariableType(
-                    const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) const { return pSimpleNode->SpecifiedTypeNodeId.Uri == "" && pSimpleNode->SpecifiedTypeNodeId.Id == "i=63"; }
+                    const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) const {
+			    return pSimpleNode->SpecifiedTypeNodeId.Uri == "" && pSimpleNode->SpecifiedTypeNodeId.Id == "i=63"
+			     || pSimpleNode->ofBaseDataVariableType;
+			}
 
             std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass)
 			{

@@ -205,6 +205,7 @@ namespace ModelOpcUa {
                 this->structureNode->SpecifiedChildNodes->emplace_back(innerChildStructureNode);
             }
         }
+        this->structureNode->ofBaseDataVariableType = ofBaseDataVariableType;
         return this->structureNode;
     }
 }

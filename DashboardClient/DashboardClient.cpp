@@ -62,7 +62,7 @@ namespace Umati {
 		{
 			for (auto &pDataSetStorage : m_dataSets)
 			{
-			    std::string jsonPayload = getJson(pDataSetStorage, pDataSetStorage->channel);
+			    std::string jsonPayload = getJson(pDataSetStorage);
 			    if(!jsonPayload.empty() && jsonPayload != "null") {
                     auto it = m_latestMessages.find(pDataSetStorage->channel);
                     time_t now;
@@ -86,7 +86,7 @@ namespace Umati {
 			}
 		}
 
-		std::string DashboardClient::getJson(const std::shared_ptr<DataSetStorage_t>& pDataSetStorage, std::string topicName)
+		std::string DashboardClient::getJson(const std::shared_ptr<DataSetStorage_t>& pDataSetStorage)
 		{
 			auto getValueCallback = [pDataSetStorage](const std::shared_ptr<const ModelOpcUa::Node>& pNode) -> nlohmann::json
 			{
@@ -99,7 +99,7 @@ namespace Umati {
                 return it->second;
 			};
 
-			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback, topicName).getJson().dump(2);
+			return Converter::ModelToJson(pDataSetStorage->node, getValueCallback).getJson().dump(2);
 		}
 
 		std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeIds(
@@ -145,6 +145,7 @@ namespace Umati {
 				*pTypeDefinition,
 				foundChildNodes
 				);
+			pNode->ofBaseDataVariableType = pTypeDefinition->ofBaseDataVariableType;
 			return pNode;
 		}
 
@@ -347,6 +348,7 @@ namespace Umati {
             for (const auto &pPlaceholderElement : placeholderElements)
             {
                 // recursive call
+              //  pPlaceholderElement.pNode->SpecifiedBrowseName.Name;
                 subscribeValues(pPlaceholderElement.pNode, valueMap);
             }
             return true;
@@ -376,7 +378,7 @@ namespace Umati {
         }
 
         bool DashboardClient::isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode) {
-            return pNode->NodeClass == ModelOpcUa::NodeClass_t::Variable
+            return (pNode->NodeClass == ModelOpcUa::NodeClass_t::Variable || pNode->NodeClass == ModelOpcUa::NodeClass_t::VariableType)
                 &&  (
                         pNode->ModellingRule == ModelOpcUa::ModellingRule_t::Mandatory
                         || pNode->ModellingRule == ModelOpcUa::ModellingRule_t::Optional

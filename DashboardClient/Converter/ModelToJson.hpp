@@ -25,7 +25,7 @@ namespace Umati
                 * or if mandatoryPlaceholder / optionalPlaceholder modeling rule
                 * - placeholderElements
                 */
-				ModelToJson(const std::shared_ptr<const ModelOpcUa::Node>& pNode, const getValue_t& getValue, const std::string& topicName, bool serializeNodeInformation = false, bool nestAsChildren = false, bool publishNullValues = false);
+				ModelToJson(const std::shared_ptr<const ModelOpcUa::Node>& pNode, const getValue_t& getValue,  bool serializeNodeInformation = false, bool nestAsChildren = false, bool publishNullValues = false);
 
 				nlohmann::json getJson()
 				{
