@@ -68,6 +68,8 @@ namespace Umati {
             virtual void browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) = 0;
             virtual void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) = 0;
             virtual ModelOpcUa::BrowseResult_t ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) = 0;
-		};
+            virtual std::string IndexToUri(uint index) = 0;
+
+        };
 	}
 }

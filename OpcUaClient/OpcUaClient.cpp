@@ -10,6 +10,7 @@
 #include "uaplatformlayer.h"
 
 #include <Exceptions/ClientNotConnected.hpp>
+#include <utility>
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
@@ -27,7 +28,7 @@ namespace Umati {
 		int OpcUaClient::PlatformLayerInitialized = 0;
 
 		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password, std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces, std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
-			: m_serverUri(serverURI), m_username(Username), m_password(Password), m_expectedObjectTypeNamespaces(expectedObjectTypeNamespaces), m_security(static_cast<OpcUa_MessageSecurityMode>(security)), m_subscr(m_uriToIndexCache, m_indexToUriCache)
+			: m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)), m_expectedObjectTypeNamespaces(std::move(expectedObjectTypeNamespaces)), m_security(static_cast<OpcUa_MessageSecurityMode>(security)), m_subscr(m_uriToIndexCache, m_indexToUriCache)
 		{
 			m_defaultServiceSettings.callTimeout = 10000;
             m_opcUaWrapper = std::move(opcUaWrapper);
@@ -67,7 +68,7 @@ namespace Umati {
 				UaString url;
 				UaByteString serverCertificate;
 				UaString securityPolicy;
-				OpcUa_UInt32 securityMode;
+				OpcUa_UInt32 securityMode {};
 			} desiredEndpoint;
 
 
@@ -115,13 +116,11 @@ namespace Umati {
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << result.toString().toUtf8() << std::endl;
 				return false;
 			}
-            //on_connected();
 
             return true;
 		}
 
-        UaClientSdk::SessionConnectInfo &
-        OpcUaClient::prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo) const {
+        UaClientSdk::SessionConnectInfo &OpcUaClient::prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo) {
             sessionConnectInfo.sApplicationName = "KonI4.0 OPC UA Data Client";
             sessionConnectInfo.sApplicationUri = "http://dashboard.umati.app/OPCUA_DataClient";
             sessionConnectInfo.sProductUri = "KonI40OpcUaClient_Product";
@@ -193,7 +192,7 @@ namespace Umati {
             return _nodeId.Uri+";"+value.toString().toUtf8();
         }
 
-        OpcUa_NodeClass OpcUaClient::readNodeClass(UaNodeId nodeId)
+        OpcUa_NodeClass OpcUaClient::readNodeClass(const UaNodeId& nodeId)
 		{
 			checkConnection();
 
@@ -257,7 +256,7 @@ namespace Umati {
 			}
 		}
 
-		UaNodeId OpcUaClient::browseSuperType(UaNodeId typeNodeId)
+		UaNodeId OpcUaClient::browseSuperType(const UaNodeId& typeNodeId)
 		{
 			checkConnection();
 
@@ -314,7 +313,7 @@ namespace Umati {
 			return UaNodeId(UaExpandedNodeId(referenceDescriptions[0].NodeId).nodeId());
 		}
 
-		bool OpcUaClient::isSameOrSubtype(UaNodeId expectedType, UaNodeId checkType, std::size_t maxDepth)
+		bool OpcUaClient::isSameOrSubtype(const UaNodeId& expectedType, const UaNodeId& checkType, std::size_t maxDepth)
 		{
 			if (checkType.isNull())
 			{
@@ -343,50 +342,16 @@ namespace Umati {
             std::vector<std::string> notFoundObjectTypeNamespaces;
             UaStringArray uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
 
-            initializeUpdateNamespaceCache(notFoundObjectTypeNamespaces);
+            initializeNamespaceCache(notFoundObjectTypeNamespaces);
 
-            for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
-                auto uaNamespace = uaNamespaces[i];
-                auto uaNamespaceAsUaString = UaString(uaNamespace);
-                auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
-                std::string namespaceURI(uaNamespaceUtf8);
-                m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
-                m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
-                LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
-            }
+            fillNamespaceCache(uaNamespaces);
 
             std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
 
-
-            UaClientSdk::BrowseContext browseVariableTypeContext = prepareObjectAndVariableTypeContext();
-            auto basicVariableTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=63"};
-            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicVariableTypeNode, m_uriToIndexCache).getNodeId();
-
-            const ModelOpcUa::BrowseResult_t browseVariableTypeResult{
-                    ModelOpcUa::NodeClass_t::VariableType,
-                    basicVariableTypeNode,
-                    ModelOpcUa::NodeId_t{"",""}, //TypeDefinition;
-                    ModelOpcUa::NodeId_t{"",""}, //ReferenceTypeId;
-                    ModelOpcUa::QualifiedName_t{basicVariableTypeNode.Uri,""} // BrowseName
-            };
-            auto startVariableType = handleBrowseTypeResult(bidirectionalTypeMap, browseVariableTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
-            browseTypes(bidirectionalTypeMap, browseVariableTypeContext, startUaNodeId, startVariableType);
-
+            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicVariableTypeNode, bidirectionalTypeMap);
             LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
 
-            UaClientSdk::BrowseContext browseObjectTypeContext = prepareObjectAndVariableTypeContext();
-            auto basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
-            UaNodeId startObjectTypeUaNodeId = Converter::ModelNodeIdToUaNodeId(basicObjectTypeNode, m_uriToIndexCache).getNodeId();
-
-            const ModelOpcUa::BrowseResult_t browseObjectTypeResult{
-                ModelOpcUa::NodeClass_t::ObjectType,
-                basicObjectTypeNode,
-                ModelOpcUa::NodeId_t{"",""}, //TypeDefinition;
-                ModelOpcUa::NodeId_t{"",""}, //ReferenceTypeId;
-                ModelOpcUa::QualifiedName_t{basicObjectTypeNode.Uri,""} // BrowseName
-            };
-            auto startObjectType = handleBrowseTypeResult(bidirectionalTypeMap, browseObjectTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
-            browseTypes(bidirectionalTypeMap, browseObjectTypeContext, startObjectTypeUaNodeId, startObjectType);
+            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicObjectTypeNode, bidirectionalTypeMap);
             LOG(INFO) << "Browsing object types finished";
 
             for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
@@ -394,13 +359,17 @@ namespace Umati {
                 auto uaNamespaceAsUaString = UaString(uaNamespace);
                 auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
                 std::string namespaceURI(uaNamespaceUtf8);
-                findObjectTypeNamespaces(notFoundObjectTypeNamespaces, i, namespaceURI, bidirectionalTypeMap);
+                findObjectTypeNamespacesAndCreateTypeMap(notFoundObjectTypeNamespaces, i, namespaceURI, bidirectionalTypeMap);
             }
 
             for(auto & notFoundObjectTypeNamespace : notFoundObjectTypeNamespaces){
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespace;
             }
 
+            updateTypeMap();
+        }
+
+        void OpcUaClient::updateTypeMap() {
             for(auto mapIterator = m_typeMap->begin(); mapIterator != m_typeMap->end(); mapIterator++) {
                 for(auto childIterator = mapIterator->second->SpecifiedChildNodes->begin(); childIterator != mapIterator->second->SpecifiedChildNodes->end(); childIterator++) {
                     try{
@@ -416,10 +385,47 @@ namespace Umati {
                 }
             }
             LOG(INFO) << "Updated typeMap";
-		}
+        }
 
-        void OpcUaClient::findObjectTypeNamespaces(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
-                                                   const std::string &namespaceURI, std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap) {
+        void OpcUaClient::initializeNamespaceCache(std::vector<std::string> &notFoundObjectTypeNamespaces) {
+            m_opcUaWrapper->SessionUpdateNamespaceTable();
+
+            m_uriToIndexCache.clear();
+            m_indexToUriCache.clear();
+            m_availableObjectTypeNamespaces.clear();
+
+            for (auto & m_expectedObjectTypeNamespace : m_expectedObjectTypeNamespaces) {
+                notFoundObjectTypeNamespaces.push_back(m_expectedObjectTypeNamespace);
+            }
+        }
+
+        void OpcUaClient::fillNamespaceCache(const UaStringArray &uaNamespaces) {
+            for (std::size_t i = 0; i < uaNamespaces.length(); ++i) {
+                auto uaNamespace = uaNamespaces[i];
+                auto uaNamespaceAsUaString = UaString(uaNamespace);
+                auto uaNamespaceUtf8 = uaNamespaceAsUaString.toUtf8();
+                std::string namespaceURI(uaNamespaceUtf8);
+                m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
+                m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
+                LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
+            }
+        }
+
+        void OpcUaClient::browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t& basicTypeNode, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap) {
+            // startBrowseTypeResult is needed to create a startVariableType
+		    const ModelOpcUa::BrowseResult_t startBrowseTypeResult{
+                    ModelOpcUa::NodeClass_t::VariableType, basicTypeNode, m_emptyId, m_emptyId,
+                    ModelOpcUa::QualifiedName_t{basicTypeNode.Uri,""} // BrowseName
+            };
+            auto startVariableType = handleBrowseTypeResult(bidirectionalTypeMap, startBrowseTypeResult, nullptr, ModelOpcUa::ModellingRule_t::Mandatory);
+
+            UaClientSdk::BrowseContext browseTypeContext = prepareObjectAndVariableTypeBrowseContext();
+            UaNodeId startUaNodeId = Converter::ModelNodeIdToUaNodeId(basicTypeNode, m_uriToIndexCache).getNodeId();
+            browseTypes(bidirectionalTypeMap, browseTypeContext, startUaNodeId, startVariableType);
+        }
+
+        void OpcUaClient::findObjectTypeNamespacesAndCreateTypeMap(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
+                                                                   const std::string &namespaceURI, std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap) {
             auto it = find (notFoundObjectTypeNamespaces.begin(), notFoundObjectTypeNamespaces.end(), namespaceURI);
             if (it != notFoundObjectTypeNamespaces.end()) {
                 NamespaceInformation_t information;
@@ -481,7 +487,7 @@ namespace Umati {
         }
 
         void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) {
-            browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectAndVariableTypeContext());
+            browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectAndVariableTypeBrowseContext());
 		}
 
         void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) {
@@ -495,7 +501,7 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, UaClientSdk::BrowseContext browseContext, UaNodeId startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent)  {
+        void OpcUaClient::browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, const UaClientSdk::BrowseContext& browseContext, const UaNodeId& startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent)  {
 
             UaReferenceDescriptions referenceDescriptions;
             browseUnderStartNode(startUaNodeId, referenceDescriptions, browseContext);
@@ -511,12 +517,12 @@ namespace Umati {
             }
         }
 
-        ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(UaNodeId uaNodeId) {
+        ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(const UaNodeId& uaNodeId) {
             UaByteString continuationPoint;
             UaReferenceDescriptions referenceDescriptions;
 
             /// begin browse modelling rule
-            UaClientSdk::BrowseContext browseContext2 = prepareObjectAndVariableTypeContext();
+            UaClientSdk::BrowseContext browseContext2 = prepareObjectAndVariableTypeBrowseContext();
             browseContext2.referenceTypeId = UaNodeId(OpcUaId_HasModellingRule);
             ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Optional;
 
@@ -547,8 +553,7 @@ namespace Umati {
                                             const ModelOpcUa::BrowseResult_t &entry,
                                             const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule) {
             UaNodeId currentUaNodeId = Converter::ModelNodeIdToUaNodeId(entry.NodeId, m_uriToIndexCache).getNodeId();
-            uint16_t currentNamespaceIndex = currentUaNodeId.namespaceIndex();
-            auto it = m_availableObjectTypeNamespaces.find(currentNamespaceIndex);
+
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
             bool isVariableType = ModelOpcUa::VariableType == entry.NodeClass;
             ModelOpcUa::StructureBiNode node(entry, std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureNode>>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule );
@@ -575,12 +580,17 @@ namespace Umati {
             return current;
        }
 
-        UaClientSdk::BrowseContext OpcUaClient::prepareObjectAndVariableTypeContext() {
+        UaClientSdk::BrowseContext OpcUaClient::prepareObjectAndVariableTypeBrowseContext() {
             UaClientSdk::BrowseContext browseContext;
             browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
             browseContext.includeSubtype = OpcUa_True;
             browseContext.maxReferencesToReturn = 0;
-
+            browseContext.resultMask = OpcUa_BrowseResultMask_All ;
+            browseContext.nodeClassMask =
+                       OpcUa_NodeClass_Object
+                    + OpcUa_NodeClass_Variable
+                    + OpcUa_NodeClass_ObjectType
+                    + OpcUa_NodeClass_VariableType;
             /*
              * - OpcUa_NodeClass_Object        = 1,
              * - OpcUa_NodeClass_Variable      = 2,
@@ -591,27 +601,7 @@ namespace Umati {
              * - OpcUa_NodeClass_DataType      = 64,
              * - OpcUa_NodeClass_View          = 128
              * */
-            browseContext.nodeClassMask =
-                    OpcUa_NodeClass_ObjectType |
-                    OpcUa_NodeClass_Object |
-                    OpcUa_NodeClass_Variable |
-                    OpcUa_NodeClass_VariableType
-                ;
-            browseContext.resultMask = OpcUa_BrowseResultMask_All ;
             return browseContext;
-        }
-
-
-        void OpcUaClient::initializeUpdateNamespaceCache(std::vector<std::string> &notFoundObjectTypeNamespaces) {
-            m_opcUaWrapper->SessionUpdateNamespaceTable();
-
-            m_uriToIndexCache.clear();
-            m_indexToUriCache.clear();
-            m_availableObjectTypeNamespaces.clear();
-
-            for (std::size_t i = 0; i < m_expectedObjectTypeNamespaces.size(); i++) {
-                notFoundObjectTypeNamespaces.push_back(m_expectedObjectTypeNamespaces[i]);
-            }
         }
 
         void OpcUaClient::connectionStatusChanged(OpcUa_UInt32 /*clientConnectionId*/, UaClientSdk::UaClient::ServerStatus serverStatus)
@@ -761,9 +751,13 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::handleContinuationPoint(const UaByteString &/*continuationPoint*/) const {
+        void OpcUaClient::handleContinuationPoint(const UaByteString &/*continuationPoint*/) {
             LOG(DEBUG) << "Handling continuation point not yet implemented";
         }
+
+        std::string OpcUaClient::IndexToUri(uint index) {
+		    return m_indexToUriCache[index];
+		}
 
         ModelOpcUa::BrowseResult_t OpcUaClient::ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescription) {
             ModelOpcUa::BrowseResult_t entry;
@@ -780,7 +774,7 @@ namespace Umati {
         }
 
         UaClientSdk::BrowseContext OpcUaClient::prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId) {
-            auto referenceTypeUaNodeId = Converter::ModelNodeIdToUaNodeId(referenceTypeId, m_uriToIndexCache).getNodeId();
+            auto referenceTypeUaNodeId = Converter::ModelNodeIdToUaNodeId(std::move(referenceTypeId), m_uriToIndexCache).getNodeId();
             UaClientSdk::BrowseContext browseContext;
             browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
             browseContext.includeSubtype = OpcUa_True;
@@ -790,10 +784,10 @@ namespace Umati {
                 browseContext.referenceTypeId = referenceTypeUaNodeId;
             }
             browseContext.resultMask =
-                OpcUa_BrowseResultMask_BrowseName |
-                OpcUa_BrowseResultMask_TypeDefinition |
-                OpcUa_BrowseResultMask_NodeClass |
-                OpcUa_BrowseResultMask_ReferenceTypeId;
+                  OpcUa_BrowseResultMask_BrowseName
+                + OpcUa_BrowseResultMask_TypeDefinition
+                + OpcUa_BrowseResultMask_NodeClass
+                + OpcUa_BrowseResultMask_ReferenceTypeId;
             return browseContext;
         }
 
@@ -936,16 +930,16 @@ namespace Umati {
             return readValues;
         }
 
-        void OpcUaClient::createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>> typeMap, uint16_t namespaceIndex) {
-		    for ( auto typeIterator = bidirectionalTypeMap->begin(); typeIterator != bidirectionalTypeMap->end(); typeIterator++ ) {
-                if(typeIterator->second->namespaceIndex != namespaceIndex) {
+        void OpcUaClient::createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, const std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>>& typeMap, uint16_t namespaceIndex) {
+		    for (auto & typeIterator : *bidirectionalTypeMap) {
+                if(typeIterator.second->namespaceIndex != namespaceIndex) {
                     continue;
                 }
                 // go to highest parent and then down the ladder to add / update attributes;
                 // create a list of pointers till parent is null
                 // go backwards and add / update child nodes till the end
                 std::shared_ptr<std::list<std::shared_ptr<ModelOpcUa::StructureBiNode>>> bloodline = std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
-                std::shared_ptr<ModelOpcUa::StructureBiNode> currentGeneration = typeIterator->second;
+                std::shared_ptr<ModelOpcUa::StructureBiNode> currentGeneration = typeIterator.second;
                 while(nullptr != currentGeneration) {
                     bloodline->emplace_back(currentGeneration);
                     currentGeneration = currentGeneration->parent;
@@ -998,8 +992,7 @@ namespace Umati {
             }
         }
 
-        void OpcUaClient::split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter)
-        {
+        void OpcUaClient::split(const std::string& inputString, std::vector<std::string>& resultContainer, char delimiter) {
             std::size_t current_char_position, previous_char_position = 0;
             current_char_position = inputString.find(delimiter);
             while (current_char_position != std::string::npos) {
@@ -1010,8 +1003,7 @@ namespace Umati {
             updateResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
         }
 
-        void
-        OpcUaClient::updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer, size_t current_char_position, size_t previous_char_position) const {
+        void OpcUaClient::updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer, size_t current_char_position, size_t previous_char_position) {
             std::string substr = inputString.substr(previous_char_position, current_char_position - previous_char_position);
             if(!substr.empty()){
                 resultContainer.push_back(substr);

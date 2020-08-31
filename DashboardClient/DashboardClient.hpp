@@ -32,9 +32,9 @@ namespace Umati {
 			~DashboardClient();
 
 			void addDataSet(
-				ModelOpcUa::NodeId_t startNodeId,
-				std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
-				std::string channel);
+				const ModelOpcUa::NodeId_t& startNodeId,
+				const std::shared_ptr<ModelOpcUa::StructureNode>& pTypeDefinition,
+				const std::string& channel);
 
 			void Publish();
 
@@ -54,7 +54,7 @@ namespace Umati {
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> values;
 			};
 
-			static std::string getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage, std::string topicName);
+			static std::string getJson(const std::shared_ptr<DataSetStorage_t>& pDataSetStorage, std::string topicName);
 
 			std::shared_ptr<const ModelOpcUa::SimpleNode> TransformToNodeIds(
 				ModelOpcUa::NodeId_t startNode,
@@ -66,7 +66,7 @@ namespace Umati {
 				std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStructurePlaceholder);
 
 			void subscribeValues(
-				std::shared_ptr<ModelOpcUa::SimpleNode> pNode,
+				const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 			);
 

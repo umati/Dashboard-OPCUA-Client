@@ -7,25 +7,23 @@ namespace Umati
 {
 	namespace Exceptions
 	{
-		OpcUaNonGoodStatusCodeException::OpcUaNonGoodStatusCodeException(UaStatusCode status, std::string message)
+		OpcUaNonGoodStatusCodeException::OpcUaNonGoodStatusCodeException(const UaStatus& status, std::string message)
 			: OpcUaException(toHex(status) + ", " + statusToMessage(status) + ": " + message)
 		{
 
 		}
 
-		OpcUaNonGoodStatusCodeException::OpcUaNonGoodStatusCodeException(UaStatusCode status)
+		OpcUaNonGoodStatusCodeException::OpcUaNonGoodStatusCodeException(const UaStatus& status)
 			: OpcUaException(toHex(status) + ", " + statusToMessage(status))
 		{
 
 		}
 
-		std::string OpcUaNonGoodStatusCodeException::statusToMessage(UaStatusCode status)
-		{
+		std::string OpcUaNonGoodStatusCodeException::statusToMessage(const UaStatus& status) {
 			return std::string(status.toString().toUtf8());
 		}
 
-		std::string OpcUaNonGoodStatusCodeException::toHex(UaStatusCode status, int digits)
-		{
+		std::string OpcUaNonGoodStatusCodeException::toHex(const UaStatus& status, int digits) {
 			std::stringstream ss;
 			ss << std::setw(digits) << std::setfill('0') << std::hex << status.code();
 			return ss.str();

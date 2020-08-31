@@ -8,7 +8,7 @@ set(UTIL_SRC
         ConfigurationJsonFile.cpp
         ConfigureLogger.cpp
         Configuration.cpp
-        )
+        Base64.cpp)
 
 message("### opcua_dashboardclient/Util: collecting source file list for library: ${UTIL_SRC}")
 add_library(Util ${UTIL_SRC})

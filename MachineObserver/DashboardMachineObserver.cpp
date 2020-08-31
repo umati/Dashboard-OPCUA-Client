@@ -2,6 +2,7 @@
 #include <easylogging++.h>
 #include "Exceptions/MachineInvalidException.hpp"
 #include <Exceptions/OpcUaException.hpp>
+#include <Base64.hpp>
 
 namespace Umati {
     namespace MachineObserver {
@@ -98,8 +99,8 @@ namespace Umati {
                     machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
                     std::stringstream topic;
-
-                    topic << "/umati" << this->getMachineSubtopic(p_type, machineInformation.MachineName);
+                    std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machine.NodeId.Uri,true);
+                    topic << "/umati" << this->getMachineSubtopic(p_type,base64ProductInstanceUri);
                     pDashClient->addDataSet(
                             {machineInformation.NamespaceURI, machine.NodeId.Id},
                             p_type,
@@ -229,7 +230,7 @@ namespace Umati {
             return false;
         }
 
-        void DashboardMachineObserver::browseIdentificationValues(ModelOpcUa::NodeId_t machineNodeId,
+        void DashboardMachineObserver::browseIdentificationValues(const ModelOpcUa::NodeId_t& machineNodeId,
                                                                     std::list<ModelOpcUa::BrowseResult_t> &identification,
                                                                   UaReferenceDescriptions &referenceDescriptions,
                                                                   nlohmann::json &identificationAsJson) const {
@@ -260,15 +261,15 @@ namespace Umati {
             std::stringstream path;
             auto it = m_machineNames.find(machineNodeId);
             if (it != m_machineNames.end()) {
-                path << this->getMachineSubtopic(p_type, it->second);
-                identificationAsJson["Path"] = path.str();
+                std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machineNodeId.Uri,true);
+                identificationAsJson["Path"] = this->getMachineSubtopic(p_type,base64ProductInstanceUri);
             }
         }
 
-        std::string DashboardMachineObserver::getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode>& p_type, const std::string& machineName) const {
+        std::string DashboardMachineObserver::getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode>& p_type, const std::string& namespaceUri) {
             std::string specification = p_type->SpecifiedBrowseName.Name;
             std::stringstream subtopic;
-            subtopic << "/" << specification << "/" << machineName;
+            subtopic << "/" << specification << "/" << namespaceUri;
             return subtopic.str();
         }
     }

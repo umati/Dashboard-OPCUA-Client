@@ -30,11 +30,8 @@ namespace Umati
 
 					if (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable)
 					{
-                        if(pSimpleNode->NodeId.Id=="i=54880" || pSimpleNode->NodeId.Id=="i=54881" ){
-                            LOG(INFO) << "hi " << pSimpleNode->NodeId.Id;
-                        }
 					    auto value = getValue(pNode);
-                        if (nestAsChildren || isBaseDataVariableType(pSimpleNode) && !pSimpleNode->ChildNodes.empty()) {
+                        if (nestAsChildren || (isBaseDataVariableType(pSimpleNode) && !pSimpleNode->ChildNodes.empty())) {
                             m_json["value"] = value;
                         } else {
                             m_json = value;

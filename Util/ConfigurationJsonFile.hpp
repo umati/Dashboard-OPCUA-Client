@@ -11,7 +11,7 @@ namespace Umati
 		class ConfigurationJsonFile : public Configuration
 		{
 		public:
-			ConfigurationJsonFile(std::string filename);
+			ConfigurationJsonFile(const std::string& filename);
 
 			// Inherit from Configuration
 			OpcUaConfig OpcUa() override;

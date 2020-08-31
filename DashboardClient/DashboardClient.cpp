@@ -28,9 +28,9 @@ namespace Umati {
 		* Identification, JobCurrentStateNumber, ProductionJobList, Stacklight, StateModelList, ToolList
 		*/
 		void DashboardClient::addDataSet(
-			ModelOpcUa::NodeId_t startNodeId,
-			std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
-			std::string channel)
+			const ModelOpcUa::NodeId_t& startNodeId,
+			const std::shared_ptr<ModelOpcUa::StructureNode>& pTypeDefinition,
+			const std::string& channel)
 		{
 		    try {
                 std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition, channel);
@@ -86,9 +86,9 @@ namespace Umati {
 			}
 		}
 
-		std::string DashboardClient::getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage, std::string topicName)
+		std::string DashboardClient::getJson(const std::shared_ptr<DataSetStorage_t>& pDataSetStorage, std::string topicName)
 		{
-			auto getValueCallback = [pDataSetStorage](const std::shared_ptr<const ModelOpcUa::Node> pNode) -> nlohmann::json
+			auto getValueCallback = [pDataSetStorage](const std::shared_ptr<const ModelOpcUa::Node>& pNode) -> nlohmann::json
 			{
 				auto it = pDataSetStorage->values.find(pNode);
 				if (it == pDataSetStorage->values.end())

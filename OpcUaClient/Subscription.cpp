@@ -246,9 +246,6 @@ namespace Umati {
             if (uaResultMonItem.isBad())
             {
                 LOG(ERROR) << "Monitored Item status code bad for " << nodeId.Uri << ";" << nodeId.Uri << " : " << uaResultMonItem.toString().toUtf8();
-//                if(uaResultMonItem != OpcUa_BadNothingToDo){
-//                   throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultMonItem);
-//                }
             }
         }
     }

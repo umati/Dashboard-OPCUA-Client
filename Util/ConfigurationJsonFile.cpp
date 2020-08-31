@@ -7,7 +7,7 @@
 
 namespace Umati {
     namespace Util {
-        ConfigurationJsonFile::ConfigurationJsonFile(std::string filename) {
+        ConfigurationJsonFile::ConfigurationJsonFile(const std::string& filename) {
             std::ifstream i(filename);
             if (!i) {
                 std::stringstream ss;

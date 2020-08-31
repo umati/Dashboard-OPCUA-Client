@@ -55,7 +55,7 @@ namespace Umati {
 			std::map <ModelOpcUa::NodeId_t, MachineInformation_t> m_onlineMachines;
 			std::map <ModelOpcUa::NodeId_t, std::string> m_machineNames;
 
-            void browseIdentificationValues( ModelOpcUa::NodeId_t machineNodeId, std::list<ModelOpcUa::BrowseResult_t> &identification,
+            void browseIdentificationValues( const ModelOpcUa::NodeId_t& machineNodeId, std::list<ModelOpcUa::BrowseResult_t> &identification,
                                             UaReferenceDescriptions &referenceDescriptions, nlohmann::json &identificationAsJson) const;
 
             std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(ModelOpcUa::NodeId_t  nodeId) const;
@@ -63,7 +63,7 @@ namespace Umati {
 
             uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) const;
 
-            std::string getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode>& p_type, const std::string& machineName) const;
+            static std::string getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode>& p_type, const std::string& namespaceUri) ;
 
             std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId);
         };
