@@ -36,7 +36,7 @@ namespace Umati
 				static std::string nodeClassToString(ModelOpcUa::NodeClass_t nodeClass);
 				nlohmann::json m_json;
 
-                bool isBaseDataVariableType(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) const;
+                static bool isBaseDataVariableType(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) ;
             };
 		}
 	}

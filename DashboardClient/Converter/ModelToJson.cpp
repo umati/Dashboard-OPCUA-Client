@@ -12,6 +12,9 @@ namespace Umati
 				const std::shared_ptr<const ModelOpcUa::Node>& pNode,
 				const getValue_t& getValue,  bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
 			{
+			    if(pNode->SpecifiedBrowseName.Name == "FeedOverride") {
+			        LOG(INFO) << "hi";
+			    }
 
 				switch (pNode->ModellingRule)
 				{
@@ -98,8 +101,8 @@ namespace Umati
             }
 
             bool ModelToJson::isBaseDataVariableType(
-                    const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) const {
-			    return pSimpleNode->SpecifiedTypeNodeId.Uri == "" && pSimpleNode->SpecifiedTypeNodeId.Id == "i=63"
+                    const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) {
+			    return (pSimpleNode->SpecifiedTypeNodeId.Uri == "" && pSimpleNode->SpecifiedTypeNodeId.Id == "i=63")
 			     || pSimpleNode->ofBaseDataVariableType;
 			}
 

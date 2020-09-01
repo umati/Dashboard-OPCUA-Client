@@ -377,7 +377,9 @@ namespace Umati {
                     auto childType = m_typeMap->find(childTypeName);
 
                     if(childType != m_typeMap->end()) {
+
                         childIterator->get()->SpecifiedChildNodes=childType->second->SpecifiedChildNodes;
+                        childIterator->get()->ofBaseDataVariableType=childType->second->ofBaseDataVariableType;
                         //LOG(INFO) << "Updating type " << childTypeName <<" for " << childIterator->get()->SpecifiedBrowseName.Uri << ";" << childIterator->get()->SpecifiedBrowseName.Name;
                     }}catch (std::exception &ex) {
                         LOG(WARNING)<< "Unable to update type due to " << ex.what();
@@ -556,7 +558,7 @@ namespace Umati {
 
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
             bool isVariableType = ModelOpcUa::VariableType == entry.NodeClass;
-            ModelOpcUa::StructureBiNode node(entry, std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureNode>>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule );
+            ModelOpcUa::StructureBiNode node(entry,ofBaseDataVariableType, std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureNode>>>(), parent, (uint16_t) currentUaNodeId.namespaceIndex(),modellingRule);
             auto current = std::make_shared<ModelOpcUa::StructureBiNode>(node);
 
             if (isObjectType || isVariableType) {

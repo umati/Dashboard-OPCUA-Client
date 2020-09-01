@@ -24,7 +24,7 @@ namespace ModelOpcUa {
 		ModellingRule_t modellingRule,
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
-		QualifiedName_t specifiedBrowseName,
+		QualifiedName_t specifiedBrowseName,bool ofBaseDataVariableType,
         std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes
 	)
 		:
@@ -37,20 +37,22 @@ namespace ModelOpcUa {
 		),
 		SpecifiedChildNodes(childNodes)
 	{
+	    this->ofBaseDataVariableType = ofBaseDataVariableType;
 	}
 
-    StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult,
+    StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult,bool ofBaseDataVariableType,
                                  std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes):
             SpecifiedChildNodes(childNodes), NodeDefinition(browseResult.NodeClass, Optional, browseResult.ReferenceTypeId, browseResult.TypeDefinition, browseResult.BrowseName)
             {
-
+                this->ofBaseDataVariableType = ofBaseDataVariableType;
             }
 
     StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult,
-                                 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes, ModellingRule_t modellingRule):
+                                 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes, ModellingRule_t modellingRule,
+                                 bool ofBaseDataVariableType):
             SpecifiedChildNodes(childNodes), NodeDefinition(browseResult.NodeClass, modellingRule, browseResult.ReferenceTypeId, browseResult.TypeDefinition, browseResult.BrowseName)
             {
-
+                this->ofBaseDataVariableType = ofBaseDataVariableType;
             }
 
     std::string StructureNode::printType(const std::shared_ptr<StructureNode>& node, const std::string& parentTree) {
@@ -129,7 +131,7 @@ namespace ModelOpcUa {
         return ss.str();
     }
 
-    StructureNode::StructureNode(StructureNode *structureNode,
+    StructureNode::StructureNode(StructureNode *structureNode, bool ofBaseDataVariableType,
                                  std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes)
             :
             NodeDefinition(
@@ -140,6 +142,7 @@ namespace ModelOpcUa {
                     structureNode->SpecifiedBrowseName
             ),
             SpecifiedChildNodes(childNodes) {
+	    this->ofBaseDataVariableType = ofBaseDataVariableType;
     }
 
     StructurePlaceholderNode::StructurePlaceholderNode(
@@ -148,8 +151,10 @@ namespace ModelOpcUa {
 		NodeId_t referenceType,
 		NodeId_t specifiedTypeNodeId,
 		QualifiedName_t specifiedBrowseName,
+		bool ofBaseDataVariableType,
         std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
 		std::list<std::shared_ptr<const StructureNode>> possibleTypes
+
 	)
 		:
 		StructureNode(
@@ -157,7 +162,7 @@ namespace ModelOpcUa {
 			modellingRule,
 			referenceType,
 			specifiedTypeNodeId,
-			specifiedBrowseName,
+			specifiedBrowseName,ofBaseDataVariableType,
 			childNodes
 		),
 		PossibleTypes(possibleTypes)
@@ -168,30 +173,30 @@ namespace ModelOpcUa {
 
 
     StructurePlaceholderNode::StructurePlaceholderNode(const std::shared_ptr<StructureNode> sharedPtr)
-    : StructureNode(sharedPtr->NodeClass,sharedPtr->ModellingRule,sharedPtr->ReferenceType, sharedPtr->SpecifiedTypeNodeId,sharedPtr->SpecifiedBrowseName,sharedPtr->SpecifiedChildNodes) {
+    : StructureNode(sharedPtr->NodeClass,sharedPtr->ModellingRule,sharedPtr->ReferenceType, sharedPtr->SpecifiedTypeNodeId,sharedPtr->SpecifiedBrowseName, sharedPtr->ofBaseDataVariableType,sharedPtr->SpecifiedChildNodes) {
 	}
 
-    StructureBiNode::StructureBiNode(BrowseResult_t browseResult,
+    StructureBiNode::StructureBiNode(BrowseResult_t browseResult,bool ofBaseDataVariableType,
                                      std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                                          std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex)
-                                         : structureNode(std::make_shared<StructureNode>(browseResult, childNodes)),
+                                         : structureNode(std::make_shared<StructureNode>(browseResult, false, childNodes)),
                                          parent(parent),
                                          namespaceIndex(namespaceIndex)  {}
 
-    StructureBiNode::StructureBiNode(BrowseResult_t browseResult,
+    StructureBiNode::StructureBiNode(BrowseResult_t browseResult,bool ofBaseDataVariableType,
                                      std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                                          std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex,
                                          ModellingRule_t modellingRule)
-                                         : structureNode(std::make_shared<StructureNode>(browseResult, childNodes, modellingRule)),
+                                         : structureNode(std::make_shared<StructureNode>(browseResult,  childNodes,modellingRule,ofBaseDataVariableType)),
                                          parent(parent),
                                          namespaceIndex(namespaceIndex)
                                          {}
 
     StructureBiNode::StructureBiNode(NodeClass_t nodeClass, ModellingRule_t modellingRule, NodeId_t referenceType,
-                                         NodeId_t specifiedTypeNodeId, QualifiedName_t specifiedBrowseName,
+                                         NodeId_t specifiedTypeNodeId, QualifiedName_t specifiedBrowseName,bool ofBaseDataVariableType,
                                      std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
                                          std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex) :
-            structureNode(std::make_shared<StructureNode>(nodeClass, modellingRule, referenceType, specifiedTypeNodeId, specifiedBrowseName,childNodes)),
+            structureNode(std::make_shared<StructureNode>(nodeClass, modellingRule, referenceType, specifiedTypeNodeId, specifiedBrowseName, ofBaseDataVariableType, childNodes)),
             parent(parent),
             namespaceIndex(namespaceIndex)
             {}
