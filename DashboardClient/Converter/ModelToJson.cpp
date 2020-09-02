@@ -12,9 +12,6 @@ namespace Umati
 				const std::shared_ptr<const ModelOpcUa::Node>& pNode,
 				const getValue_t& getValue,  bool serializeNodeInformation, bool nestAsChildren, bool publishNullValues)
 			{
-			    if(pNode->SpecifiedBrowseName.Name == "FeedOverride") {
-			        LOG(INFO) << "hi";
-			    }
 
 				switch (pNode->ModellingRule)
 				{

@@ -145,9 +145,7 @@ namespace Umati {
 				*pTypeDefinition,
 				foundChildNodes
 				);
-            if(pNode->SpecifiedBrowseName.Name == "FeedOverride") {
-                LOG(INFO) << "hi";
-            }
+
 			pNode->ofBaseDataVariableType = pTypeDefinition->ofBaseDataVariableType;
 			return pNode;
 		}
@@ -278,9 +276,6 @@ namespace Umati {
 		{
 		    // LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
-            if(pNode->SpecifiedBrowseName.Name == "FeedOverride") {
-                LOG(INFO)<<"hi";
-            }
             // Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
 			{
