@@ -15,9 +15,10 @@ namespace Umati {
                 }
             }
 
-            void UaDataValueToJsonValue::setValueFromDataValue(const UaDataValue &dataValue, bool serializeStatusInformation) {
+            void UaDataValueToJsonValue::setValueFromDataValue(const UaDataValue &dataValue,
+                                                               bool serializeStatusInformation) {
                 auto &jsonValue = m_value;
-                if(serializeStatusInformation) {
+                if (serializeStatusInformation) {
                     jsonValue = m_value["value"];
                 }
 
@@ -176,7 +177,8 @@ namespace Umati {
                         variant.toExtensionObject(exObj);
                         jsonValue = {};
                         if (exObj.dataTypeId().namespaceIndex() != 0) {
-                            LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
+                            LOG(ERROR)
+                                    << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
                             break;
                         }
 
@@ -189,7 +191,8 @@ namespace Umati {
                             }
 
                             default: {
-                                LOG(ERROR) << "Not implemented conversion from type: " << exObj.dataTypeId().toFullString().toUtf8();
+                                LOG(ERROR) << "Not implemented conversion from type: "
+                                           << exObj.dataTypeId().toFullString().toUtf8();
                             }
                         }
                         break;

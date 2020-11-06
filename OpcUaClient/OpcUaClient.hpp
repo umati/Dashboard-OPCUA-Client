@@ -18,131 +18,188 @@
 #include "OpcUaInterface.hpp"
 
 namespace Umati {
-	namespace OpcUa {
-		class OpcUaClient : public UaClientSdk::UaSessionCallback, public Dashboard::IDashboardDataClient
-		{
-			UA_DISABLE_COPY(OpcUaClient);
-		public:
-			explicit OpcUaClient(std::string serverURI, std::string Username = std::string(), std::string Password = std::string(), std::uint8_t security = 1, std::vector<std::string> expectedObjectTypeNamespaces = std::vector<std::string>(), std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
-			~OpcUaClient() override;
+    namespace OpcUa {
+        class OpcUaClient : public UaClientSdk::UaSessionCallback, public Dashboard::IDashboardDataClient {
+            UA_DISABLE_COPY(OpcUaClient);
+        public:
+            explicit OpcUaClient(std::string serverURI, std::string Username = std::string(),
+                                 std::string Password = std::string(), std::uint8_t security = 1,
+                                 std::vector <std::string> expectedObjectTypeNamespaces = std::vector<std::string>(),
+                                 std::shared_ptr <Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
 
-			bool disconnect();
+            ~OpcUaClient() override;
+
+            bool disconnect();
 
 
-			bool isConnected() { return m_isConnected; }
+            bool isConnected() { return m_isConnected; }
 
-			// Inherit from IDashboardClient
-			std::list<ModelOpcUa::BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t typeDefinition) override;
-			ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
-			std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
-			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) override;
-            void browseUnderStartNode(UaNodeId startUaNodeId,UaReferenceDescriptions &referenceDescriptions, UaClientSdk::BrowseContext browseContext) override;
-            ModelOpcUa::BrowseResult_t ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) override;
-            std::vector<nlohmann::json> readValues(std::list< ModelOpcUa::NodeId_t> nodeIds) override;
-            UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
+            // Inherit from IDashboardClient
+            std::list <ModelOpcUa::BrowseResult_t>
+            Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId,
+                   ModelOpcUa::NodeId_t typeDefinition) override;
+
+            ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode,
+                                                             ModelOpcUa::QualifiedName_t browseName) override;
+
+            std::shared_ptr <ValueSubscriptionHandle>
+            Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
+
+            void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) override;
+
+            void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
+                                      UaClientSdk::BrowseContext browseContext) override;
+
+            ModelOpcUa::BrowseResult_t
+            ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) override;
+
+            std::vector <nlohmann::json> readValues(std::list <ModelOpcUa::NodeId_t> nodeIds) override;
+
+            UaDataValues readValues2(std::list <ModelOpcUa::NodeId_t> modelNodeIds) override;
+
             std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) override;
+
             std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) override;
 
             std::string IndexToUri(uint index) override;
 
         protected:
-			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
+            void connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
+                                         UaClientSdk::UaClient::ServerStatus serverStatus) override;
 
-			bool connect();
+            bool connect();
 
-			OpcUa_NodeClass readNodeClass(const UaNodeId& nodeId);
+            OpcUa_NodeClass readNodeClass(const UaNodeId &nodeId);
 
-			void checkConnection();
+            void checkConnection();
 
-			UaNodeId browseSuperType(const UaNodeId& typeNodeId);
+            UaNodeId browseSuperType(const UaNodeId &typeNodeId);
 
-			// Max search depth
-			bool isSameOrSubtype(const UaNodeId& expectedType, const UaNodeId& checkType, std::size_t maxDepth = 100);
+            // Max search depth
+            bool isSameOrSubtype(const UaNodeId &expectedType, const UaNodeId &checkType, std::size_t maxDepth = 100);
 
-			// ------- Default call settings -----------
-			UaClientSdk::ServiceSettings m_defaultServiceSettings;
-			double m_maxAgeRead_ms = 100.0;
+            // ------- Default call settings -----------
+            UaClientSdk::ServiceSettings m_defaultServiceSettings;
+            double m_maxAgeRead_ms = 100.0;
 
-			void updateNamespaceCache();
+            void updateNamespaceCache();
 
-			void threadConnectExecution();
+            void threadConnectExecution();
 
-			std::shared_ptr<UaClientSdk::UaSession> m_pSession;
-			std::map<uint16_t, std::string> m_indexToUriCache;
+            std::shared_ptr <UaClientSdk::UaSession> m_pSession;
+            std::map <uint16_t, std::string> m_indexToUriCache;
             std::string m_serverUri;
-			std::string m_username;
-			std::string m_password;
-			std::vector<std::string> m_expectedObjectTypeNamespaces;
-			OpcUa_MessageSecurityMode m_security = OpcUa_MessageSecurityMode::OpcUa_MessageSecurityMode_None;
+            std::string m_username;
+            std::string m_password;
+            std::vector <std::string> m_expectedObjectTypeNamespaces;
+            OpcUa_MessageSecurityMode m_security = OpcUa_MessageSecurityMode::OpcUa_MessageSecurityMode_None;
 
-			std::shared_ptr<std::thread> m_connectThread;
-			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
-			std::atomic_bool m_isConnected = { false };
-			std::atomic_bool m_tryConnecting = { false };
+            std::shared_ptr <std::thread> m_connectThread;
+            std::shared_ptr <OpcUaInterface> m_opcUaWrapper;
+            std::atomic_bool m_isConnected = {false};
+            std::atomic_bool m_tryConnecting = {false};
 
-			Subscription m_subscr;
+            Subscription m_subscr;
 
-			struct UaNodeId_Compare
-			{
-				bool operator()(const UaNodeId & left, const UaNodeId &right) const
-				{
-					return
-						std::string(left.toXmlString().toUtf8()) <
-						std::string(right.toXmlString().toUtf8());
-				}
-			};
+            struct UaNodeId_Compare {
+                bool operator()(const UaNodeId &left, const UaNodeId &right) const {
+                    return
+                            std::string(left.toXmlString().toUtf8()) <
+                            std::string(right.toXmlString().toUtf8());
+                }
+            };
 
-			/// Map for chaching super types. Key = Type, Value = Supertype
-			std::map<UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
+            /// Map for chaching super types. Key = Type, Value = Supertype
+            std::map <UaNodeId, UaNodeId, UaNodeId_Compare> m_superTypes;
 
-		private:
-			static int PlatformLayerInitialized;
-            const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"",""};
-			const ModelOpcUa::NodeId_t m_basicVariableTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=63"};
-            const ModelOpcUa::NodeId_t m_basicObjectTypeNode   = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+        private:
+            static int PlatformLayerInitialized;
+            const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"", ""};
+            const ModelOpcUa::NodeId_t m_basicVariableTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/",
+                                                                                      "i=63"};
+            const ModelOpcUa::NodeId_t m_basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/",
+                                                                                    "i=58"};
 
             void on_connected();
 
             static UaClientSdk::SessionConnectInfo &
-            prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo) ;
+            prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo);
 
-            void initializeNamespaceCache(std::vector<std::string> &notFoundObjectTypeNamespaces);
+            void initializeNamespaceCache(std::vector <std::string> &notFoundObjectTypeNamespaces);
 
-            void findObjectTypeNamespacesAndCreateTypeMap(std::vector<std::string> &notFoundObjectTypeNamespaces, size_t i,
-                                                          const std::string &namespaceURI, std::shared_ptr<std::map <std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>());
+            void
+            findObjectTypeNamespacesAndCreateTypeMap(std::vector <std::string> &notFoundObjectTypeNamespaces, size_t i,
+                                                     const std::string &namespaceURI,
+                                                     std::shared_ptr <std::map<std::string,
+                                                             std::shared_ptr < ModelOpcUa::StructureBiNode>>
+
+            >
+            bidirectionalTypeMap =
+            std::make_shared < std::map < std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>
+            >());
 
             UaClientSdk::BrowseContext prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);
 
-            void browseTypes(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, const UaClientSdk::BrowseContext& browseContext, const UaNodeId& startUaNodeId, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, bool ofBaseDataVariableType);
+            void browseTypes(std::shared_ptr <std::map<std::string, std::shared_ptr < ModelOpcUa::StructureBiNode>>
 
-            static void handleContinuationPoint(const UaByteString &continuationPoint) ;
+            > bidirectionalTypeMap,
+            const UaClientSdk::BrowseContext &browseContext,
+            const UaNodeId &startUaNodeId,
+            const std::shared_ptr <ModelOpcUa::StructureBiNode> &parent,
+            bool ofBaseDataVariableType
+            );
+
+            static void handleContinuationPoint(const UaByteString &continuationPoint);
 
             void ReferenceDescriptionsToBrowseResults(const UaNodeId &typeDefinitionUaNodeId,
                                                       const UaReferenceDescriptions &referenceDescriptions,
-                                                      std::list<ModelOpcUa::BrowseResult_t> &browseResult);
+                                                      std::list <ModelOpcUa::BrowseResult_t> &browseResult);
 
-            std::list<ModelOpcUa::BrowseResult_t>
+            std::list <ModelOpcUa::BrowseResult_t>
             BrowseWithContext(const ModelOpcUa::NodeId_t &startNode, const ModelOpcUa::NodeId_t &referenceTypeId,
                               const ModelOpcUa::NodeId_t &typeDefinition, UaClientSdk::BrowseContext &browseContext);
 
-            static UaClientSdk::BrowseContext prepareObjectAndVariableTypeBrowseContext() ;
+            static UaClientSdk::BrowseContext prepareObjectAndVariableTypeBrowseContext();
 
-            std::shared_ptr<ModelOpcUa::StructureBiNode> handleBrowseTypeResult(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap,
-                const ModelOpcUa::BrowseResult_t &entry, const std::shared_ptr<ModelOpcUa::StructureBiNode>& parent, ModelOpcUa::ModellingRule_t modellingRule, bool ofBaseDataVariableType);
+            std::shared_ptr <ModelOpcUa::StructureBiNode> handleBrowseTypeResult(
+                    std::shared_ptr <std::map<std::string, std::shared_ptr < ModelOpcUa::StructureBiNode>>
 
-            static void createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, const std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>>& sharedPtr, uint16_t namespaceIndex);
+            > &bidirectionalTypeMap,
+            const ModelOpcUa::BrowseResult_t &entry,
+            const std::shared_ptr <ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t
+            modellingRule,
+            bool ofBaseDataVariableType
+            );
 
-            ModelOpcUa::ModellingRule_t browseModellingRule(const UaNodeId& uaNodeId);
+            static void
+            createTypeMap(std::shared_ptr <std::map<std::string, std::shared_ptr < ModelOpcUa::StructureBiNode>>
 
-            static void split(const std::string &inputString, std::vector<std::string> &resultContainer, char delimiter);
+            > &bidirectionalTypeMap, const std::shared_ptr <std::map<std::string,
+                    std::shared_ptr < ModelOpcUa::StructureNode>>>& sharedPtr,
+            uint16_t namespaceIndex
+            );
 
-            static void updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer, size_t current_char_position, size_t previous_char_position) ;
+            ModelOpcUa::ModellingRule_t browseModellingRule(const UaNodeId &uaNodeId);
+
+            static void
+            split(const std::string &inputString, std::vector <std::string> &resultContainer, char delimiter);
+
+            static void
+            updateResultContainer(const std::string &inputString, std::vector <std::string> &resultContainer,
+                                  size_t current_char_position, size_t previous_char_position);
 
             void fillNamespaceCache(const UaStringArray &uaNamespaces);
 
-            void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t &basicTypeNode, std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> bidirectionalTypeMap, bool ofBaseDataVariableType);
+            void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(const ModelOpcUa::NodeId_t &basicTypeNode,
+                                                                       std::shared_ptr <std::map<std::string,
+                                                                               std::shared_ptr <
+                                                                               ModelOpcUa::StructureBiNode>>
+
+            > bidirectionalTypeMap,
+            bool ofBaseDataVariableType
+            );
 
             void updateTypeMap();
-		};
-	}
+        };
+    }
 }

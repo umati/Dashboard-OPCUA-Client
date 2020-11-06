@@ -22,48 +22,64 @@ namespace Umati {
                                                    const UaString &sDiscoveryURL,
                                                    UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
                                                    UaEndpointDescriptions &endpointDescriptions) = 0;
+
             virtual UaStatus DiscoveryFindServers(
                     UaClientSdk::ServiceSettings &serviceSettings,
                     const UaString &sDiscoveryURL,
                     UaClientSdk::ClientSecurityInfo &clientSecurityInfo,
                     UaApplicationDescriptions &applicationDescriptions) = 0;
-            virtual void GetNewSession(std::shared_ptr<UaClientSdk::UaSession>& m_pSession) = 0;
-            virtual UaStatus SessionConnect(const UaString&      sURL,
-                                            UaClientSdk::SessionConnectInfo&  sessionConnectInfo,
-                                            UaClientSdk::SessionSecurityInfo& sessionSecurityInfo,
-                                            UaClientSdk::UaSessionCallback*   pSessionCallback) = 0;
-            virtual UaStatus SessionDisconnect(UaClientSdk::ServiceSettings& serviceSettings,
-                                           OpcUa_Boolean    bDeleteSubscriptions) = 0;
+
+            virtual void GetNewSession(std::shared_ptr <UaClientSdk::UaSession> &m_pSession) = 0;
+
+            virtual UaStatus SessionConnect(const UaString &sURL,
+                                            UaClientSdk::SessionConnectInfo &sessionConnectInfo,
+                                            UaClientSdk::SessionSecurityInfo &sessionSecurityInfo,
+                                            UaClientSdk::UaSessionCallback *pSessionCallback) = 0;
+
+            virtual UaStatus SessionDisconnect(UaClientSdk::ServiceSettings &serviceSettings,
+                                               OpcUa_Boolean bDeleteSubscriptions) = 0;
+
             virtual void SessionUpdateNamespaceTable() = 0;
+
             virtual UaStringArray SessionGetNamespaceTable() = 0;
-            virtual UaStatus SessionRead(UaClientSdk::ServiceSettings&         serviceSettings,
-                                         OpcUa_Double             maxAge,
+
+            virtual UaStatus SessionRead(UaClientSdk::ServiceSettings &serviceSettings,
+                                         OpcUa_Double maxAge,
                                          OpcUa_TimestampsToReturn timeStamps,
-                                         const UaReadValueIds&    nodesToRead,
-                                         UaDataValues&            values,
-                                         UaDiagnosticInfos&       diagnosticInfos) = 0;
+                                         const UaReadValueIds &nodesToRead,
+                                         UaDataValues &values,
+                                         UaDiagnosticInfos &diagnosticInfos) = 0;
+
             virtual bool SessionIsConnected() = 0;
+
             virtual UaStatus SessionBrowse(
-                    UaClientSdk::ServiceSettings&         serviceSettings,
-                    const UaNodeId&          nodeToBrowse,
-                    const UaClientSdk::BrowseContext&     browseContext,
-                    UaByteString&            continuationPoint,
-                    UaReferenceDescriptions& referenceDescriptions) = 0;
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaNodeId &nodeToBrowse,
+                    const UaClientSdk::BrowseContext &browseContext,
+                    UaByteString &continuationPoint,
+                    UaReferenceDescriptions &referenceDescriptions) = 0;
+
             virtual UaStatus SessionTranslateBrowsePathsToNodeIds(
-                    UaClientSdk::ServiceSettings&     serviceSettings,
-                    const UaBrowsePaths& browsePaths,
-                    UaBrowsePathResults& browsePathResults,
-                    UaDiagnosticInfos&   diagnosticInfos
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaBrowsePaths &browsePaths,
+                    UaBrowsePathResults &browsePathResults,
+                    UaDiagnosticInfos &diagnosticInfos
             ) = 0;
-            virtual void setSubscription(Subscription* p_in_subscr) = 0;
-            virtual void SubscriptionCreateSubscription(std::shared_ptr<UaClientSdk::UaSession>& m_pSession) = 0;
-            virtual std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> SubscriptionSubscribe(	ModelOpcUa::NodeId_t nodeId, Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback) = 0;
+
+            virtual void setSubscription(Subscription *p_in_subscr) = 0;
+
+            virtual void SubscriptionCreateSubscription(std::shared_ptr <UaClientSdk::UaSession> &m_pSession) = 0;
+
+            virtual std::shared_ptr <Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
+            SubscriptionSubscribe(ModelOpcUa::NodeId_t nodeId,
+                                  Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback) = 0;
+
         protected:
 
-            Subscription* p_subscr;
+            Subscription *p_subscr;
         };
 
-        class OpcUaWrapper: public OpcUaInterface {
+        class OpcUaWrapper : public OpcUaInterface {
         public:
 
             UaStatus DiscoveryGetEndpoints(UaClientSdk::ServiceSettings &serviceSettings,
@@ -84,29 +100,29 @@ namespace Umati {
                                              applicationDescriptions);
             };
 
-            void GetNewSession(std::shared_ptr<UaClientSdk::UaSession>& m_pSession) override {
+            void GetNewSession(std::shared_ptr <UaClientSdk::UaSession> &m_pSession) override {
                 m_pSession.reset(new UaClientSdk::UaSession());
                 pSession = m_pSession;
             }
 
-            UaStatus SessionConnect(const UaString&      sURL,
-                                            UaClientSdk::SessionConnectInfo&  sessionConnectInfo,
-                                            UaClientSdk::SessionSecurityInfo& sessionSecurityInfo,
-                                            UaClientSdk::UaSessionCallback*   pSessionCallback) override {
-                    return pSession->connect(sURL, sessionConnectInfo, sessionSecurityInfo, pSessionCallback);
+            UaStatus SessionConnect(const UaString &sURL,
+                                    UaClientSdk::SessionConnectInfo &sessionConnectInfo,
+                                    UaClientSdk::SessionSecurityInfo &sessionSecurityInfo,
+                                    UaClientSdk::UaSessionCallback *pSessionCallback) override {
+                return pSession->connect(sURL, sessionConnectInfo, sessionSecurityInfo, pSessionCallback);
             }
 
-            UaStatus SessionDisconnect(UaClientSdk::ServiceSettings& serviceSettings,
-                                       OpcUa_Boolean    bDeleteSubscriptions) override {
+            UaStatus SessionDisconnect(UaClientSdk::ServiceSettings &serviceSettings,
+                                       OpcUa_Boolean bDeleteSubscriptions) override {
                 return pSession->disconnect(serviceSettings, bDeleteSubscriptions);
             }
 
-            UaStatus SessionRead(UaClientSdk::ServiceSettings&         serviceSettings,
-                                 OpcUa_Double             maxAge,
+            UaStatus SessionRead(UaClientSdk::ServiceSettings &serviceSettings,
+                                 OpcUa_Double maxAge,
                                  OpcUa_TimestampsToReturn timeStamps,
-                                 const UaReadValueIds&    nodesToRead,
-                                 UaDataValues&            values,
-                                 UaDiagnosticInfos&       diagnosticInfos) override {
+                                 const UaReadValueIds &nodesToRead,
+                                 UaDataValues &values,
+                                 UaDiagnosticInfos &diagnosticInfos) override {
                 return pSession->read(serviceSettings, maxAge, timeStamps, nodesToRead, values, diagnosticInfos);
             }
 
@@ -123,26 +139,28 @@ namespace Umati {
             }
 
             UaStatus SessionBrowse(
-                    UaClientSdk::ServiceSettings&         serviceSettings,
-                    const UaNodeId&          nodeToBrowse,
-                    const UaClientSdk::BrowseContext&     browseContext,
-                    UaByteString&            continuationPoint,
-                    UaReferenceDescriptions& referenceDescriptions) override {
-                return pSession->browse(serviceSettings, nodeToBrowse, browseContext, continuationPoint, referenceDescriptions);
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaNodeId &nodeToBrowse,
+                    const UaClientSdk::BrowseContext &browseContext,
+                    UaByteString &continuationPoint,
+                    UaReferenceDescriptions &referenceDescriptions) override {
+                return pSession->browse(serviceSettings, nodeToBrowse, browseContext, continuationPoint,
+                                        referenceDescriptions);
             }
 
             UaStatus SessionTranslateBrowsePathsToNodeIds(
-                    UaClientSdk::ServiceSettings&     serviceSettings,
-                    const UaBrowsePaths& browsePaths,
-                    UaBrowsePathResults& browsePathResults,
-                    UaDiagnosticInfos&   diagnosticInfos
+                    UaClientSdk::ServiceSettings &serviceSettings,
+                    const UaBrowsePaths &browsePaths,
+                    UaBrowsePathResults &browsePathResults,
+                    UaDiagnosticInfos &diagnosticInfos
             ) override {
-                return pSession->translateBrowsePathsToNodeIds(serviceSettings, browsePaths, browsePathResults, diagnosticInfos);
+                return pSession->translateBrowsePathsToNodeIds(serviceSettings, browsePaths, browsePathResults,
+                                                               diagnosticInfos);
             }
 
-            void setSubscription(Subscription* p_in_subscr) override {p_subscr = p_in_subscr;}
+            void setSubscription(Subscription *p_in_subscr) override { p_subscr = p_in_subscr; }
 
-            void SubscriptionCreateSubscription(std::shared_ptr<UaClientSdk::UaSession>& m_pSession) override {
+            void SubscriptionCreateSubscription(std::shared_ptr <UaClientSdk::UaSession> &m_pSession) override {
                 if (p_subscr == nullptr) {
                     LOG(ERROR) << "Unable to create subscription, pointer is NULL ";
                     exit(SIGTERM);
@@ -150,8 +168,9 @@ namespace Umati {
                 p_subscr->createSubscription(m_pSession);
             };
 
-            std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> SubscriptionSubscribe(ModelOpcUa::NodeId_t nodeId,
-                    Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback) override {
+            std::shared_ptr <Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
+            SubscriptionSubscribe(ModelOpcUa::NodeId_t nodeId,
+                                  Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback) override {
                 if (p_subscr == nullptr) {
                     LOG(ERROR) << "Unable to subscribe, pointer is NULL ";
                     exit(SIGTERM);
@@ -159,7 +178,7 @@ namespace Umati {
                 return p_subscr->Subscribe(nodeId, callback);
             }
 
-            std::shared_ptr<UaClientSdk::UaSession> pSession;
+            std::shared_ptr <UaClientSdk::UaSession> pSession;
         };
     }
 }
