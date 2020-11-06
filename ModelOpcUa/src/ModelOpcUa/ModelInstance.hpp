@@ -49,7 +49,6 @@ namespace ModelOpcUa {
 		QualifiedName_t BrowseName;
 	};
 
-	// Currently I assume PlaceholderNode is used to list all actual objects of a type, e.g. all stacklights of type stacklight
 	// ModellingRule is one of {OptionalPlaceholder, MandatoryPlaceholder}
 	class PlaceholderNode : public Node {
 	public:
