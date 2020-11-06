@@ -814,7 +814,7 @@ OpcUaClient::BrowseWithContext(const ModelOpcUa::NodeId_t &startNode,
         throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
     }
 
-    std::__cxx11::list <ModelOpcUa::BrowseResult_t> browseResult;
+    std::list <ModelOpcUa::BrowseResult_t> browseResult;
     ReferenceDescriptionsToBrowseResults(typeDefinitionUaNodeId, referenceDescriptions, browseResult);
     handleContinuationPoint(continuationPoint);
 
