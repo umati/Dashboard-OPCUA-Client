@@ -7,3 +7,4 @@ enable_testing()
 message("### opcua_dashboardclient/ModelOpcUa: adding subdirectories")
 add_subdirectory(src)
 
+add_subdirectory(example)
