@@ -5,7 +5,6 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
-#include <zconf.h>
 
 namespace Umati {
 	namespace MachineObserver {

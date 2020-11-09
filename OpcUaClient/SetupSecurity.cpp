@@ -31,7 +31,7 @@ namespace Umati {
 			std::vector<std::string> parts;
 
 			std::string part = "";
-			int i = 0;
+			uint i = 0;
 
 			// Directory must end with a '/', otherwise last part is ignored (expected file)
 			while (i < directory.size()) {
