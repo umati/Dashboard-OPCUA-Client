@@ -849,9 +849,6 @@ namespace Umati {
 			LOG(DEBUG) << "Handling continuation point not yet implemented";
 		}
 
-		std::string OpcUaClient::IndexToUri(uint index) {
-			return m_indexToUriCache[index];
-		}
 
 		ModelOpcUa::BrowseResult_t
 		OpcUaClient::ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescription) {

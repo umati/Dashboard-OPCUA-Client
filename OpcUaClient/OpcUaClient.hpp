@@ -56,13 +56,9 @@ namespace Umati {
 
 			std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) override;
 
-			UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
-
 			std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) override;
 
 			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) override;
-
-			std::string IndexToUri(uint index) override;
 
 		protected:
 			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
@@ -122,6 +118,8 @@ namespace Umati {
 																					"i=58"};
 
 			void on_connected();
+			UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds);
+
 
 			static UaClientSdk::SessionConnectInfo &
 			prepareSessionConnectInfo(UaClientSdk::SessionConnectInfo &sessionConnectInfo);

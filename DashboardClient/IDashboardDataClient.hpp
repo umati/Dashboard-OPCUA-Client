@@ -71,8 +71,6 @@ namespace Umati {
 
 			virtual std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
-			virtual UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) = 0;
-
 			virtual void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
 											  UaClientSdk::BrowseContext browseContext) = 0;
 
@@ -81,9 +79,6 @@ namespace Umati {
 
 			virtual ModelOpcUa::BrowseResult_t
 			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) = 0;
-
-			virtual std::string IndexToUri(uint index) = 0;
-
 		};
 	}
 }
