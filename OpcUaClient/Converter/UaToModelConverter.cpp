@@ -2,29 +2,29 @@
 #include <easylogging++.h>
 
 namespace Umati {
-    namespace OpcUa {
-        namespace Converter {
+	namespace OpcUa {
+		namespace Converter {
 
-            UaToModelConverter::UaToModelConverter(const std::map <uint16_t, std::string> &idToUri) : m_idToUri(
-                    idToUri) {
-            }
+			UaToModelConverter::UaToModelConverter(const std::map<uint16_t, std::string> &idToUri) : m_idToUri(
+					idToUri) {
+			}
 
-            UaToModelConverter::~UaToModelConverter() {}
+			UaToModelConverter::~UaToModelConverter() {}
 
 
-            std::string UaToModelConverter::getUriFromNsIndex(uint16_t nsIndex) {
-                if (nsIndex == 0) {
-                    return std::string();
-                }
+			std::string UaToModelConverter::getUriFromNsIndex(uint16_t nsIndex) {
+				if (nsIndex == 0) {
+					return std::string();
+				}
 
-                auto it = m_idToUri.find(nsIndex);
-                if (it == m_idToUri.end()) {
-                    LOG(ERROR) << "Could not find nsIndex: " << nsIndex << std::endl;
-                    return std::string();
-                }
+				auto it = m_idToUri.find(nsIndex);
+				if (it == m_idToUri.end()) {
+					LOG(ERROR) << "Could not find nsIndex: " << nsIndex << std::endl;
+					return std::string();
+				}
 
-                return it->second;
-            }
-        }
-    }
+				return it->second;
+			}
+		}
+	}
 }

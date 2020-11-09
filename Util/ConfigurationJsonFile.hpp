@@ -4,19 +4,18 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-namespace Umati
-{
-	namespace Util
-	{
-		class ConfigurationJsonFile : public Configuration
-		{
+namespace Umati {
+	namespace Util {
+		class ConfigurationJsonFile : public Configuration {
 		public:
-			ConfigurationJsonFile(const std::string& filename);
+			ConfigurationJsonFile(const std::string &filename);
 
 			// Inherit from Configuration
 			OpcUaConfig OpcUa() override;
+
 			MqttConfig Mqtt() override;
-            std::vector<std::string> ObjectTypeNamespacesVector() override;
+
+			std::vector<std::string> ObjectTypeNamespacesVector() override;
 
 			const std::string JsonKey_OpcUa = std::string("OpcUa");
 			const std::string JsonKey_OpcUa_Endpoint = std::string("Endpoint");
@@ -34,13 +33,17 @@ namespace Umati
 
 		protected:
 			nlohmann::json getValueOrException(nlohmann::json json, std::string key);
+
 			ConfigurationJsonFile() = default;
+
 			virtual void parseConfigurationFile(nlohmann::json json);
+
 			virtual void parseConfigurationMqtt(nlohmann::json json);
+
 			virtual void parseConfigurationOpcUa(nlohmann::json json);
 
 			OpcUaConfig m_opcUa;
-            std::vector<std::string> m_ObjectTypeNamespacesVector;
+			std::vector<std::string> m_ObjectTypeNamespacesVector;
 			MqttConfig m_mqtt;
 
 		};

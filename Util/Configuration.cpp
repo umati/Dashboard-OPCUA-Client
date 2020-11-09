@@ -5,7 +5,7 @@
 #include "Configuration.hpp"
 
 namespace Umati {
-    namespace Util {
-            Configuration::~Configuration() {}
-    }
+	namespace Util {
+		Configuration::~Configuration() {}
+	}
 }

@@ -2,8 +2,7 @@
 
 #include <stdexcept>
 
-namespace Umati
-{
+namespace Umati {
 	namespace Exceptions {
 		class UmatiException : public std::runtime_error {
 		public:

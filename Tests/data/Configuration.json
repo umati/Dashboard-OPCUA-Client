@@ -1,5 +1,7 @@
 {
-  "ObjectTypeNamespaces": ["http://www.umati.info"],
+  "ObjectTypeNamespaces": [
+    "http://www.umati.info"
+  ],
   "OpcUa": {
     "Endpoint": "opc.tcp://localhost:4840",
     "User": "User",

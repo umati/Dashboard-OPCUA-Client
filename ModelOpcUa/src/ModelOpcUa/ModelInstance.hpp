@@ -1,5 +1,6 @@
 
 #pragma once
+
 #include "ModelDefinition.hpp"
 
 #include <memory>
@@ -7,16 +8,17 @@
 namespace ModelOpcUa {
 
 	//Instance of a node, contains the structur informations
-	class Node : public NodeDefinition
-	{
+	class Node : public NodeDefinition {
 	public:
 		using NodeDefinition::NodeDefinition;
-		Node(const NodeDefinition&, const std::list<std::shared_ptr<const Node>> &childNodes);
+
+		Node(const NodeDefinition &, const std::list<std::shared_ptr<const Node>> &childNodes);
+
 		virtual ~Node() = 0;
 
 		/// All child elements
 		const std::list<std::shared_ptr<const Node>> ChildNodes;
-        bool ofBaseDataVariableType = false;
+		bool ofBaseDataVariableType = false;
 	protected:
 	};
 
@@ -27,24 +29,24 @@ namespace ModelOpcUa {
 
 		// Node available
 		SimpleNode(
-			NodeId_t nodeId,
-			NodeId_t typeNodeId,
-			NodeDefinition nodeDefinition,
-			const std::list<std::shared_ptr<const Node>> &childNodes
+				NodeId_t nodeId,
+				NodeId_t typeNodeId,
+				NodeDefinition nodeDefinition,
+				const std::list<std::shared_ptr<const Node>> &childNodes
 		);
 
 		// Node not available
 		SimpleNode(NodeDefinition nodeDefinition);
 
 		bool isAvaliable();
+
 		NodeId_t NodeId;
 
 		// The instanciated type of the Node (might be a subtype of the defined one)
 		NodeId_t TypeNodeId;
 	};
 
-	struct PlaceholderElement
-	{
+	struct PlaceholderElement {
 		std::shared_ptr<const SimpleNode> pNode;
 		QualifiedName_t BrowseName;
 	};
@@ -53,8 +55,9 @@ namespace ModelOpcUa {
 	class PlaceholderNode : public Node {
 	public:
 		using Node::Node;
+
 		void addInstance(PlaceholderElement instance);
-		
+
 		std::list<PlaceholderElement> getInstances() const;
 
 	protected:

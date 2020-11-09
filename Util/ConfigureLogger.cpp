@@ -3,22 +3,19 @@
 #include <easylogging++.h>
 
 // Initiliaze Logger once
- INITIALIZE_EASYLOGGINGPP;
+INITIALIZE_EASYLOGGINGPP;
 //INITIALIZE_NULL_EASYLOGGINGPP;
 
-namespace Umati
-{
-	namespace Util
-	{
+namespace Umati {
+	namespace Util {
 
-		void ConfigureLogger(std::string name)
-		{
+		void ConfigureLogger(std::string name) {
 			//el::Helpers::setStorage(el::base::type::StoragePointer());
 
 			el::Configurations conf;
 			conf.setToDefault();
 			conf.parseFromText(
-				R"LOG_CONFIG(
+					R"LOG_CONFIG(
 * GLOBAL:
   FORMAT = "%datetime [%logger] %level %func:%line %msg"
   ENABLED = true

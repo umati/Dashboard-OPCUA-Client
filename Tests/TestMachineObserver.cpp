@@ -26,11 +26,11 @@ using ::testing::Invoke;
 using ::testing::AtLeast;
 
 namespace Umati {
-    namespace MachineObserver {
-        class TestMachineObserver : public MachineObserver {
+	namespace MachineObserver {
+		class TestMachineObserver : public MachineObserver {
 
-        };
-    }
+		};
+	}
 }
 
 
