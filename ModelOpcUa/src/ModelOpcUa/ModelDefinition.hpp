@@ -17,7 +17,7 @@ namespace ModelOpcUa {
 			return Uri.empty() && Id.empty();
 		}
 
-		operator std::string() const {
+		explicit operator std::string() const {
 			std::stringstream ss;
 			if (!Uri.empty()) {
 				ss << "nsu=" << Uri << ";";
@@ -55,7 +55,7 @@ namespace ModelOpcUa {
 			return Uri.empty() && Name.empty();
 		}
 
-		operator std::string() const {
+		explicit operator std::string() const {
 			std::stringstream ss;
 			if (!Uri.empty()) {
 				ss << "nsu=" << Uri << ";";
@@ -169,8 +169,6 @@ namespace ModelOpcUa {
 
 		static std::string printType(const std::shared_ptr<StructureNode> &node, const std::string &parentTree);
 
-		static std::string printJson(const std::shared_ptr<StructureNode> &node);
-
 	private:
 		static std::string
 		printJsonIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree, int tabs);
@@ -228,7 +226,7 @@ namespace ModelOpcUa {
 
 		);
 
-		StructurePlaceholderNode(const std::shared_ptr<StructureNode> sharedPtr);
+		explicit StructurePlaceholderNode(std::shared_ptr<StructureNode> sharedPtr);
 
 // All predefined subtypes that are handled separately
 		const std::list<std::shared_ptr<const StructureNode>> PossibleTypes;

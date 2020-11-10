@@ -54,6 +54,10 @@ namespace Umati {
 
 			static void logMachinesChanging(const std::string &text,
 											const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines);
+
+			void createMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
+															 const std::string &startNodeNamespaceUri,
+															 const ModelOpcUa::NodeId_t &startNode) const;
 		};
 	}
 }

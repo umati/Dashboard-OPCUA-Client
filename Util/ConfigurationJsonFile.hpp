@@ -8,7 +8,7 @@ namespace Umati {
 	namespace Util {
 		class ConfigurationJsonFile : public Configuration {
 		public:
-			ConfigurationJsonFile(const std::string &filename);
+			explicit ConfigurationJsonFile(const std::string &filename);
 
 			// Inherit from Configuration
 			OpcUaConfig OpcUa() override;

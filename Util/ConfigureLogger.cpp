@@ -3,13 +3,13 @@
 #include <easylogging++.h>
 
 // Initiliaze Logger once
-INITIALIZE_EASYLOGGINGPP;
+INITIALIZE_EASYLOGGINGPP
 //INITIALIZE_NULL_EASYLOGGINGPP;
 
 namespace Umati {
 	namespace Util {
 
-		void ConfigureLogger(std::string name) {
+		void ConfigureLogger(const std::string& name) {
 			//el::Helpers::setStorage(el::base::type::StoragePointer());
 
 			el::Configurations conf;

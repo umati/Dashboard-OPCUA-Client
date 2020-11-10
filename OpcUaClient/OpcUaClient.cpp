@@ -422,7 +422,7 @@ namespace Umati {
 			);
 		}
 
-		uint OpcUaClient::getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) {
+		uint OpcUaClient::GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) {
 			UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
 			auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(nodeId.Id.c_str()));
 			uint machineNamespaceIndex = m_uriToIndexCache[nodeId.Uri];
@@ -443,6 +443,42 @@ namespace Umati {
 				machineTypeNamespaceIndex = machineTypeDefinitionReferenceDescriptions[i].NodeId.NodeId.NamespaceIndex;
 			}
 			return machineTypeNamespaceIndex;
+		}
+
+		void
+		OpcUaClient::CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
+																 const std::string &startNodeNamespaceUri,
+																 const ModelOpcUa::NodeId_t &startNode) {
+			auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
+			UaReferenceDescriptions referenceDescriptions;
+			uint namespaceIndex = m_uriToIndexCache[startNodeNamespaceUri];
+			startNodeId.setNamespaceIndex(namespaceIndex);
+
+			browseUnderStartNode(startNodeId, referenceDescriptions);
+
+			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+				auto refDesc = referenceDescriptions[i];
+				try {
+					auto browseRes = ReferenceDescriptionToBrowseResult(refDesc);
+					machineList.emplace_back(browseRes);
+				} catch (std::exception &ex) { LOG(ERROR) << "unable to add machine: " << ex.what(); }
+			}
+		}
+
+		void OpcUaClient::FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
+																   std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+																   std::vector<std::string> &identificationValueKeys) {
+			auto startNodeId = UaNodeId::fromXmlString(UaString(identification.front().NodeId.Id.c_str()));
+			startNodeId.setNamespaceIndex(m_uriToIndexCache[identification.front().NodeId.Uri]);
+
+			UaReferenceDescriptions referenceDescriptions;
+			browseUnderStartNode(startNodeId, referenceDescriptions);
+			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
+				ModelOpcUa::BrowseResult_t browseResult = ReferenceDescriptionToBrowseResult(
+						referenceDescriptions[i]);
+				identificationValueKeys.push_back(browseResult.BrowseName.Name);
+				identificationNodes.emplace_back(browseResult.NodeId);
+			}
 		}
 
 		void
@@ -795,6 +831,12 @@ namespace Umati {
 			}
 		}
 
+		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::BrowseHasComponent(ModelOpcUa::NodeId_t startNode,
+						   ModelOpcUa::NodeId_t typeDefinition)	{
+			auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
+			return Browse(startNode, hasComponents, typeDefinition);
+	}
+
 		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::Browse(
 				ModelOpcUa::NodeId_t startNode,
 				ModelOpcUa::NodeId_t referenceTypeId,
@@ -1004,7 +1046,7 @@ namespace Umati {
 			return m_opcUaWrapper->SubscriptionSubscribe(nodeId, callback);
 		}
 
-		std::vector<nlohmann::json> OpcUaClient::readValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) {
+		std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) {
 			std::vector<nlohmann::json> ret;
 			UaDataValues readValues = readValues2(modelNodeIds);
 
@@ -1149,7 +1191,6 @@ namespace Umati {
 				}
 				auto shared = std::make_shared<ModelOpcUa::StructureNode>(node);
 
-//LOG(INFO) << std::endl << ModelOpcUa::StructureNode::printJson(shared);
 				std::pair<std::string, std::shared_ptr<ModelOpcUa::StructureNode>> newType(typeName, shared);
 				typeMap->
 						insert(newType);

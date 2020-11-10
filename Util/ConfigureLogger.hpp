@@ -4,6 +4,6 @@
 
 namespace Umati {
 	namespace Util {
-		void ConfigureLogger(std::string name);
+		void ConfigureLogger(const std::string& name);
 	}
 }

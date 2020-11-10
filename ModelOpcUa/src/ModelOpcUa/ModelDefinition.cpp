@@ -99,12 +99,6 @@ namespace ModelOpcUa {
 		return ss.str();
 	}
 
-	std::string StructureNode::printJson(const std::shared_ptr<StructureNode> &node) {
-		std::stringstream ss;
-		ss << "{" << std::endl << printJsonIntern(node, "", 0) << "}" << std::endl;
-		return ss.str();
-	}
-
 	std::string
 	StructureNode::printJsonIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree,
 								   int tabs) {

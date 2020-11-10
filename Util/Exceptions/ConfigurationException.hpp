@@ -10,13 +10,15 @@ namespace Umati {
 						msg_(message) {
 				}
 
-				virtual ~ConfigurationException() throw() {}
+				~ConfigurationException() noexcept override;
 
 			protected:
 				/** Error message.
 				 */
 				std::string msg_;
 			};
+
+			ConfigurationException::~ConfigurationException() noexcept {}
 		}
 	}
 }

@@ -3,6 +3,7 @@
 #include "Exceptions/MachineInvalidException.hpp"
 #include <Exceptions/OpcUaException.hpp>
 #include <Base64.hpp>
+#include <utility>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -10,8 +11,8 @@ namespace Umati {
 		DashboardMachineObserver::DashboardMachineObserver(
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
 				std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher
-		) : MachineObserver(pDataClient),
-			m_pPublisher(pPublisher) {
+		) : MachineObserver(std::move(pDataClient)),
+			m_pPublisher(std::move(pPublisher)) {
 			startUpdateMachineThread();
 		}
 
@@ -100,7 +101,7 @@ namespace Umati {
 
 				std::stringstream topic;
 				std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machine.NodeId.Uri, true);
-				topic << "/umati" << this->getMachineSubtopic(p_type, base64ProductInstanceUri);
+				topic << "/umati" << Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(p_type, base64ProductInstanceUri);
 				pDashClient->addDataSet(
 						{machineInformation.NamespaceURI, machine.NodeId.Id},
 						p_type,
@@ -126,8 +127,8 @@ namespace Umati {
 		}
 
 		std::shared_ptr<ModelOpcUa::StructureNode>
-		DashboardMachineObserver::getTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const {
-			uint machineTypeNamespaceIndex = m_pDataClient->getImplementedNamespaceIndex(nodeId);
+		DashboardMachineObserver::getTypeOfNamespace(const ModelOpcUa::NodeId_t& nodeId) const {
+			uint machineTypeNamespaceIndex = m_pDataClient->GetImplementedNamespaceIndex(nodeId);
 
 			std::string typeName =
 					m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" +
@@ -139,10 +140,9 @@ namespace Umati {
 			return typePair->second;
 		}
 
-
 		std::shared_ptr<ModelOpcUa::StructureNode>
-		DashboardMachineObserver::getIdentificationTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const {
-			uint machineTypeNamespaceIndex = m_pDataClient->getImplementedNamespaceIndex(nodeId);
+		DashboardMachineObserver::getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t& nodeId) const {
+			uint machineTypeNamespaceIndex = m_pDataClient->GetImplementedNamespaceIndex(nodeId);
 			std::string idType = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
 			std::string identificationTypeName =
 					m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" +
@@ -192,15 +192,14 @@ namespace Umati {
 
 				if (typeIt != m_pDataClient->m_nameToId->end()) {
 					ModelOpcUa::NodeId_t type = typeIt->second;
-					auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
 
-					std::list<ModelOpcUa::BrowseResult_t> identification = m_pDataClient->Browse(machineNodeId,
-																								 hasComponents, type);
+					std::list<ModelOpcUa::BrowseResult_t> identification =
+							m_pDataClient->BrowseHasComponent(machineNodeId, type);
 					if (!identification.empty()) {
 						LOG(INFO) << "Found component of type " << type.Uri << ";" << type.Id << " in "
 								  << machineNodeId.Uri << ";" << machineNodeId.Id;
-						UaReferenceDescriptions referenceDescriptions;
-						browseIdentificationValues(machineNodeId, identification, referenceDescriptions,
+
+						browseIdentificationValues(machineNodeId, identification,
 												   identificationAsJson);
 						if (!identificationAsJson.empty()) {
 							return true;
@@ -223,26 +222,17 @@ namespace Umati {
 
 		void DashboardMachineObserver::browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId,
 																  std::list<ModelOpcUa::BrowseResult_t> &identification,
-																  UaReferenceDescriptions &referenceDescriptions,
 																  nlohmann::json &identificationAsJson) const {
 			std::vector<nlohmann::json> identificationListValues;
-			auto startNodeId = UaNodeId::fromXmlString(UaString(identification.front().NodeId.Id.c_str()));
-			startNodeId.setNamespaceIndex(m_pDataClient->m_uriToIndexCache[identification.front().NodeId.Uri]);
-			m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
-
 
 			std::shared_ptr<ModelOpcUa::StructureNode> p_type = getTypeOfNamespace(identification.front().NodeId);
-
 			std::list<ModelOpcUa::NodeId_t> identificationNodes;
 			std::vector<std::string> identificationValueKeys;
-			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
-				ModelOpcUa::BrowseResult_t browseResult = m_pDataClient->ReferenceDescriptionToBrowseResult(
-						referenceDescriptions[i]);
-				identificationValueKeys.push_back(browseResult.BrowseName.Name);
-				identificationNodes.emplace_back(browseResult.NodeId);
-			}
 
-			identificationListValues = m_pDataClient->readValues(identificationNodes);
+			m_pDataClient->FillIdentificationValuesFromBrowseResult(identification, identificationNodes,
+																	identificationValueKeys);
+
+			identificationListValues = m_pDataClient->ReadeNodeValues(identificationNodes);
 			for (uint i = 0; i < identificationListValues.size(); i++) {
 				auto value = identificationListValues.at(i);
 				if (value.dump(0) != "null") {
@@ -254,7 +244,7 @@ namespace Umati {
 			auto it = m_machineNames.find(machineNodeId);
 			if (it != m_machineNames.end()) {
 				std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machineNodeId.Uri, true);
-				identificationAsJson["Path"] = this->getMachineSubtopic(p_type, base64ProductInstanceUri);
+				identificationAsJson["Path"] = Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(p_type, base64ProductInstanceUri);
 			}
 		}
 

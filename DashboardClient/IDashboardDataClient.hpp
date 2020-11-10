@@ -4,9 +4,6 @@
 
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <functional>
-#include <uanodeid.h>
-#include <uaarraytemplates.h>
-#include <uaclientsdk.h>
 
 namespace Umati {
 
@@ -25,6 +22,10 @@ namespace Umati {
 
 			virtual std::list<ModelOpcUa::BrowseResult_t>
 			Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId,
+				   ModelOpcUa::NodeId_t typeDefinition) = 0;
+
+			virtual std::list<ModelOpcUa::BrowseResult_t>
+			BrowseHasComponent(ModelOpcUa::NodeId_t startNode,
 				   ModelOpcUa::NodeId_t typeDefinition) = 0;
 
 			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(
@@ -51,7 +52,7 @@ namespace Umati {
 
 				virtual void unsubscribe() = 0;
 
-				bool isUnsubscribed() { return m_unsubscribed; }
+				bool isUnsubscribed() const { return m_unsubscribed; }
 
 			protected:
 				void setUnsubscribed() {
@@ -69,18 +70,18 @@ namespace Umati {
 			virtual std::shared_ptr<ValueSubscriptionHandle>
 			Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
-			virtual std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
+			virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
-			virtual uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) = 0;
-
-			virtual void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-											  UaClientSdk::BrowseContext browseContext) = 0;
+			virtual uint GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
 			virtual void
-			browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) = 0;
+			CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
+														const std::string &startNodeNamespaceUri,
+														const ModelOpcUa::NodeId_t &startNode) = 0;
 
-			virtual ModelOpcUa::BrowseResult_t
-			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) = 0;
+			virtual void
+			FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification, std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+													 std::vector<std::string> &identificationValueKeys) = 0;
 		};
 	}
 }

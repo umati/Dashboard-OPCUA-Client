@@ -7,6 +7,6 @@
 
 namespace Umati {
 	namespace Dashboard {
-		IDashboardDataClient::ValueSubscriptionHandle::~ValueSubscriptionHandle() {}
+		IDashboardDataClient::ValueSubscriptionHandle::~ValueSubscriptionHandle() = default;
 	}
 }

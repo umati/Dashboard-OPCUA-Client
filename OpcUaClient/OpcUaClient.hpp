@@ -40,28 +40,31 @@ namespace Umati {
 			Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId,
 				   ModelOpcUa::NodeId_t typeDefinition) override;
 
+			std::list<ModelOpcUa::BrowseResult_t>
+			BrowseHasComponent(ModelOpcUa::NodeId_t startNode,
+							   ModelOpcUa::NodeId_t typeDefinition) override;
+
 			ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode,
 															 ModelOpcUa::QualifiedName_t browseName) override;
 
 			std::shared_ptr<ValueSubscriptionHandle>
 			Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
 
-			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) override;
+			uint GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) override;
 
-			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-									  UaClientSdk::BrowseContext browseContext) override;
-
-			uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) override;
-
-			ModelOpcUa::BrowseResult_t
-			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) override;
-
-			std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) override;
+			std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) override;
 
 			std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) override;
 
 			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) override;
 
+			void CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
+															 const std::string &startNodeNamespaceUri,
+															 const ModelOpcUa::NodeId_t &startNode) override;
+
+			void
+			FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification, std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+													 std::vector<std::string> &identificationValueKeys) override;
 		protected:
 			void connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
 										 UaClientSdk::UaClient::ServerStatus serverStatus) override;
@@ -171,6 +174,14 @@ namespace Umati {
 					modellingRule,
 					bool ofBaseDataVariableType
 			);
+
+			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions);
+
+			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
+									  UaClientSdk::BrowseContext browseContext);
+
+			ModelOpcUa::BrowseResult_t
+			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions);
 
 			static void
 			createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>

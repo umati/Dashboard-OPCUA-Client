@@ -20,7 +20,7 @@ namespace Umati {
 					std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher
 			);
 
-			~DashboardMachineObserver();
+			~DashboardMachineObserver() override;
 
 			void PublishAll();
 
@@ -60,13 +60,12 @@ namespace Umati {
 
 			void browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId,
 											std::list<ModelOpcUa::BrowseResult_t> &identification,
-											UaReferenceDescriptions &referenceDescriptions,
 											nlohmann::json &identificationAsJson) const;
 
-			std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const;
+			std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(const ModelOpcUa::NodeId_t& nodeId) const;
 
 			std::shared_ptr<ModelOpcUa::StructureNode>
-			getIdentificationTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const;
+			getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t& nodeId) const;
 
 			static std::string getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
 												  const std::string &namespaceUri);

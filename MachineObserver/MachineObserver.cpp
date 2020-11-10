@@ -98,23 +98,11 @@ namespace Umati {
 			try {
 				LOG(INFO) << "Searching for machines";
 				machineList.empty();
-				UaReferenceDescriptions referenceDescriptions;
 
 				std::string startNodeNamespaceUri = "http://opcfoundation.org/UA/Machinery/";
 				ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{startNodeNamespaceUri, "i=1001"};
-				auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
-				uint namespaceIndex = m_pDataClient->m_uriToIndexCache[startNodeNamespaceUri];
-				startNodeId.setNamespaceIndex(namespaceIndex);
-
-				m_pDataClient->browseUnderStartNode(startNodeId, referenceDescriptions);
-
-				for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++) {
-					auto refDesc = referenceDescriptions[i];
-					try {
-						auto browseRes = m_pDataClient->ReferenceDescriptionToBrowseResult(refDesc);
-						machineList.emplace_back(browseRes);
-					} catch (std::exception &ex) { LOG(ERROR) << "unable to add machine: " << ex.what(); }
-				}
+				m_pDataClient->CreateMachineListForNamespaceUnderStartNode(machineList, startNodeNamespaceUri,
+																		   startNode);
 			}
 			catch (const Umati::Exceptions::OpcUaException &ex) {
 				LOG(ERROR) << "Browse new machines failed with: " << ex.what();
@@ -124,7 +112,6 @@ namespace Umati {
 				LOG(ERROR) << "OPC UA Client not connected." << ex.what();
 				return false;
 			}
-
 			return true;
 		}
 

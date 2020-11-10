@@ -6,6 +6,6 @@
 
 namespace Umati {
 	namespace Util {
-		Configuration::~Configuration() {}
+		Configuration::~Configuration() = default;
 	}
 }
