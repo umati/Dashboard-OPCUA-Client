@@ -2,23 +2,21 @@
 
 
 namespace Umati {
-	namespace Util {
-		namespace Exception {
-			class ConfigurationException : public std::exception {
-			public:
-				explicit ConfigurationException(const char *message) :
-						msg_(message) {
-				}
+    namespace Util {
+        namespace Exception {
+            class ConfigurationException : public std::exception {
+            public:
+                explicit ConfigurationException(const char *message) :
+                        msg_(message) {
+                }
 
-				~ConfigurationException() noexcept override;
+                virtual ~ConfigurationException() throw() {}
 
-			protected:
-				/** Error message.
-				 */
-				std::string msg_;
-			};
-
-			ConfigurationException::~ConfigurationException() noexcept {}
-		}
-	}
+            protected:
+                /** Error message.
+                 */
+                std::string msg_;
+            };
+        }
+    }
 }

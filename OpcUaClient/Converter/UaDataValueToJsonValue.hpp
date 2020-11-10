@@ -9,7 +9,7 @@ namespace Umati {
 		namespace Converter {
 			class UaDataValueToJsonValue {
 			public:
-				UaDataValueToJsonValue(const UaDataValue &dataValue, bool serializeStatusInformation = false);
+				explicit UaDataValueToJsonValue(const UaDataValue &dataValue, bool serializeStatusInformation = false);
 
 				nlohmann::json getValue() {
 					return m_value;
@@ -17,7 +17,6 @@ namespace Umati {
 			protected:
 
 				void setValueFromDataValue(const UaDataValue &dataValue, bool serializeStatusInformation = false);
-
 				void setStatusCodeFromDataValue(const UaDataValue &dataValue);
 
 				nlohmann::json m_value;

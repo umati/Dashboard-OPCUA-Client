@@ -9,7 +9,7 @@ namespace Umati {
 					idToUri) {
 			}
 
-			UaToModelConverter::~UaToModelConverter() {}
+			UaToModelConverter::~UaToModelConverter() = default;
 
 
 			std::string UaToModelConverter::getUriFromNsIndex(uint16_t nsIndex) {

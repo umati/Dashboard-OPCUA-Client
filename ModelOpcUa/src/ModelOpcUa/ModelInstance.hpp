@@ -12,9 +12,9 @@ namespace ModelOpcUa {
 	public:
 		using NodeDefinition::NodeDefinition;
 
-		Node(const NodeDefinition &, const std::list<std::shared_ptr<const Node>> &childNodes);
+		Node(const NodeDefinition &, std::list<std::shared_ptr<const Node>> childNodes);
 
-		virtual ~Node() = 0;
+		~Node() override = 0;
 
 		/// All child elements
 		const std::list<std::shared_ptr<const Node>> ChildNodes;
@@ -25,20 +25,20 @@ namespace ModelOpcUa {
 	// ModellingRule is one of {Optional, Mandatory}
 	class SimpleNode : public Node {
 	public:
-		virtual ~SimpleNode() = default;
+		~SimpleNode() override = default;
 
 		// Node available
 		SimpleNode(
 				NodeId_t nodeId,
 				NodeId_t typeNodeId,
-				NodeDefinition nodeDefinition,
+				const NodeDefinition& nodeDefinition,
 				const std::list<std::shared_ptr<const Node>> &childNodes
 		);
 
 		// Node not available
-		SimpleNode(NodeDefinition nodeDefinition);
+		explicit SimpleNode(const NodeDefinition& nodeDefinition);
 
-		bool isAvaliable();
+		bool isAvaliable() const;
 
 		NodeId_t NodeId;
 
@@ -56,7 +56,7 @@ namespace ModelOpcUa {
 	public:
 		using Node::Node;
 
-		void addInstance(PlaceholderElement instance);
+		void addInstance(const PlaceholderElement& instance);
 
 		std::list<PlaceholderElement> getInstances() const;
 

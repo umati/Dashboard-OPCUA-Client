@@ -15,7 +15,7 @@ namespace Umati {
 			class ModelQualifiedNameToUaQualifiedName : public ModelToUaConverter {
 			public:
 				ModelQualifiedNameToUaQualifiedName(
-						ModelOpcUa::QualifiedName_t modelQualifiedName,
+						const ModelOpcUa::QualifiedName_t& modelQualifiedName,
 						const std::map<std::string, uint16_t> &uriToID
 				);
 

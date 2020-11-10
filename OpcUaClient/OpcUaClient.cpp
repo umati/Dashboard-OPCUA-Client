@@ -1,16 +1,11 @@
 #include "OpcUaClient.hpp"
 
-#include <iostream>
 #include "SetupSecurity.hpp"
-#include <easylogging++.h>
-
-#include <list>
 
 
 #include "uaplatformlayer.h"
 
 #include <Exceptions/ClientNotConnected.hpp>
-#include <utility>
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
@@ -603,12 +598,12 @@ namespace Umati {
 			}
 		}
 
-		void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions) {
+		void OpcUaClient::browseUnderStartNode(const UaNodeId& startUaNodeId, UaReferenceDescriptions &referenceDescriptions) {
 			browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectAndVariableTypeBrowseContext());
 		}
 
-		void OpcUaClient::browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-											   UaClientSdk::BrowseContext browseContext) {
+		void OpcUaClient::browseUnderStartNode(const UaNodeId& startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
+											   const UaClientSdk::BrowseContext& browseContext) {
 			UaByteString continuationPoint;
 			// References -> nodes referenced to this, e.g. child nodes
 			// BrowseName: Readable Name and namespace index
@@ -1059,7 +1054,7 @@ namespace Umati {
 			return ret;
 		}
 
-		UaDataValues OpcUaClient::readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds) {
+		UaDataValues OpcUaClient::readValues2(const std::list<ModelOpcUa::NodeId_t>& modelNodeIds) {
 			UaStatus uaStatus;
 			UaReadValueIds readValueIds;
 			readValueIds.resize(modelNodeIds.size());

@@ -154,13 +154,13 @@ namespace ModelOpcUa {
 
 		);
 
-		StructureNode(BrowseResult_t browseResult, bool ofBaseDataVariableType,
+		StructureNode(const BrowseResult_t& browseResult, bool ofBaseDataVariableType,
 					  std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes =
 					  std::make_shared<std::list<std::shared_ptr<StructureNode>>>()
 
 		);
 
-		StructureNode(BrowseResult_t browseResult,
+		StructureNode(const BrowseResult_t& browseResult,
 					  std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
 					  ModellingRule_t modellingRule, bool ofBaseDataVariableType);
 
@@ -226,7 +226,7 @@ namespace ModelOpcUa {
 
 		);
 
-		explicit StructurePlaceholderNode(std::shared_ptr<StructureNode> sharedPtr);
+		explicit StructurePlaceholderNode(const std::shared_ptr<StructureNode>& sharedPtr);
 
 // All predefined subtypes that are handled separately
 		const std::list<std::shared_ptr<const StructureNode>> PossibleTypes;

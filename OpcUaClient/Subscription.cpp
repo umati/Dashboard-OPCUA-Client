@@ -1,6 +1,6 @@
 #include "Subscription.hpp"
-#include <easylogging++.h>
-#include <uasession.h>
+
+#include <utility>
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
@@ -20,7 +20,7 @@ namespace Umati {
 
 			}
 
-			virtual ~ValueSubscriptionHandle() {
+			~ValueSubscriptionHandle() override {
 				unsubscribeInternal();
 			}
 
@@ -105,7 +105,7 @@ namespace Umati {
 		void Subscription::createSubscription(std::shared_ptr<UaClientSdk::UaSession> pSession) {
 			UaClientSdk::ServiceSettings servSettings;
 			UaClientSdk::SubscriptionSettings subSettings;
-			_pSession = pSession;
+			_pSession = std::move(pSession);
 			if (m_pSubscription == NULL) {
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(_pSession, servSettings, this, 1,
 																				subSettings, OpcUa_True,
@@ -221,8 +221,8 @@ namespace Umati {
 		}
 
 		void
-		Subscription::validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult,
-												ModelOpcUa::NodeId_t nodeId) {
+		Subscription::validateMonitorItemResult(const UaStatus& uaResult, UaMonitoredItemCreateResults monItemCreateResult,
+												const ModelOpcUa::NodeId_t& nodeId) {
 			if (uaResult.isBad()) {
 				LOG(ERROR) << "Create Monitored items for " << nodeId.Uri << ";" << nodeId.Uri << " failed with: "
 						   << uaResult.toString().toUtf8();

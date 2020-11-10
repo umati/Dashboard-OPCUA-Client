@@ -8,9 +8,9 @@ namespace Umati {
 					uriToID) {
 			}
 
-			ModelToUaConverter::~ModelToUaConverter() {}
+			ModelToUaConverter::~ModelToUaConverter() = default;
 
-			uint16_t ModelToUaConverter::getNsIndexFromUri(std::string uri) {
+			uint16_t ModelToUaConverter::getNsIndexFromUri(const std::string& uri) {
 				if (uri.empty()) {
 					return 0;
 				}

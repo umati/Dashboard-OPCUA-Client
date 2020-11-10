@@ -8,7 +8,7 @@ namespace Umati {
 		namespace Converter {
 			class UaToModelConverter {
 			public:
-				UaToModelConverter(const std::map<uint16_t, std::string> &idToUri);
+				explicit UaToModelConverter(const std::map<uint16_t, std::string> &idToUri);
 
 				virtual ~UaToModelConverter() = 0;
 

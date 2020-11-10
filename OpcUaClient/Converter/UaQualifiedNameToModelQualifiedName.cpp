@@ -7,7 +7,7 @@ namespace Umati {
 	namespace OpcUa {
 		namespace Converter {
 
-			UaQualifiedNameToModelQualifiedName::UaQualifiedNameToModelQualifiedName(UaQualifiedName qualifiedName,
+			UaQualifiedNameToModelQualifiedName::UaQualifiedNameToModelQualifiedName(const UaQualifiedName& qualifiedName,
 																					 const std::map<uint16_t, std::string> &idToUri)
 					: UaToModelConverter(idToUri) {
 				m_qualifiedName.Uri = getUriFromNsIndex(qualifiedName.namespaceIndex());

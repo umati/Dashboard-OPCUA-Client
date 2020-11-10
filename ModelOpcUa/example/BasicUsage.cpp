@@ -2,9 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <iostream>
-#include <sstream>
-#include <type_traits>
+#include <utility>
 #include "ExampleModels.hpp"
 
 std::string toString(ModelOpcUa::NodeClass_t nodeClass)
@@ -132,7 +130,7 @@ std::string toString(const std::shared_ptr<const ModelOpcUa::Node> &pNode, int d
 	return ss.str();
 }
 
-ModelOpcUa::NodeId_t translateBrowsePathToNodeIdMock(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t BrowseName)
+ModelOpcUa::NodeId_t translateBrowsePathToNodeIdMock(const ModelOpcUa::NodeId_t& startNode, const ModelOpcUa::QualifiedName_t& BrowseName)
 {
 	ModelOpcUa::NodeId_t ret;
 	if (!startNode.isNull())
@@ -152,14 +150,14 @@ struct BrowseResult_t {
 };
 
 
-std::list<BrowseResult_t> browseNodes(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId, ModelOpcUa::NodeId_t nodeTypeId)
+std::list<BrowseResult_t> browseNodes(const ModelOpcUa::NodeId_t& startNode, const ModelOpcUa::NodeId_t& referenceTypeId, const ModelOpcUa::NodeId_t& nodeTypeId)
 {
 	return std::list<BrowseResult_t>();
 }
 
 std::shared_ptr<const ModelOpcUa::PlaceholderNode> browsePlaceholder(
 	ModelOpcUa::NodeId_t startNode,
-	std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStrucPlaceholder)
+	const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode>& pStrucPlaceholder)
 {
 	if (pStrucPlaceholder)
 	{
@@ -167,7 +165,7 @@ std::shared_ptr<const ModelOpcUa::PlaceholderNode> browsePlaceholder(
 	}
 	pStrucPlaceholder->ReferenceType;
 
-	auto browseResults = browseNodes(startNode, pStrucPlaceholder->ReferenceType, pStrucPlaceholder->SpecifiedTypeNodeId);
+	auto browseResults = browseNodes(std::move(startNode), pStrucPlaceholder->ReferenceType, pStrucPlaceholder->SpecifiedTypeNodeId);
 	for (auto &browseResult : browseResults)
 	{
 		// Look for the correct type in possibleTypes based on the browseType

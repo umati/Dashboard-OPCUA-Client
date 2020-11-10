@@ -5,7 +5,7 @@
 
 namespace Umati {
 	namespace Exceptions {
-		OpcUaNonGoodStatusCodeException::OpcUaNonGoodStatusCodeException(const UaStatus &status, std::string message)
+		OpcUaNonGoodStatusCodeException::OpcUaNonGoodStatusCodeException(const UaStatus &status, const std::string& message)
 				: OpcUaException(toHex(status) + ", " + statusToMessage(status) + ": " + message) {
 
 		}

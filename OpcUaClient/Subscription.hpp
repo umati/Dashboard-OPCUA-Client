@@ -50,8 +50,8 @@ namespace Umati {
 			prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
 									UaMonitoredItemCreateRequests &monItemCreateReq) const;
 
-			void validateMonitorItemResult(UaStatus uaResult, UaMonitoredItemCreateResults monItemCreateResult,
-										   ModelOpcUa::NodeId_t nodeId);
+			static void validateMonitorItemResult(const UaStatus& uaResult, UaMonitoredItemCreateResults monItemCreateResult,
+										   const ModelOpcUa::NodeId_t& nodeId);
 		};
 
 	}

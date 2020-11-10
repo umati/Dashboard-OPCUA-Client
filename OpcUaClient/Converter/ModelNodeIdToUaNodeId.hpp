@@ -10,7 +10,7 @@ namespace Umati {
 		namespace Converter {
 			class ModelNodeIdToUaNodeId : public ModelToUaConverter {
 			public:
-				ModelNodeIdToUaNodeId(ModelOpcUa::NodeId_t modelNodeId,
+				ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t& modelNodeId,
 									  const std::map<std::string, uint16_t> &uriToID);
 
 				UaNodeId getNodeId() {

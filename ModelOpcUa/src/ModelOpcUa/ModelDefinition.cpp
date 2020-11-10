@@ -1,6 +1,8 @@
 
 #include "ModelDefinition.hpp"
 #include <cassert>
+#include <utility>
+#include <utility>
 
 namespace ModelOpcUa {
 
@@ -12,9 +14,9 @@ namespace ModelOpcUa {
 			QualifiedName_t specifiedBrowseName)
 			: NodeClass(nodeClass),
 			  ModellingRule(modellingRule),
-			  ReferenceType(referenceType),
-			  SpecifiedTypeNodeId(specifiedTypeNodeId),
-			  SpecifiedBrowseName(specifiedBrowseName) {
+			  ReferenceType(std::move(std::move(referenceType))),
+			  SpecifiedTypeNodeId(std::move(std::move(specifiedTypeNodeId))),
+			  SpecifiedBrowseName(std::move(std::move(specifiedBrowseName))) {
 
 	}
 
@@ -30,27 +32,27 @@ namespace ModelOpcUa {
 			NodeDefinition(
 					nodeClass,
 					modellingRule,
-					referenceType,
-					specifiedTypeNodeId,
-					specifiedBrowseName
+					std::move(referenceType),
+					std::move(specifiedTypeNodeId),
+					std::move(specifiedBrowseName)
 			),
-			SpecifiedChildNodes(childNodes) {
+			SpecifiedChildNodes(std::move(std::move(childNodes))) {
 		this->ofBaseDataVariableType = ofBaseDataVariableType;
 	}
 
-	StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult, bool ofBaseDataVariableType,
+	StructureNode::StructureNode(const ModelOpcUa::BrowseResult_t& browseResult, bool ofBaseDataVariableType,
 								 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes) :
-			SpecifiedChildNodes(childNodes),
+			SpecifiedChildNodes(std::move(std::move(childNodes))),
 			NodeDefinition(browseResult.NodeClass, Optional, browseResult.ReferenceTypeId, browseResult.TypeDefinition,
 						   browseResult.BrowseName) {
 		this->ofBaseDataVariableType = ofBaseDataVariableType;
 	}
 
-	StructureNode::StructureNode(ModelOpcUa::BrowseResult_t browseResult,
+	StructureNode::StructureNode(const ModelOpcUa::BrowseResult_t& browseResult,
 								 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
 								 ModellingRule_t modellingRule,
 								 bool ofBaseDataVariableType) :
-			SpecifiedChildNodes(childNodes),
+			SpecifiedChildNodes(std::move(std::move(childNodes))),
 			NodeDefinition(browseResult.NodeClass, modellingRule, browseResult.ReferenceTypeId,
 						   browseResult.TypeDefinition, browseResult.BrowseName) {
 		this->ofBaseDataVariableType = ofBaseDataVariableType;
@@ -143,7 +145,7 @@ namespace ModelOpcUa {
 					structureNode->SpecifiedTypeNodeId,
 					structureNode->SpecifiedBrowseName
 			),
-			SpecifiedChildNodes(childNodes) {
+			SpecifiedChildNodes(std::move(std::move(childNodes))) {
 		this->ofBaseDataVariableType = ofBaseDataVariableType;
 	}
 
@@ -162,18 +164,18 @@ namespace ModelOpcUa {
 			StructureNode(
 					nodeClass,
 					modellingRule,
-					referenceType,
-					specifiedTypeNodeId,
-					specifiedBrowseName, ofBaseDataVariableType,
-					childNodes
+					std::move(referenceType),
+					std::move(specifiedTypeNodeId),
+					std::move(specifiedBrowseName), ofBaseDataVariableType,
+					std::move(childNodes)
 			),
-			PossibleTypes(possibleTypes) {
+			PossibleTypes(std::move(std::move(possibleTypes))) {
 		assert(modellingRule == ModellingRule_t::MandatoryPlaceholder ||
 			   modellingRule == ModellingRule_t::OptionalPlaceholder);
 	}
 
 
-	StructurePlaceholderNode::StructurePlaceholderNode(const std::shared_ptr<StructureNode> sharedPtr)
+	StructurePlaceholderNode::StructurePlaceholderNode(const std::shared_ptr<StructureNode>& sharedPtr)
 			: StructureNode(sharedPtr->NodeClass, sharedPtr->ModellingRule, sharedPtr->ReferenceType,
 							sharedPtr->SpecifiedTypeNodeId, sharedPtr->SpecifiedBrowseName,
 							sharedPtr->ofBaseDataVariableType, sharedPtr->SpecifiedChildNodes) {
@@ -183,7 +185,7 @@ namespace ModelOpcUa {
 									 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
 									 std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex)
 			: structureNode(std::make_shared<StructureNode>(browseResult, false, childNodes)),
-			  parent(parent),
+			  parent(std::move(std::move(parent))),
 			  namespaceIndex(namespaceIndex) {}
 
 	StructureBiNode::StructureBiNode(BrowseResult_t browseResult, bool ofBaseDataVariableType,
@@ -192,7 +194,7 @@ namespace ModelOpcUa {
 									 ModellingRule_t modellingRule)
 			: structureNode(
 			std::make_shared<StructureNode>(browseResult, childNodes, modellingRule, ofBaseDataVariableType)),
-			  parent(parent),
+			  parent(std::move(std::move(parent))),
 			  namespaceIndex(namespaceIndex) {}
 
 	StructureBiNode::StructureBiNode(NodeClass_t nodeClass, ModellingRule_t modellingRule, NodeId_t referenceType,
@@ -202,12 +204,12 @@ namespace ModelOpcUa {
 									 std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex) :
 			structureNode(std::make_shared<StructureNode>(nodeClass, modellingRule, referenceType, specifiedTypeNodeId,
 														  specifiedBrowseName, ofBaseDataVariableType, childNodes)),
-			parent(parent),
+			parent(std::move(std::move(parent))),
 			namespaceIndex(namespaceIndex) {}
 
 	std::shared_ptr<StructureNode> StructureBiNode::toStructureNode() {
 
-		if (this->SpecifiedBiChildNodes->size() > 0) {
+		if (!this->SpecifiedBiChildNodes->empty()) {
 			for (auto childIterator = this->SpecifiedBiChildNodes->begin();
 				 childIterator != this->SpecifiedBiChildNodes->end(); childIterator++) {
 				auto innerChild = childIterator.operator*();

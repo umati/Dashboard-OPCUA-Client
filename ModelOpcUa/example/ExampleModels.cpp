@@ -2,6 +2,7 @@
 #include <string>
 
 #include <ModelOpcUa/ModelOpcUa.hpp>
+#include <utility>
 #include "ExampleModels.hpp"
 
 namespace ExampleModels
@@ -21,7 +22,7 @@ namespace ExampleModels
 			modellingRule,
 			HasComponentTypeNodeId,
 			BaseDataVariableTypeNodeId,
-			ModelOpcUa::QualifiedName_t{ MyTypeNs, name },
+			ModelOpcUa::QualifiedName_t{ MyTypeNs, std::move(name) },
 			false
 			);
 	}
@@ -37,10 +38,10 @@ namespace ExampleModels
 			modellingRule,
 			HasComponentTypeNodeId,
 			BaseDataVariableTypeNodeId,
-			{MyTypeNs, name },
+			{MyTypeNs, std::move(name) },
 			false,
 			{},
-			possibleTypes
+			std::move(possibleTypes)
 		));
 	}
 

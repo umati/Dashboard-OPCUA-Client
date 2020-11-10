@@ -123,7 +123,7 @@ namespace Umati {
 																					"i=58"};
 
 			void on_connected();
-			UaDataValues readValues2(std::list<ModelOpcUa::NodeId_t> modelNodeIds);
+			UaDataValues readValues2(const std::list<ModelOpcUa::NodeId_t>& modelNodeIds);
 
 
 			static UaClientSdk::SessionConnectInfo &
@@ -175,10 +175,10 @@ namespace Umati {
 					bool ofBaseDataVariableType
 			);
 
-			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions);
+			void browseUnderStartNode(const UaNodeId& startUaNodeId, UaReferenceDescriptions &referenceDescriptions);
 
-			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-									  UaClientSdk::BrowseContext browseContext);
+			void browseUnderStartNode(const UaNodeId& startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
+									  const UaClientSdk::BrowseContext& browseContext);
 
 			ModelOpcUa::BrowseResult_t
 			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions);

@@ -11,7 +11,7 @@ namespace Umati {
 
 			class UaNodeClassToModelNodeClass {
 			public:
-				UaNodeClassToModelNodeClass(OpcUa_NodeClass nodeClass);
+				explicit UaNodeClassToModelNodeClass(OpcUa_NodeClass nodeClass);
 
 				ModelOpcUa::NodeClass_t getNodeClass() {
 					return m_nodeClass;
