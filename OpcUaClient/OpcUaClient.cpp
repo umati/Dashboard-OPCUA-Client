@@ -431,7 +431,7 @@ namespace Umati {
 			browseContext.nodeClassMask = 0; // ALL
 			browseContext.resultMask = OpcUa_BrowseResultMask_All;
 			browseUnderStartNode(startFromMachineNodeId, machineTypeDefinitionReferenceDescriptions,
-												browseContext);
+								 browseContext);
 
 			uint machineTypeNamespaceIndex = 0;
 			for (OpcUa_UInt32 i = 0; i < machineTypeDefinitionReferenceDescriptions.length(); i++) {
@@ -460,9 +460,10 @@ namespace Umati {
 			}
 		}
 
-		void OpcUaClient::FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
-																   std::list<ModelOpcUa::NodeId_t> &identificationNodes,
-																   std::vector<std::string> &identificationValueKeys) {
+		void
+		OpcUaClient::FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
+															  std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+															  std::vector<std::string> &identificationValueKeys) {
 			auto startNodeId = UaNodeId::fromXmlString(UaString(identification.front().NodeId.Id.c_str()));
 			startNodeId.setNamespaceIndex(m_uriToIndexCache[identification.front().NodeId.Uri]);
 
@@ -598,12 +599,14 @@ namespace Umati {
 			}
 		}
 
-		void OpcUaClient::browseUnderStartNode(const UaNodeId& startUaNodeId, UaReferenceDescriptions &referenceDescriptions) {
+		void OpcUaClient::browseUnderStartNode(const UaNodeId &startUaNodeId,
+											   UaReferenceDescriptions &referenceDescriptions) {
 			browseUnderStartNode(startUaNodeId, referenceDescriptions, prepareObjectAndVariableTypeBrowseContext());
 		}
 
-		void OpcUaClient::browseUnderStartNode(const UaNodeId& startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-											   const UaClientSdk::BrowseContext& browseContext) {
+		void
+		OpcUaClient::browseUnderStartNode(const UaNodeId &startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
+										  const UaClientSdk::BrowseContext &browseContext) {
 			UaByteString continuationPoint;
 			// References -> nodes referenced to this, e.g. child nodes
 			// BrowseName: Readable Name and namespace index
@@ -827,10 +830,10 @@ namespace Umati {
 		}
 
 		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::BrowseHasComponent(ModelOpcUa::NodeId_t startNode,
-						   ModelOpcUa::NodeId_t typeDefinition)	{
+																			  ModelOpcUa::NodeId_t typeDefinition) {
 			auto hasComponents = ModelOpcUa::NodeId_t{"", std::to_string(OpcUaId_HasComponent)};
 			return Browse(startNode, hasComponents, typeDefinition);
-	}
+		}
 
 		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::Browse(
 				ModelOpcUa::NodeId_t startNode,
@@ -1054,7 +1057,7 @@ namespace Umati {
 			return ret;
 		}
 
-		UaDataValues OpcUaClient::readValues2(const std::list<ModelOpcUa::NodeId_t>& modelNodeIds) {
+		UaDataValues OpcUaClient::readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds) {
 			UaStatus uaStatus;
 			UaReadValueIds readValueIds;
 			readValueIds.resize(modelNodeIds.size());

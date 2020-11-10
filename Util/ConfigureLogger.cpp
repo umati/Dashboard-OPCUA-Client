@@ -9,7 +9,7 @@ INITIALIZE_EASYLOGGINGPP
 namespace Umati {
 	namespace Util {
 
-		void ConfigureLogger(const std::string& name) {
+		void ConfigureLogger(const std::string &name) {
 			//el::Helpers::setStorage(el::base::type::StoragePointer());
 
 			el::Configurations conf;

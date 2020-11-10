@@ -10,7 +10,7 @@ namespace Umati {
 		public:
 			using OpcUaException::OpcUaException;
 
-			OpcUaNonGoodStatusCodeException(const UaStatus &status, const std::string& message);
+			OpcUaNonGoodStatusCodeException(const UaStatus &status, const std::string &message);
 
 			explicit OpcUaNonGoodStatusCodeException(const UaStatus &status);
 

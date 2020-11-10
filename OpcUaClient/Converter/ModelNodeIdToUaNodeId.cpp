@@ -6,7 +6,7 @@
 namespace Umati {
 	namespace OpcUa {
 		namespace Converter {
-			ModelNodeIdToUaNodeId::ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t& modelNodeId,
+			ModelNodeIdToUaNodeId::ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t &modelNodeId,
 														 const std::map<std::string, uint16_t> &uriToID)
 					: ModelToUaConverter(uriToID) {
 				m_nodeId = UaNodeId::fromXmlString(UaString(modelNodeId.Id.c_str()));

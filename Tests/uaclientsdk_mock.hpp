@@ -23,7 +23,7 @@ namespace UaClientSdk {
 				ServiceSettings & serviceSettings,
 				const UaString &sDiscoveryURL,
 				ClientSecurityInfo &clientSecurityInfo,
-				UaApplicationDescriptions &applicationDescriptions));
+				UaApplicationDescriptions & applicationDescriptions));
 
 		MOCK_METHOD(UaStatus, findServers, (
 				ServiceSettings & serviceSettings,
@@ -31,7 +31,7 @@ namespace UaClientSdk {
 				ClientSecurityInfo &clientSecurityInfo,
 				const UaStringArray &localIds,
 				const UaStringArray &serverUris,
-				UaApplicationDescriptions &applicationDescriptions));
+				UaApplicationDescriptions & applicationDescriptions));
 
 		MOCK_METHOD(UaStatus, findServersOnNetwork, (
 				ServiceSettings & serviceSettings,
@@ -41,7 +41,7 @@ namespace UaClientSdk {
 				const UaStringArray &serverCapabilities,
 				OpcUa_UInt32 maxRecordsToReturn,
 				UaDateTime &lastCounterResetTime,
-				UaServerOnNetworks &servers));
+				UaServerOnNetworks & servers));
 
 		MOCK_METHOD(UaStatus, findServersOnNetwork, (
 				ServiceSettings & serviceSettings,
@@ -49,14 +49,14 @@ namespace UaClientSdk {
 				ClientSecurityInfo &clientSecurityInfo,
 				OpcUa_UInt32 startingRecordId,
 				UaDateTime &lastCounterResetTime,
-				UaServerOnNetworks &servers));
+				UaServerOnNetworks & servers));
 
 		MOCK_METHOD(UaStatus, queryDirectory, (
 				ServiceSettings & serviceSettings,
 				const UaString &sGdsURL,
 				OpcUa_UInt32 startingRecordId,
 				UaDateTime &lastCounterResetTime,
-				UaServerOnNetworks &servers));
+				UaServerOnNetworks & servers));
 
 		MOCK_METHOD(UaStatus, queryDirectory, (
 				ServiceSettings & serviceSettings,
@@ -75,7 +75,7 @@ namespace UaClientSdk {
 				const UaString &productUri,
 				const UaStringArray &serverCapabilities,
 				UaDateTime &lastCounterResetTime,
-				UaServerOnNetworks &servers));
+				UaServerOnNetworks & servers));
 
 		MOCK_METHOD(UaStatus, queryDirectory, (
 				ServiceSettings & serviceSettings,
@@ -89,7 +89,7 @@ namespace UaClientSdk {
 				const UaString &productUri,
 				const UaStringArray &serverCapabilities,
 				UaDateTime &lastCounterResetTime,
-				UaServerOnNetworks &servers));
+				UaServerOnNetworks & servers));
 
 		MOCK_METHOD(UaStatus, startReverseDiscovery, (
 				const UaString& sClientEndpointUrl,
@@ -142,7 +142,7 @@ namespace UaClientSdk {
 				const UaNodeId &nodeToBrowse,
 				const BrowseContext &browseContext,
 				UaByteString &continuationPoint,
-				UaReferenceDescriptions &referenceDescriptions));
+				UaReferenceDescriptions & referenceDescriptions));
 
 		// Continue a previous browse request
 		MOCK_METHOD(UaStatus, browseNext, (
@@ -158,7 +158,7 @@ namespace UaClientSdk {
 				OpcUa_UInt32 maxReferencesToReturn,
 				const UaBrowseDescriptions &browseDescription,
 				UaBrowseResults &browseResults,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Continue a previous browseList request
 		MOCK_METHOD(UaStatus, browseListNext, (
@@ -166,20 +166,20 @@ namespace UaClientSdk {
 						OpcUa_Boolean releaseContinuationPoint,
 				const UaByteStringArray &continuationPoints,
 				UaBrowseResults &browseResults,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Translate a browse path to a NodeId.
 		MOCK_METHOD(UaStatus, translateBrowsePathsToNodeIds, (
 				ServiceSettings & serviceSettings,
 				const UaBrowsePaths &browsePaths,
 				UaBrowsePathResults &browsePathResults,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Register nodes to create shortcuts in the server.
 		MOCK_METHOD(UaStatus, registerNodes, (
 				ServiceSettings & serviceSettings,
 				const UaNodeIdArray &nodesToRegister,
-				UaNodeIdArray &registeredNodesIds));
+				UaNodeIdArray & registeredNodesIds));
 
 		// Unregister nodes to delete shortcuts in the server.
 		MOCK_METHOD(UaStatus, unregisterNodes, (
@@ -193,7 +193,7 @@ namespace UaClientSdk {
 				OpcUa_TimestampsToReturn timeStamps,
 				const UaReadValueIds &nodesToRead,
 				UaDataValues &values,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Reads variable values asynchronous from OPC server
 		MOCK_METHOD(UaStatus, beginRead, (
@@ -208,7 +208,7 @@ namespace UaClientSdk {
 				ServiceSettings & serviceSettings,
 				const UaWriteValues &nodesToWrite,
 				UaStatusCodeArray &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Writes variable values asynchronous to OPC server
 		MOCK_METHOD(UaStatus, beginWrite, (
@@ -247,7 +247,7 @@ namespace UaClientSdk {
 		MOCK_METHOD(UaStatus, call, (
 				ServiceSettings & serviceSettings,
 				const CallIn &callRequest,
-				CallOut &results));
+				CallOut & results));
 
 		// Calls a method of an Object in the OPC server asynchronous
 		MOCK_METHOD(UaStatus, beginCall, (
@@ -260,7 +260,7 @@ namespace UaClientSdk {
 				ServiceSettings & serviceSettings,
 				const UaCallMethodRequests &callMethodRequests,
 				UaCallMethodResults &callMethodResults,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Reads the history of item values synchronous from OPC server
 		MOCK_METHOD(UaStatus, historyReadRawModified, (
@@ -268,7 +268,7 @@ namespace UaClientSdk {
 				const HistoryReadRawModifiedContext &historyReadRawModifiedContext,
 				const UaHistoryReadValueIds &nodesToRead,
 				HistoryReadDataResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Reads the processed history of item values synchronous from the OPC server based on a passed aggregate
 		MOCK_METHOD(UaStatus, historyReadProcessed, (
@@ -276,7 +276,7 @@ namespace UaClientSdk {
 				const HistoryReadProcessedContext &historyReadProcessedContext,
 				const UaHistoryReadValueIds &nodesToRead,
 				HistoryReadDataResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Reads the history of item values synchronous from OPC server for the given timestamps
 		MOCK_METHOD(UaStatus, historyReadAtTime, (
@@ -284,7 +284,7 @@ namespace UaClientSdk {
 				const HistoryReadAtTimeContext &historyReadAtTimeContext,
 				const UaHistoryReadValueIds &nodesToRead,
 				HistoryReadDataResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Reads the history of events from an event notifier object synchronous from OPC server
 		MOCK_METHOD(UaStatus, historyReadEvent, (
@@ -292,42 +292,42 @@ namespace UaClientSdk {
 				const HistoryReadEventContext &historyReadEventContext,
 				const UaHistoryReadValueIds &nodesToRead,
 				HistoryReadEventResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Update the history of item values synchronous at OPC server
 		MOCK_METHOD(UaStatus, historyUpdateData, (
 				ServiceSettings & serviceSettings,
 				const UpdateDataDetails &updateDataDetails,
 				UaHistoryUpdateResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Delete the history of item values synchronous at OPC server
 		MOCK_METHOD(UaStatus, historyDeleteRawModified, (
 				ServiceSettings & serviceSettings,
 				const DeleteRawModifiedDetails &deleteDetails,
 				UaHistoryUpdateResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Delete the history of item values synchronous at OPC server for the given timestamps
 		MOCK_METHOD(UaStatus, historyDeleteAtTime, (
 				ServiceSettings & serviceSettings,
 				const DeleteAtTimeDetails &deleteDetails,
 				UaHistoryUpdateResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Update the history of events synchronous at OPC server
 		MOCK_METHOD(UaStatus, historyUpdateEvents, (
 				ServiceSettings & serviceSettings,
 				const UpdateEventDetails &updateEventDetails,
 				UaHistoryUpdateResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Delete the history of events synchronous at OPC server for the given event Ids
 		MOCK_METHOD(UaStatus, historyDeleteEvents, (
 				ServiceSettings & serviceSettings,
 				const DeleteEventDetails &deleteDetails,
 				UaHistoryUpdateResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Reads the history of item values asynchronous from OPC server
 		MOCK_METHOD(UaStatus, beginHistoryReadRawModified, (
@@ -392,28 +392,28 @@ namespace UaClientSdk {
 				ServiceSettings & serviceSettings,
 				const UaAddNodesItems &nodesToAdd,
 				UaAddNodesResults &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Adds a list of references to the OPC server address space
 		MOCK_METHOD(UaStatus, addReferences, (
 				ServiceSettings & serviceSettings,
 				const UaAddReferencesItems &referencesToAdd,
 				UaStatusCodeArray &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Removes a list of nodes from the OPC server address space
 		MOCK_METHOD(UaStatus, deleteNodes, (
 				ServiceSettings & serviceSettings,
 				const UaDeleteNodesItems &nodesToDelete,
 				UaStatusCodeArray &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Removes a list of references from the OPC server address space
 		MOCK_METHOD(UaStatus, deleteReferences, (
 				ServiceSettings & serviceSettings,
 				const UaDeleteReferencesItems &referencesToDelete,
 				UaStatusCodeArray &results,
-				UaDiagnosticInfos &diagnosticInfos));
+				UaDiagnosticInfos & diagnosticInfos));
 
 		// Adds a list of nodes asynchronous to the OPC server address space
 		MOCK_METHOD(UaStatus, beginAddNodes, (
@@ -450,7 +450,7 @@ namespace UaClientSdk {
 				UaByteString &continuationPoint,
 				UaQueryDataSets &queryDataSets,
 				UaDiagnosticInfos &diagnosticInfos,
-				UaParsingResults &parsingResults));
+				UaParsingResults & parsingResults));
 
 		// Continue a previous query request
 		MOCK_METHOD(UaStatus, queryNext, (
@@ -488,7 +488,7 @@ namespace UaClientSdk {
 				ServiceSettings & serviceSettings,
 				const UaNodeId &methodId,
 				UaArguments &inputArguments,
-				UaArguments &outputArguments));
+				UaArguments & outputArguments));
 
 		MOCK_METHOD(OpcUa_UInt32, connectTimeout, (), (const));
 		MOCK_METHOD(void, setConnectTimeout, (OpcUa_UInt32 connectTimeout), ());
@@ -586,14 +586,14 @@ namespace Umati {
 					OpcUa_TimestampsToReturn timeStamps,
 					const UaReadValueIds &nodesToRead,
 					UaDataValues &values,
-					UaDiagnosticInfos &diagnosticInfos), (override));
+					UaDiagnosticInfos & diagnosticInfos), (override));
 			MOCK_METHOD(bool, SessionIsConnected, (), (override));
 			MOCK_METHOD(UaStatus, SessionBrowse, (
 					UaClientSdk::ServiceSettings & serviceSettings,
 					const UaNodeId &nodeToBrowse,
 					const UaClientSdk::BrowseContext &browseContext,
 					UaByteString &continuationPoint,
-					UaReferenceDescriptions &referenceDescriptions), (override));
+					UaReferenceDescriptions & referenceDescriptions), (override));
 			MOCK_METHOD(UaStatus, SessionTranslateBrowsePathsToNodeIds, (
 					UaClientSdk::ServiceSettings & serviceSettings,
 					const UaBrowsePaths &browsePaths,

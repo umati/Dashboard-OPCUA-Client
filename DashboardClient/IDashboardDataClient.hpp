@@ -26,7 +26,7 @@ namespace Umati {
 
 			virtual std::list<ModelOpcUa::BrowseResult_t>
 			BrowseHasComponent(ModelOpcUa::NodeId_t startNode,
-				   ModelOpcUa::NodeId_t typeDefinition) = 0;
+							   ModelOpcUa::NodeId_t typeDefinition) = 0;
 
 			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(
 					ModelOpcUa::NodeId_t startNode,
@@ -80,7 +80,8 @@ namespace Umati {
 														const ModelOpcUa::NodeId_t &startNode) = 0;
 
 			virtual void
-			FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification, std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+			FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
+													 std::list<ModelOpcUa::NodeId_t> &identificationNodes,
 													 std::vector<std::string> &identificationValueKeys) = 0;
 		};
 	}

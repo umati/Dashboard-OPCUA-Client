@@ -31,12 +31,12 @@ namespace ModelOpcUa {
 		SimpleNode(
 				NodeId_t nodeId,
 				NodeId_t typeNodeId,
-				const NodeDefinition& nodeDefinition,
+				const NodeDefinition &nodeDefinition,
 				const std::list<std::shared_ptr<const Node>> &childNodes
 		);
 
 		// Node not available
-		explicit SimpleNode(const NodeDefinition& nodeDefinition);
+		explicit SimpleNode(const NodeDefinition &nodeDefinition);
 
 		bool isAvaliable() const;
 
@@ -56,7 +56,7 @@ namespace ModelOpcUa {
 	public:
 		using Node::Node;
 
-		void addInstance(const PlaceholderElement& instance);
+		void addInstance(const PlaceholderElement &instance);
 
 		std::list<PlaceholderElement> getInstances() const;
 

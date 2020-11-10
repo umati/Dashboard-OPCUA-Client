@@ -101,7 +101,8 @@ namespace Umati {
 
 				std::stringstream topic;
 				std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machine.NodeId.Uri, true);
-				topic << "/umati" << Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(p_type, base64ProductInstanceUri);
+				topic << "/umati" << Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(p_type,
+																										  base64ProductInstanceUri);
 				pDashClient->addDataSet(
 						{machineInformation.NamespaceURI, machine.NodeId.Id},
 						p_type,
@@ -127,7 +128,7 @@ namespace Umati {
 		}
 
 		std::shared_ptr<ModelOpcUa::StructureNode>
-		DashboardMachineObserver::getTypeOfNamespace(const ModelOpcUa::NodeId_t& nodeId) const {
+		DashboardMachineObserver::getTypeOfNamespace(const ModelOpcUa::NodeId_t &nodeId) const {
 			uint machineTypeNamespaceIndex = m_pDataClient->GetImplementedNamespaceIndex(nodeId);
 
 			std::string typeName =
@@ -141,7 +142,7 @@ namespace Umati {
 		}
 
 		std::shared_ptr<ModelOpcUa::StructureNode>
-		DashboardMachineObserver::getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t& nodeId) const {
+		DashboardMachineObserver::getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &nodeId) const {
 			uint machineTypeNamespaceIndex = m_pDataClient->GetImplementedNamespaceIndex(nodeId);
 			std::string idType = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
 			std::string identificationTypeName =
@@ -244,7 +245,8 @@ namespace Umati {
 			auto it = m_machineNames.find(machineNodeId);
 			if (it != m_machineNames.end()) {
 				std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machineNodeId.Uri, true);
-				identificationAsJson["Path"] = Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(p_type, base64ProductInstanceUri);
+				identificationAsJson["Path"] = Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(
+						p_type, base64ProductInstanceUri);
 			}
 		}
 

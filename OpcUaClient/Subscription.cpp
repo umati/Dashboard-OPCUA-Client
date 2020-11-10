@@ -221,8 +221,9 @@ namespace Umati {
 		}
 
 		void
-		Subscription::validateMonitorItemResult(const UaStatus& uaResult, UaMonitoredItemCreateResults monItemCreateResult,
-												const ModelOpcUa::NodeId_t& nodeId) {
+		Subscription::validateMonitorItemResult(const UaStatus &uaResult,
+												UaMonitoredItemCreateResults monItemCreateResult,
+												const ModelOpcUa::NodeId_t &nodeId) {
 			if (uaResult.isBad()) {
 				LOG(ERROR) << "Create Monitored items for " << nodeId.Uri << ";" << nodeId.Uri << " failed with: "
 						   << uaResult.toString().toUtf8();

@@ -60,12 +60,12 @@ namespace Umati {
 			for (auto &pDataSetStorage : m_dataSets) {
 				std::string jsonPayload = getJson(pDataSetStorage);
 				if (!jsonPayload.empty() && jsonPayload != "null") {
-					LastMessage_t& lastMessage = m_latestMessages[pDataSetStorage->channel];
+					LastMessage_t &lastMessage = m_latestMessages[pDataSetStorage->channel];
 
 					time_t now;
 					time(&now);
 
-					if(jsonPayload != lastMessage.payload || difftime(now, lastMessage.lastSent) > 60) {
+					if (jsonPayload != lastMessage.payload || difftime(now, lastMessage.lastSent) > 60) {
 						m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
 						lastMessage.payload = jsonPayload;
 						lastMessage.lastSent = now;
@@ -300,7 +300,7 @@ namespace Umati {
 			}
 		}
 
-		void DashboardClient::handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node>& pChildNode,
+		void DashboardClient::handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
 													   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
 			// LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
 
@@ -313,8 +313,9 @@ namespace Umati {
 			subscribeValues(pSimpleChild, valueMap);
 		}
 
-		void DashboardClient::handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node>& pChildNode,
-																  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
+		void
+		DashboardClient::handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+															 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
 			// LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
 			auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
 			if (!pPlaceholderChild) {
