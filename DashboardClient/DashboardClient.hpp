@@ -82,13 +82,13 @@ namespace Umati {
 			void handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
 										   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
-			bool handleSubscribePlaceholderChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
+			void handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node>& pChildNode,
 													 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
 			void subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
 								std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
-			bool handleSubscribeChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
+			void handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node>& pChildNode,
 										  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
 			void preparePlaceholderNodesTypeId(

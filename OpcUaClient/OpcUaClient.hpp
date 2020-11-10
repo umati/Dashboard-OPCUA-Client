@@ -51,6 +51,8 @@ namespace Umati {
 			void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
 									  UaClientSdk::BrowseContext browseContext) override;
 
+			uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) override;
+
 			ModelOpcUa::BrowseResult_t
 			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions) override;
 

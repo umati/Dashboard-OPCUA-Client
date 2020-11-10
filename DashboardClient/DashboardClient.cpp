@@ -284,57 +284,50 @@ namespace Umati {
 				switch (pChildNode->ModellingRule) {
 					case ModelOpcUa::Mandatory:
 					case ModelOpcUa::Optional: {
-						bool should_break = handleSubscribeChildNode(pChildNode, valueMap);
-						if (should_break) {
-							break;
-						}
+						handleSubscribeChildNode(pChildNode, valueMap);
+						break;
 					}
 					case ModelOpcUa::MandatoryPlaceholder:
 					case ModelOpcUa::OptionalPlaceholder: {
-						bool should_break = handleSubscribePlaceholderChildNode(pChildNode, valueMap);
-						if (should_break) {
-							break;
-						}
+						handleSubscribePlaceholderChildNode(pChildNode, valueMap);
+						break;
 					}
-					default:
+					default: {
 						LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
 						break;
+					}
 				}
 			}
 		}
 
-		bool DashboardClient::handleSubscribeChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
+		void DashboardClient::handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node>& pChildNode,
 													   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
 			// LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
 
 			auto pSimpleChild = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pChildNode);
 			if (!pSimpleChild) {
 				LOG(ERROR) << "Simple node error, instance not a simple node." << std::endl;
-				return false;
+				return;
 			}
 			// recursive call
 			subscribeValues(pSimpleChild, valueMap);
-			return true;
 		}
 
-		// Returns if the caller should exit the loop (break;) or not
-		bool DashboardClient::handleSubscribePlaceholderChildNode(std::shared_ptr<const ModelOpcUa::Node> pChildNode,
+		void DashboardClient::handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node>& pChildNode,
 																  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap) {
 			// LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
 			auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
 			if (!pPlaceholderChild) {
 				LOG(ERROR) << "Placeholder error, instance not a placeholder." << std::endl;
-				return true;
+				return;
 			}
 
 			auto placeholderElements = pPlaceholderChild->getInstances();
 
 			for (const auto &pPlaceholderElement : placeholderElements) {
 				// recursive call
-				//  pPlaceholderElement.pNode->SpecifiedBrowseName.Name;
 				subscribeValues(pPlaceholderElement.pNode, valueMap);
 			}
-			return true;
 		}
 
 		void DashboardClient::subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,

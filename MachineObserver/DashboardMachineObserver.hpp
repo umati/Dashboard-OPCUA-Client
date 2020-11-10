@@ -68,8 +68,6 @@ namespace Umati {
 			std::shared_ptr<ModelOpcUa::StructureNode>
 			getIdentificationTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const;
 
-			uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) const;
-
 			static std::string getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
 												  const std::string &namespaceUri);
 

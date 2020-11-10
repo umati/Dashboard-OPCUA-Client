@@ -71,6 +71,8 @@ namespace Umati {
 
 			virtual std::vector<nlohmann::json> readValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
+			virtual uint getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) = 0;
+
 			virtual void browseUnderStartNode(UaNodeId startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
 											  UaClientSdk::BrowseContext browseContext) = 0;
 

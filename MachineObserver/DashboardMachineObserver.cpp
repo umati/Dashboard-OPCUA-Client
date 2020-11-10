@@ -127,7 +127,7 @@ namespace Umati {
 
 		std::shared_ptr<ModelOpcUa::StructureNode>
 		DashboardMachineObserver::getTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const {
-			uint machineTypeNamespaceIndex = getImplementedNamespaceIndex(nodeId);
+			uint machineTypeNamespaceIndex = m_pDataClient->getImplementedNamespaceIndex(nodeId);
 
 			std::string typeName =
 					m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" +
@@ -142,7 +142,7 @@ namespace Umati {
 
 		std::shared_ptr<ModelOpcUa::StructureNode>
 		DashboardMachineObserver::getIdentificationTypeOfNamespace(ModelOpcUa::NodeId_t nodeId) const {
-			uint machineTypeNamespaceIndex = getImplementedNamespaceIndex(nodeId);
+			uint machineTypeNamespaceIndex = m_pDataClient->getImplementedNamespaceIndex(nodeId);
 			std::string idType = m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceIdentificationType;
 			std::string identificationTypeName =
 					m_pDataClient->m_availableObjectTypeNamespaces[machineTypeNamespaceIndex].NamespaceUri + ";" +
@@ -158,29 +158,6 @@ namespace Umati {
 				// LOG(INFO) << "Found " << identificationTypeName << " for namespace index " << machineTypeNamespaceIndex << " in typeMap";
 			}
 			return typePair->second;
-		}
-
-		uint DashboardMachineObserver::getImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) const {
-			UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
-			auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(nodeId.Id.c_str()));
-			uint machineNamespaceIndex = m_pDataClient->m_uriToIndexCache[nodeId.Uri];
-			startFromMachineNodeId.setNamespaceIndex(machineNamespaceIndex);
-
-			UaClientSdk::BrowseContext browseContext;
-			browseContext.referenceTypeId = OpcUaId_HasTypeDefinition;
-			browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
-			browseContext.includeSubtype = OpcUa_True;
-			browseContext.maxReferencesToReturn = 0;
-			browseContext.nodeClassMask = 0; // ALL
-			browseContext.resultMask = OpcUa_BrowseResultMask_All;
-			m_pDataClient->browseUnderStartNode(startFromMachineNodeId, machineTypeDefinitionReferenceDescriptions,
-												browseContext);
-
-			uint machineTypeNamespaceIndex = 0;
-			for (OpcUa_UInt32 i = 0; i < machineTypeDefinitionReferenceDescriptions.length(); i++) {
-				machineTypeNamespaceIndex = machineTypeDefinitionReferenceDescriptions[i].NodeId.NodeId.NamespaceIndex;
-			}
-			return machineTypeNamespaceIndex;
 		}
 
 		void DashboardMachineObserver::removeMachine(ModelOpcUa::BrowseResult_t machine) {
