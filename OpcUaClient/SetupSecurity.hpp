@@ -1,11 +1,11 @@
 #pragma once
+
 #include <uaclientsdk.h>
 #include <string>
 
 namespace Umati {
 	namespace OpcUa {
-		class SetupSecurity
-		{
+		class SetupSecurity {
 		public:
 			struct paths_t {
 				std::string ServerTrustedCerts;
@@ -19,7 +19,9 @@ namespace Umati {
 			};
 
 			static bool setupSecurity(UaClientSdk::SessionSecurityInfo *sessionSecurityInfo);
+
 			static bool createNewClientCert();
+
 		protected:
 			static paths_t paths;
 		};

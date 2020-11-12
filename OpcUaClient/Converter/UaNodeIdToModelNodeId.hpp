@@ -7,14 +7,11 @@
 
 #include "UaToModelConverter.hpp"
 
-namespace Umati
-{
-	namespace OpcUa
-	{
+namespace Umati {
+	namespace OpcUa {
 		namespace Converter {
 
-			class UaNodeIdToModelNodeId : public UaToModelConverter
-			{
+			class UaNodeIdToModelNodeId : public UaToModelConverter {
 			public:
 				UaNodeIdToModelNodeId(UaNodeId nodeId, const std::map<uint16_t, std::string> &idToUri);
 

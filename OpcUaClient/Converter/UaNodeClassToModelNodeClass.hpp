@@ -5,17 +5,13 @@
 
 #include <ModelOpcUa/ModelDefinition.hpp>
 
-namespace Umati
-{
-	namespace OpcUa
-	{
-		namespace Converter
-		{
+namespace Umati {
+	namespace OpcUa {
+		namespace Converter {
 
-			class UaNodeClassToModelNodeClass
-			{
+			class UaNodeClassToModelNodeClass {
 			public:
-				UaNodeClassToModelNodeClass(OpcUa_NodeClass nodeClass);
+				explicit UaNodeClassToModelNodeClass(OpcUa_NodeClass nodeClass);
 
 				ModelOpcUa::NodeClass_t getNodeClass() {
 					return m_nodeClass;

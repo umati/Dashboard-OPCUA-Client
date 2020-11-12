@@ -1,8 +1,8 @@
 {
   "OpcUa": {
     "Endpoint": "opc.tcp://localhost:4840",
-    "User": "",
-    "Password": "",
+    "User": "User",
+    "Password": "Password",
     "Security": 1
   },
   "Mqtt": {

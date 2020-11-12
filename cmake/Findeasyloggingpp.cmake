@@ -13,20 +13,20 @@
 # TODO handle source installation if the library
 # TODO respect REQUIRED
 
-find_library (EASYLOGGINGPP_LIB easyloggingpp)
+find_library(EASYLOGGINGPP_LIB easyloggingpp)
 
-if("${EASYLOGGINGPP_LIB}" STREQUAL "EASYLOGGINGPP_LIB-NOTFOUND")
-	message(SEND_ERROR "### Could not found easylogging, please specify CMAKE_PREFIX_PATH")
-else()
-	message("### Found easylogging library: '${EASYLOGGINGPP_LIB}'")
-endif()
+if ("${EASYLOGGINGPP_LIB}" STREQUAL "EASYLOGGINGPP_LIB-NOTFOUND")
+    message(SEND_ERROR "### Could not found easylogging, please specify CMAKE_PREFIX_PATH")
+else ()
+    message("### Found easylogging library: '${EASYLOGGINGPP_LIB}'")
+endif ()
 
 find_path(EASYLOGGINGPP_INCLUDE easylogging++.h)
-if("${EASYLOGGINGPP_INCLUDE}" STREQUAL "EASYLOGGINGPP_INCLUDE-NOTFOUND")
-	message(SEND_ERROR "### Could not found easylogging++.h, please specify CMAKE_PREFIX_PATH")
-else()
-	message("### Found easylogging++.h in:'${EASYLOGGINGPP_INCLUDE}' ")
-endif()
+if ("${EASYLOGGINGPP_INCLUDE}" STREQUAL "EASYLOGGINGPP_INCLUDE-NOTFOUND")
+    message(SEND_ERROR "### Could not found easylogging++.h, please specify CMAKE_PREFIX_PATH")
+else ()
+    message("### Found easylogging++.h in:'${EASYLOGGINGPP_INCLUDE}' ")
+endif ()
 
 
 add_library(easyloggingpplib ${EASYLOGGINGPP_INCLUDE}/easylogging++.cc)

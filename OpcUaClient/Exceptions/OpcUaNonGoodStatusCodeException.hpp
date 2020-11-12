@@ -4,19 +4,20 @@
 #include <Exceptions/OpcUaException.hpp>
 #include <statuscode.h>
 
-namespace Umati
-{
-	namespace Exceptions
-	{
+namespace Umati {
+	namespace Exceptions {
 		class OpcUaNonGoodStatusCodeException : public OpcUaException {
 		public:
 			using OpcUaException::OpcUaException;
-			OpcUaNonGoodStatusCodeException(UaStatusCode status, std::string message);
-			OpcUaNonGoodStatusCodeException(UaStatusCode status);
+
+			OpcUaNonGoodStatusCodeException(const UaStatus &status, const std::string &message);
+
+			explicit OpcUaNonGoodStatusCodeException(const UaStatus &status);
 
 		protected:
-			std::string statusToMessage(UaStatusCode status);
-			std::string toHex(UaStatusCode status, int digits = 8);
+			static std::string statusToMessage(const UaStatus &status);
+
+			static std::string toHex(const UaStatus &status, int digits = 8);
 
 		};
 	}

@@ -5,8 +5,7 @@
 #include "UmatiException.hpp"
 
 
-namespace Umati
-{
+namespace Umati {
 	namespace Exceptions {
 		class ClientNotConnected : public UmatiException {
 		public:

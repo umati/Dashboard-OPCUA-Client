@@ -4,17 +4,16 @@
 #include <map>
 
 namespace Umati {
-	namespace OpcUa
-	{
+	namespace OpcUa {
 		namespace Converter {
-			class ModelToUaConverter
-			{
+			class ModelToUaConverter {
 			public:
-				ModelToUaConverter(const std::map<std::string, uint16_t> &uriToID);
+				explicit ModelToUaConverter(const std::map<std::string, uint16_t> &uriToID);
 
 				virtual ~ModelToUaConverter() = 0;
+
 			protected:
-				uint16_t getNsIndexFromUri(std::string uri);
+				uint16_t getNsIndexFromUri(const std::string &uri);
 
 				const std::map<std::string, uint16_t> &m_uriToID;
 			};

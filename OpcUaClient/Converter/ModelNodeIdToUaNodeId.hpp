@@ -6,13 +6,12 @@
 #include "ModelToUaConverter.hpp"
 
 namespace Umati {
-	namespace OpcUa
-	{
+	namespace OpcUa {
 		namespace Converter {
-			class ModelNodeIdToUaNodeId : public ModelToUaConverter
-			{
+			class ModelNodeIdToUaNodeId : public ModelToUaConverter {
 			public:
-				ModelNodeIdToUaNodeId(ModelOpcUa::NodeId_t modelNodeId, const std::map<std::string, uint16_t> &uriToID);
+				ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t &modelNodeId,
+									  const std::map<std::string, uint16_t> &uriToID);
 
 				UaNodeId getNodeId() {
 					return m_nodeId;

@@ -1,33 +1,29 @@
 #pragma once
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
+#include <vector>
 
-namespace Umati
-{
-	namespace Util
-	{
-		class Configuration
-		{
+namespace Umati {
+	namespace Util {
+		class Configuration {
 		public:
 			virtual ~Configuration() = 0;
 
-			struct MqttConfig
-			{
+			struct MqttConfig {
 				///  Hostname or IP-Address
 				std::string Hostname;
 
 				std::uint16_t Port;
-				
+
 				/// Might be empty if no authentification required
 				std::string Username;
-				
+
 				/// Might be empty if no authentification required
 				std::string Password;
 			};
 
-			struct OpcUaConfig
-			{
+			struct OpcUaConfig {
 				/// OPC UA Endpoint
 				std::string Endpoint;
 
@@ -38,8 +34,8 @@ namespace Umati
 				std::uint8_t Security = 1;
 			};
 
-			inline virtual std::string MachineCacheFile() = 0;
-			
+			inline virtual std::vector<std::string> ObjectTypeNamespacesVector() = 0;
+
 			inline virtual MqttConfig Mqtt() = 0;
 
 			inline virtual OpcUaConfig OpcUa() = 0;

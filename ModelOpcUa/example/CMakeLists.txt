@@ -1,5 +1,5 @@
 
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required(VERSION 3.11)
 find_package(GTest REQUIRED NO_CMAKE_PATH)
 
 add_executable(BasicUsage "BasicUsage.cpp" "ExampleModels.cpp")

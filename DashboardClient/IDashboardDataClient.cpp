@@ -6,7 +6,7 @@
 #include "IDashboardDataClient.hpp"
 
 namespace Umati {
-    namespace Dashboard {
-        IDashboardDataClient::ValueSubscriptionHandle::~ValueSubscriptionHandle() {}
-    }
+	namespace Dashboard {
+		IDashboardDataClient::ValueSubscriptionHandle::~ValueSubscriptionHandle() = default;
+	}
 }

@@ -3,6 +3,7 @@
 #include "IDashboardDataClient.hpp"
 #include "IPublisher.hpp"
 #include <ModelOpcUa/ModelInstance.hpp>
+#include <map>
 
 namespace Umati {
 
@@ -27,42 +28,46 @@ namespace Umati {
 		class DashboardClient {
 		public:
 			DashboardClient(std::shared_ptr<IDashboardDataClient> pDashboardDataClient,
-				std::shared_ptr<IPublisher> pPublisher);
+							std::shared_ptr<IPublisher> pPublisher);
+
 			~DashboardClient();
 
 			void addDataSet(
-				ModelOpcUa::NodeId_t startNodeId,
-				std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition,
-				std::string channel);
+					const ModelOpcUa::NodeId_t &startNodeId,
+					const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
+					const std::string &channel);
 
-			/// \TODO rename
 			void Publish();
 
 
 		protected:
-			struct DataSetStorage_t
-			{
+
+			struct LastMessage_t {
+				std::string payload;
+				time_t lastSent;
+			};
+
+			struct DataSetStorage_t {
 				ModelOpcUa::NodeId_t startNodeId;
-				std::shared_ptr<ModelOpcUa::StructureNode> pTypeDefinition;
 				std::string channel;
 				std::shared_ptr<const ModelOpcUa::SimpleNode> node;
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> values;
 			};
 
-			std::string getJson(std::shared_ptr<DataSetStorage_t> pDataSetStorage);
+			static std::string getJson(const std::shared_ptr<DataSetStorage_t> &pDataSetStorage);
 
 			std::shared_ptr<const ModelOpcUa::SimpleNode> TransformToNodeIds(
-				ModelOpcUa::NodeId_t startNode,
-				const std::shared_ptr<const ModelOpcUa::StructureNode> &pTypeDefinition
+					ModelOpcUa::NodeId_t startNode,
+					const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition
 			);
 
 			std::shared_ptr<const ModelOpcUa::PlaceholderNode> BrowsePlaceholder(
-				ModelOpcUa::NodeId_t startNode,
-				std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStrucPlaceholder);
+					ModelOpcUa::NodeId_t startNode,
+					std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStructurePlaceholder);
 
 			void subscribeValues(
-				const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
-				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
+					const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
+					std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 			);
 
 			std::vector<std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>> m_subscribedValues;
@@ -70,6 +75,41 @@ namespace Umati {
 			std::shared_ptr<IPublisher> m_pPublisher;
 
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
+			std::map<std::string, LastMessage_t> m_latestMessages;
+
+			bool isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
+
+			void handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
+										   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+
+			void handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+													 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+
+			void subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
+								std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+
+			void handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+										  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+
+			void preparePlaceholderNodesTypeId(
+					const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pStructurePlaceholder,
+					std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
+					const std::list<ModelOpcUa::BrowseResult_t> &browseResults);
+
+			std::shared_ptr<DataSetStorage_t> prepareDataSetStorage(const ModelOpcUa::NodeId_t &startNodeId,
+																	const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
+																	const std::string &channel);
+
+			bool OptionalAndMandatoryTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
+													   std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
+													   const std::shared_ptr<ModelOpcUa::StructureNode> &pChild);
+
+			bool OptionalAndMandatoryPlaceholderTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
+																  std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
+																  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild);
+
+			void TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
+												  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const;
 		};
 	}
 }
