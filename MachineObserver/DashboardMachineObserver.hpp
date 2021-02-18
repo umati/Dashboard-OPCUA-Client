@@ -1,31 +1,34 @@
 #pragma once
 
 #include "MachineObserver.hpp"
+#include <OpcUaTypeReader.hpp>
 #include <DashboardClient.hpp>
 #include <atomic>
 #include <thread>
 #include <mutex>
 
-namespace Umati {
-	namespace MachineObserver {
+namespace Umati
+{
+	namespace MachineObserver
+	{
 		/**
 		* Depends on an iPublisher (e.g. mqtt client) to publish a machine list and online states of machines and
 		* an iDashboardDataClient (e.g. Umati::OpcUa::OpcUaClient) to read the machineList. It inherits stuff from MachineObserver
 		* and is itself used by the main function DashboardOpcUaClient.
 		*/
-		class DashboardMachineObserver : public MachineObserver {
+		class DashboardMachineObserver : public MachineObserver
+		{
 		public:
 			DashboardMachineObserver(
-					std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
-					std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher
-			);
+				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
+				std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
+				std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader);
 
 			~DashboardMachineObserver() override;
 
 			void PublishAll();
 
 		protected:
-
 			void startUpdateMachineThread();
 
 			void stopMachineUpdateThread();
@@ -37,13 +40,18 @@ namespace Umati {
 
 			void removeMachine(ModelOpcUa::BrowseResult_t machine) override;
 
-			bool isOnline(const ModelOpcUa::NodeId_t &machineNodeId, nlohmann::json &identificationAsJson) override;
+			bool isOnline(
+				const ModelOpcUa::NodeId_t &machineNodeId,
+				nlohmann::json &identificationAsJson,
+				const ModelOpcUa::NodeId_t &typeDefinition) override;
 
-			struct MachineInformation_t {
+			struct MachineInformation_t
+			{
 				ModelOpcUa::NodeId_t StartNodeId;
 				std::string NamespaceURI;
 				std::string Specification;
 				std::string MachineName;
+				ModelOpcUa::NodeId_t TypeDefinition;
 			};
 
 			int m_publishMachinesOnline = 0;
@@ -52,7 +60,7 @@ namespace Umati {
 			std::thread m_updateMachineThread;
 
 			std::shared_ptr<Umati::Dashboard::IPublisher> m_pPublisher;
-
+			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> m_pOpcUaTypeReader;
 			std::mutex m_dashboardClients_mutex;
 			std::map<ModelOpcUa::NodeId_t, std::shared_ptr<Umati::Dashboard::DashboardClient>> m_dashboardClients;
 			std::map<ModelOpcUa::NodeId_t, MachineInformation_t> m_onlineMachines;
@@ -65,12 +73,12 @@ namespace Umati {
 			std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(const ModelOpcUa::NodeId_t &nodeId) const;
 
 			std::shared_ptr<ModelOpcUa::StructureNode>
-			getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &nodeId) const;
+			getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &typeDefinition) const;
 
 			static std::string getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
 												  const std::string &namespaceUri);
 
 			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId);
 		};
-	}
-}
+	} // namespace MachineObserver
+} // namespace Umati

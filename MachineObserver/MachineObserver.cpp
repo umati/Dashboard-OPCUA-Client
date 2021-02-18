@@ -129,7 +129,7 @@ namespace Umati {
 				try {
 					// Check if machine is still online. If so, remove it from the removed machines. If it is not on there, it must be a new machine
 					nlohmann::json identificationAsJson;
-					if (isOnline(machineTool.NodeId, identificationAsJson)) {
+					if (isOnline(machineTool.NodeId, identificationAsJson, machineTool.TypeDefinition)) {
 						if (it != toBeRemovedMachines.end()) {
 							toBeRemovedMachines.erase(it);// todo or does it need to be it++?
 						} else {

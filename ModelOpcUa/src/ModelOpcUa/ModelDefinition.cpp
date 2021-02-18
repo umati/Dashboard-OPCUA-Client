@@ -183,29 +183,29 @@ namespace ModelOpcUa {
 
 	StructureBiNode::StructureBiNode(BrowseResult_t browseResult, bool ofBaseDataVariableType,
 									 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
-									 std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex)
+									 std::shared_ptr<StructureBiNode> parent, std::string namespaceUri)
 			: structureNode(std::make_shared<StructureNode>(browseResult, false, childNodes)),
 			  parent(std::move(std::move(parent))),
-			  namespaceIndex(namespaceIndex) {}
+			  namespaceUri(namespaceUri) {}
 
 	StructureBiNode::StructureBiNode(BrowseResult_t browseResult, bool ofBaseDataVariableType,
 									 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
-									 std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex,
+									 std::shared_ptr<StructureBiNode> parent, std::string namespaceUri,
 									 ModellingRule_t modellingRule)
 			: structureNode(
 			std::make_shared<StructureNode>(browseResult, childNodes, modellingRule, ofBaseDataVariableType)),
 			  parent(std::move(std::move(parent))),
-			  namespaceIndex(namespaceIndex) {}
+			  namespaceUri(namespaceUri) {}
 
 	StructureBiNode::StructureBiNode(NodeClass_t nodeClass, ModellingRule_t modellingRule, NodeId_t referenceType,
 									 NodeId_t specifiedTypeNodeId, QualifiedName_t specifiedBrowseName,
 									 bool ofBaseDataVariableType,
 									 std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes,
-									 std::shared_ptr<StructureBiNode> parent, uint16_t namespaceIndex) :
+									 std::shared_ptr<StructureBiNode> parent, std::string namespaceUri) :
 			structureNode(std::make_shared<StructureNode>(nodeClass, modellingRule, referenceType, specifiedTypeNodeId,
 														  specifiedBrowseName, ofBaseDataVariableType, childNodes)),
 			parent(std::move(std::move(parent))),
-			namespaceIndex(namespaceIndex) {}
+			namespaceUri(namespaceUri) {}
 
 	std::shared_ptr<StructureNode> StructureBiNode::toStructureNode() {
 

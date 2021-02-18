@@ -9,6 +9,7 @@ set(DASHBOARDCLIENT_SRC
 
         "DashboardClient.cpp"
         "IDashboardDataClient.cpp"
+        "OpcUaTypeReader.cpp"
         "Converter/ModelToJson.cpp"
         )
 

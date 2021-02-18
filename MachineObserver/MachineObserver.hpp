@@ -42,7 +42,11 @@ namespace Umati {
 
 			virtual void removeMachine(ModelOpcUa::BrowseResult_t machine) = 0;
 
-			virtual bool isOnline(const ModelOpcUa::NodeId_t &machineNodeId, nlohmann::json &identificationAsJson) = 0;
+			virtual bool isOnline(
+				const ModelOpcUa::NodeId_t &machineNodeId,
+				nlohmann::json &identificationAsJson,
+				const ModelOpcUa::NodeId_t &typeDefinition
+				) = 0;
 
 			std::shared_ptr<Dashboard::IDashboardDataClient> m_pDataClient;
 			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> m_knownMachines;

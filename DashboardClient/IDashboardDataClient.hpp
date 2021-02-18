@@ -4,85 +4,166 @@
 
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <functional>
+#include "NodeIdsWellKnown.hpp"
 
-namespace Umati {
+namespace Umati
+{
 
-	namespace Dashboard {
-		/**
+    namespace Dashboard
+    {
+        /**
 		* Interface that describes functions to e.g. browse a source (e.g. OPC UA Server)
 		* Is implemented e.g. by Umati::OpcUa::OpcUaClient. 
 		*/
-		class IDashboardDataClient {
-		public:
+        class IDashboardDataClient
+        {
+        public:
+            typedef std::function<void(nlohmann::json value)> newValueCallbackFunction_t;
 
-			typedef std::function<void(nlohmann::json value)> newValueCallbackFunction_t;
+            virtual ~IDashboardDataClient() = default;
 
-			virtual ~IDashboardDataClient() = default;
+            /// See "Browse Service" from OPC UA Part 4 for details
+            struct BrowseContext_t
+            {
+                enum class BrowseDirection
+                {
+                    FORWARD = 0,
+                    BACKWARD = 1,
+                    BOTH = 2,
+                } browseDirection = BrowseDirection::FORWARD;
+                ModelOpcUa::NodeId_t referenceTypeId;
+                bool includeSubtypes = true;
+                enum class NodeClassMask
+                {
+                    ALL = 0x00,
+                    OBJECT = 0X01,
+                    VARIABLE = 0X02,
+                    METHOD = 0X04,
+                    OBJECT_TYPE = 0X08,
+                    VARIABLE_TYPE = 0X10,
+                    REFERENCE_TYPE = 0X20,
+                    DATATYPE = 0X40,
+                    VIEW = 0X80,
+                };
+                std::uint32_t nodeClassMask = (std::uint32_t) NodeClassMask::ALL;
+                enum class ResultMask
+                {
+                    REFERENCETYPE = 0X01,
+                    ISFORWARD = 0X02,
+                    NODECLASS = 0X04,
+                    BROWSENAME = 0X08,
+                    DISPLAYNAME = 0X10,
+                    TYPEDEFINITION = 0X20,
+                    ALL = 0X3F,
+                };
+                std::uint32_t resultMask = (std::uint32_t) ResultMask::ALL;
 
+                inline static BrowseContext_t HasComponent()
+                {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_HasComponent;
+                    return ret;
+                }
 
-			virtual std::list<ModelOpcUa::BrowseResult_t>
-			Browse(ModelOpcUa::NodeId_t startNode, ModelOpcUa::NodeId_t referenceTypeId,
-				   ModelOpcUa::NodeId_t typeDefinition) = 0;
+                inline static BrowseContext_t WithReference(
+                    ModelOpcUa::NodeId_t referenceTypeId)
+                {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = referenceTypeId;
+                    return ret;
+                }
 
-			virtual std::list<ModelOpcUa::BrowseResult_t>
-			BrowseHasComponent(ModelOpcUa::NodeId_t startNode,
-							   ModelOpcUa::NodeId_t typeDefinition) = 0;
+                inline static BrowseContext_t ObjectAndVariable()
+                {
+                    BrowseContext_t ret;
+                    ret.nodeClassMask =
+                    (std::uint32_t)NodeClassMask::OBJECT |
+                    (std::uint32_t)NodeClassMask::OBJECT_TYPE |
+                    (std::uint32_t)NodeClassMask::VARIABLE |
+                    (std::uint32_t)NodeClassMask::VARIABLE_TYPE;
+                    return ret;
+                }
+            };
 
-			virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(
-					ModelOpcUa::NodeId_t startNode,
-					ModelOpcUa::QualifiedName_t browseName
-			) = 0;
+            virtual std::list<ModelOpcUa::BrowseResult_t>
+            Browse(
+                ModelOpcUa::NodeId_t startNode,
+                BrowseContext_t browseContext) = 0;
 
-			std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>>();
-			std::shared_ptr<std::map<std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map<std::string, ModelOpcUa::NodeId_t>>();
+            virtual std::list<ModelOpcUa::BrowseResult_t>
+            BrowseWithResultTypeFilter(
+                ModelOpcUa::NodeId_t startNode,
+                BrowseContext_t browseContext,
+                ModelOpcUa::NodeId_t typeDefinition) = 0;
 
-			struct NamespaceInformation_t {
-				std::string Namespace;
-				std::string NamespaceUri;
-				std::string NamespaceType;
-				std::string NamespaceIdentificationType;
-			};
+            // Deprecated
+            inline virtual std::list<ModelOpcUa::BrowseResult_t>
+            Browse(
+                ModelOpcUa::NodeId_t startNode,
+                ModelOpcUa::NodeId_t referenceTypeId,
+                ModelOpcUa::NodeId_t typeDefinition)
+            {
+                return BrowseWithResultTypeFilter(startNode, BrowseContext_t::WithReference(referenceTypeId), typeDefinition);
+            }
 
-			std::map<uint16_t, NamespaceInformation_t> m_availableObjectTypeNamespaces;
-			std::map<std::string, uint16_t> m_uriToIndexCache;
+            // Deprecated
+            inline virtual std::list<ModelOpcUa::BrowseResult_t>
+            BrowseHasComponent(
+                ModelOpcUa::NodeId_t startNode,
+                ModelOpcUa::NodeId_t typeDefinition)
+            {
+                return BrowseWithResultTypeFilter(startNode, BrowseContext_t::HasComponent(), typeDefinition);
+            }
 
-			class ValueSubscriptionHandle {
-			public:
-				virtual ~ValueSubscriptionHandle() = 0;
+            ModelOpcUa::ModellingRule_t BrowseModellingRule(ModelOpcUa::NodeId_t nodeId);
 
-				virtual void unsubscribe() = 0;
+            virtual ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(
+                ModelOpcUa::NodeId_t startNode,
+                ModelOpcUa::QualifiedName_t browseName) = 0;
 
-				bool isUnsubscribed() const { return m_unsubscribed; }
+            std::map<std::string, uint16_t> m_uriToIndexCache;
 
-			protected:
-				void setUnsubscribed() {
-					m_unsubscribed = true;
-				}
+            class ValueSubscriptionHandle
+            {
+            public:
+                virtual ~ValueSubscriptionHandle() = 0;
 
-			private:
-				bool m_unsubscribed = false;
-			};
+                virtual void unsubscribe() = 0;
 
-			virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
+                bool isUnsubscribed() const { return m_unsubscribed; }
 
-			virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) = 0;
+            protected:
+                void setUnsubscribed()
+                {
+                    m_unsubscribed = true;
+                }
 
-			virtual std::shared_ptr<ValueSubscriptionHandle>
-			Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
+            private:
+                bool m_unsubscribed = false;
+            };
 
-			virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
+            virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
-			virtual uint GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) = 0;
+            virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
-			virtual void
-			CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-														const std::string &startNodeNamespaceUri,
-														const ModelOpcUa::NodeId_t &startNode) = 0;
+            virtual std::shared_ptr<ValueSubscriptionHandle>
+            Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
-			virtual void
-			FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
-													 std::list<ModelOpcUa::NodeId_t> &identificationNodes,
-													 std::vector<std::string> &identificationValueKeys) = 0;
-		};
-	}
-}
+            virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
+
+            virtual uint GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) = 0;
+
+            virtual void
+            CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
+                                                        const std::string &startNodeNamespaceUri,
+                                                        const ModelOpcUa::NodeId_t &startNode) = 0;
+
+            virtual void
+            FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
+                                                     std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+                                                     std::vector<std::string> &identificationValueKeys) = 0;
+
+            virtual std::vector<std::string> Namespaces() = 0;
+        };
+    } // namespace Dashboard
+} // namespace Umati

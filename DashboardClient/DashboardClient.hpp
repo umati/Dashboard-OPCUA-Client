@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDashboardDataClient.hpp"
+#include "OpcUaTypeReader.hpp"
 #include "IPublisher.hpp"
 #include <ModelOpcUa/ModelInstance.hpp>
 #include <map>
@@ -28,7 +29,8 @@ namespace Umati {
 		class DashboardClient {
 		public:
 			DashboardClient(std::shared_ptr<IDashboardDataClient> pDashboardDataClient,
-							std::shared_ptr<IPublisher> pPublisher);
+							std::shared_ptr<IPublisher> pPublisher,
+							std::shared_ptr<OpcUaTypeReader> pTypeReader);
 
 			~DashboardClient();
 
@@ -73,6 +75,7 @@ namespace Umati {
 			std::vector<std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>> m_subscribedValues;
 			std::shared_ptr<IDashboardDataClient> m_pDashboardDataClient;
 			std::shared_ptr<IPublisher> m_pPublisher;
+			std::shared_ptr<OpcUaTypeReader> m_pTypeReader;
 
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
 			std::map<std::string, LastMessage_t> m_latestMessages;
