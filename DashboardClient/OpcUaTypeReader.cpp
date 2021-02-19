@@ -1,5 +1,6 @@
 #include "OpcUaTypeReader.hpp"
 #include <easylogging++.h>
+#include <regex>
 
 namespace Umati
 {
@@ -131,19 +132,9 @@ namespace Umati
         {
             NamespaceInformation_t information;
 
-            std::vector<std::string> resultContainer;
-            {
-                auto index = namespaceURI.find_last_of('/');
-                if (index != std::string::npos)
-                {
-                    information.Namespace = namespaceURI.substr(index);
-                }
-                else
-                {
-                    information.Namespace = namespaceURI;
-                }
-                information.NamespaceUri = namespaceURI;
-            }
+            information.Namespace = CSNameFromUri(namespaceURI);
+            information.NamespaceUri = namespaceURI;
+
 
             std::string identificationTypeName = information.Namespace + "IdentificationType";
             std::string startNodeNamespaceUri = "http://opcfoundation.org/UA/Machinery/";
@@ -372,6 +363,20 @@ namespace Umati
                 return nullptr;
             }
             return typePair->second;
+        }
+
+        std::string OpcUaTypeReader::CSNameFromUri(std::string nsUri)
+        {
+            const std::regex regex(R"(\/([\w\-]+)\/?$)");
+            std::smatch match;
+            if(std::regex_search(nsUri, match, regex))
+            {
+                return match[1].str();
+            }
+            else
+            {
+                return nsUri;
+            }
         }
 
     } // namespace Dashboard

@@ -75,6 +75,8 @@ namespace Umati
                 const ModelOpcUa::NodeId_t &startNodeId,
                 const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent,
                 bool ofBaseDataVariableType);
+            
+            static std::string CSNameFromUri(std::string nsUri);
         };
     } // namespace OpcUa
 } // namespace Umati
