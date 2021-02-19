@@ -24,6 +24,8 @@ namespace Umati
                 std::string NamespaceType;
                 std::string NamespaceIdentificationType;
             };
+
+            /// \todo make the following internal structures private and provide access via funcitons
             // Key: NsUri
             std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNamespaces;
@@ -33,10 +35,6 @@ namespace Umati
         protected:
             std::shared_ptr<Umati::Dashboard::IDashboardDataClient> m_pClient;
             const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"", ""};
-            const ModelOpcUa::NodeId_t m_basicVariableTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/",
-                                                                                      "i=63"};
-            const ModelOpcUa::NodeId_t m_basicObjectTypeNode = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/",
-                                                                                    "i=58"};
             void initialize(std::vector<std::string> &notFoundObjectTypeNamespaces);
             void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(
                 const ModelOpcUa::NodeId_t &basicTypeNode,
@@ -47,7 +45,6 @@ namespace Umati
                 bool ofBaseDataVariableType);
 
             void updateTypeMap();
-            uint GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId);
             void findObjectTypeNamespacesAndCreateTypeMap(
                 const std::string &namespaceURI,
                 std::shared_ptr<

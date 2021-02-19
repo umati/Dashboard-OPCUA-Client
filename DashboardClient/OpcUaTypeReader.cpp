@@ -22,11 +22,11 @@ namespace Umati
                     std::map<
                         std::string,
                         std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
-
-            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicVariableTypeNode, bidirectionalTypeMap, true);
+            initialize(notFoundObjectTypeNamespaces);
+            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(NodeId_BaseVariableType, bidirectionalTypeMap, true);
             LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
 
-            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(m_basicObjectTypeNode, bidirectionalTypeMap, false);
+            browseObjectOrVariableTypeAndFillBidirectionalTypeMap(NodeId_BaseObjectType, bidirectionalTypeMap, false);
             LOG(INFO) << "Browsing object types finished";
 
             auto namespaces = m_pClient->Namespaces();
@@ -121,32 +121,6 @@ namespace Umati
                 ofBaseDataVariableType);
         }
 
-        uint OpcUaTypeReader::GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId)
-        {
-            throw std::runtime_error("Deprecated, deduce this from typ information");
-            /*UaReferenceDescriptions machineTypeDefinitionReferenceDescriptions;
-            auto startFromMachineNodeId = UaNodeId::fromXmlString(UaString(nodeId.Id.c_str()));
-            uint machineNamespaceIndex = m_uriToIndexCache[nodeId.Uri];
-            startFromMachineNodeId.setNamespaceIndex(machineNamespaceIndex);
-
-            UaClientSdk::BrowseContext browseContext;
-            browseContext.referenceTypeId = OpcUaId_HasTypeDefinition;
-            browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
-            browseContext.includeSubtype = OpcUa_True;
-            browseContext.maxReferencesToReturn = 0;
-            browseContext.nodeClassMask = 0; // ALL
-            browseContext.resultMask = OpcUa_BrowseResultMask_All;
-            browseUnderStartNode(startFromMachineNodeId, machineTypeDefinitionReferenceDescriptions,
-                                 browseContext);
-
-            uint machineTypeNamespaceIndex = 0;
-            for (OpcUa_UInt32 i = 0; i < machineTypeDefinitionReferenceDescriptions.length(); i++)
-            {
-                machineTypeNamespaceIndex = machineTypeDefinitionReferenceDescriptions[i].NodeId.NodeId.NamespaceIndex;
-            }
-            return machineTypeNamespaceIndex;*/
-        }
-
         void OpcUaTypeReader::findObjectTypeNamespacesAndCreateTypeMap(
             const std::string &namespaceURI,
             std::shared_ptr<
@@ -188,7 +162,7 @@ namespace Umati
             }
 
             std::string typeName = information.Namespace + "Type";
-            auto startNode2 = ModelOpcUa::NodeId_t{"http://opcfoundation.org/UA/", "i=58"};
+            auto startNode2 = ModelOpcUa::NodeId_t{ns0Uri, "i=58"};
             auto browseResults2 = m_pClient->Browse(startNode2, IDashboardDataClient::BrowseContext_t::ObjectAndVariable());
 
             for (auto &brResult : browseResults2)

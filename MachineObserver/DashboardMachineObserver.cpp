@@ -33,6 +33,7 @@ namespace Umati
 				pDashClient.second->Publish();
 			}
 
+			// Publish online machines every 30th publish
 			if (m_publishMachinesOnline >= 30)
 			{
 				this->publishMachinesList();
@@ -150,19 +151,15 @@ namespace Umati
 		std::shared_ptr<ModelOpcUa::StructureNode>
 		DashboardMachineObserver::getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &typeDefinition) const
 		{
-			auto it = std::find_if(
-				m_pOpcUaTypeReader->m_availableObjectTypeNamespaces.begin(),
-				m_pOpcUaTypeReader->m_availableObjectTypeNamespaces.end(),
-				[&](const auto &el)
-				{
-					return el.second.NamespaceUri == typeDefinition.Uri;
-				});
-			if(it == m_pOpcUaTypeReader->m_availableObjectTypeNamespaces.end())
+			std::string identificationTypeName;
+			try{
+				auto el = m_pOpcUaTypeReader->m_availableObjectTypeNamespaces.at(typeDefinition.Uri);
+				identificationTypeName = el.NamespaceUri + ";" + el.NamespaceIdentificationType;
+			}catch(std::out_of_range &ex)
 			{
 				LOG(ERROR) << "Could not found type namespace for URI: " << typeDefinition.Uri << std::endl;
 				throw Exceptions::MachineInvalidException("Could not found type namespace for URI");
 			}
-			std::string identificationTypeName = it->second.NamespaceUri + ";" + it->second.NamespaceIdentificationType;
 			auto typePair = m_pOpcUaTypeReader->m_typeMap->find(identificationTypeName);
 			if (typePair == m_pOpcUaTypeReader->m_typeMap->end())
 			{

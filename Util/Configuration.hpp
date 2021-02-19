@@ -34,11 +34,11 @@ namespace Umati {
 				std::uint8_t Security = 1;
 			};
 
-			inline virtual std::vector<std::string> ObjectTypeNamespacesVector() = 0;
+			virtual std::vector<std::string> ObjectTypeNamespacesVector() = 0;
 
-			inline virtual MqttConfig Mqtt() = 0;
+			virtual MqttConfig Mqtt() = 0;
 
-			inline virtual OpcUaConfig OpcUa() = 0;
+			virtual OpcUaConfig OpcUa() = 0;
 		};
 	}
 }

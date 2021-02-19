@@ -81,6 +81,7 @@ namespace Umati
                     (std::uint32_t)NodeClassMask::OBJECT_TYPE |
                     (std::uint32_t)NodeClassMask::VARIABLE |
                     (std::uint32_t)NodeClassMask::VARIABLE_TYPE;
+                    ret.referenceTypeId = NodeId_HierarchicalReferences;
                     return ret;
                 }
             };
@@ -150,8 +151,6 @@ namespace Umati
             Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
-
-            virtual uint GetImplementedNamespaceIndex(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
             virtual void
             CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,

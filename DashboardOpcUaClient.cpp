@@ -67,15 +67,32 @@ int main(int argc, char *argv[])
 		config->ObjectTypeNamespacesVector(),
 		opcUaWrapper);
 
-	auto pOpcUaTypeReader = std::make_shared<Umati::Dashboard::OpcUaTypeReader>(
-		pClient,
-		config->ObjectTypeNamespacesVector());
-
 	auto pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
 		config->Mqtt().Hostname,
 		config->Mqtt().Port,
 		config->Mqtt().Username,
 		config->Mqtt().Password);
+
+	auto pOpcUaTypeReader = std::make_shared<Umati::Dashboard::OpcUaTypeReader>(
+		pClient,
+		config->ObjectTypeNamespacesVector());
+
+	{
+		std::size_t i = 0;
+		while (running && !pClient->isConnected() && i < 100)
+		{
+			LOG(INFO) << "Waiting for OPC UA connection.";
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			++i;
+		}
+
+		if (!pClient->isConnected())
+		{
+			LOG(INFO) << "Connection not established, exiting.";
+			return 1;
+		}
+		pOpcUaTypeReader->readTypes();
+	}
 
 	Umati::MachineObserver::DashboardMachineObserver dashboardMachineObserver(
 		pClient,
