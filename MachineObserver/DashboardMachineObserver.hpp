@@ -67,8 +67,13 @@ namespace Umati
 			std::map<ModelOpcUa::NodeId_t, std::string> m_machineNames;
 
 			void browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId,
-											std::list<ModelOpcUa::BrowseResult_t> &identification,
+											ModelOpcUa::BrowseResult_t &identification,
 											nlohmann::json &identificationAsJson) const;
+			///\TODO Refactor: Rename, integrate into browseIdentificationValues!?
+			void FillIdentificationValuesFromBrowseResult(
+				const ModelOpcUa::NodeId_t &identificationInstance,
+				std::list<ModelOpcUa::NodeId_t> &identificationNodes,
+				std::vector<std::string> &identificationValueKeys) const;
 
 			std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(const ModelOpcUa::NodeId_t &nodeId) const;
 

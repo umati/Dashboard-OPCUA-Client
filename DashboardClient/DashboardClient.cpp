@@ -185,12 +185,14 @@ namespace Umati
 			}
 			catch (std::exception &ex)
 			{
+				/*
 				LOG(WARNING) << "Could not find '"
 							 << static_cast<std::string>(startNode)
 							 << "'->'"
 							 << static_cast<std::string>(pChild->SpecifiedBrowseName)
 							 << "'"
 							 << "Unknown ID caused exception: " << ex.what();
+							 */
 				if (pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional)
 				{
 					LOG(ERROR) << "Forwarding exception, cause:"

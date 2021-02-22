@@ -40,7 +40,6 @@ namespace Umati {
 					this->setUnsubscribed();
 					return;
 				}
-				LOG(INFO) << "Unsubscribing monitoredItemId:" << std::to_string(m_monitoredItemId);
 				m_pClientSubscription->Unsubscribe(m_monitoredItemId, m_clientHandle);
 				this->setUnsubscribed();
 			}
@@ -148,10 +147,6 @@ namespace Umati {
 			}
 
 			if (m_pSubscription != NULL) {
-				LOG(WARNING) << "deleting monitored items, subscription used: " << this
-							 << ". is this the old one? is this allowed to be the old one?";
-				LOG(WARNING) << "deleting monitored items, uasubscription used: " << m_pSubscription
-							 << ". is this the old one? is this allowed to be the old one?";
 				auto ret = m_pSubscription->deleteMonitoredItems(
 						servSettings,
 						monItems,

@@ -152,16 +152,6 @@ namespace Umati
 
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
-            virtual void
-            CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-                                                        const std::string &startNodeNamespaceUri,
-                                                        const ModelOpcUa::NodeId_t &startNode) = 0;
-
-            virtual void
-            FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
-                                                     std::list<ModelOpcUa::NodeId_t> &identificationNodes,
-                                                     std::vector<std::string> &identificationValueKeys) = 0;
-
             virtual std::vector<std::string> Namespaces() = 0;
         };
     } // namespace Dashboard

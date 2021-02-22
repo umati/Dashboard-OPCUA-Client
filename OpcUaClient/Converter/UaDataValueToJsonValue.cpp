@@ -2,6 +2,7 @@
 
 #include <uadatetime.h>
 #include <uarange.h>
+#include <uaeuinformation.h>
 #include <easylogging++.h>
 
 namespace Umati {
@@ -187,6 +188,29 @@ namespace Umati {
 								UaRange range(exObj);
 								jsonValue["low"] = range.getLow();
 								jsonValue["high"] = range.getHigh();
+								break;
+							}
+							case OpcUaId_EUInformation: {
+								UaEUInformation euInfo(exObj);
+								jsonValue["namespaceUri"] = euInfo.getNamespaceUri().toUtf8();
+								jsonValue["unitId"] = euInfo.getUnitId();
+								
+								{
+									UaDataValue dataVal;
+									euInfo.getDisplayName().toDataValue(dataVal, OpcUa_False);
+									jsonValue["displayName"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
+								{
+									UaDataValue dataVal;
+									euInfo.getDescription().toDataValue(dataVal, OpcUa_False);
+									jsonValue["description"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
 								break;
 							}
 

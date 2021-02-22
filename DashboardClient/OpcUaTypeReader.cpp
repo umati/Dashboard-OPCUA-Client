@@ -137,9 +137,8 @@ namespace Umati
 
 
             std::string identificationTypeName = information.Namespace + "IdentificationType";
-            std::string startNodeNamespaceUri = "http://opcfoundation.org/UA/Machinery/";
             /// \TODO Why 1012?
-            ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{startNodeNamespaceUri, "i=1012"};
+            ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{nsUriMachinery, "i=1012"};
 
             auto browseResults = m_pClient->Browse(startNode, IDashboardDataClient::BrowseContext_t::ObjectAndVariable());
 

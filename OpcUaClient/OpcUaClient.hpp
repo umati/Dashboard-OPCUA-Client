@@ -61,15 +61,6 @@ namespace Umati
 
 			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) override;
 
-			void CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-															 const std::string &startNodeNamespaceUri,
-															 const ModelOpcUa::NodeId_t &startNode) override;
-
-			void
-			FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
-													 std::list<ModelOpcUa::NodeId_t> &identificationNodes,
-													 std::vector<std::string> &identificationValueKeys) override;
-
 			std::vector<std::string> Namespaces() override;
 
 		protected:
@@ -151,20 +142,12 @@ namespace Umati
 			static Umati::Dashboard::IDashboardDataClient::BrowseContext_t prepareObjectAndVariableTypeBrowseContext();
 			UaClientSdk::BrowseContext getUaBrowseContext(const BrowseContext_t &browseContext);
 
-			void browseUnderStartNode(const UaNodeId &startUaNodeId, UaReferenceDescriptions &referenceDescriptions);
-
-			void browseUnderStartNode(const UaNodeId &startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-									  const UaClientSdk::BrowseContext &browseContext);
-
 			OpcUa_NodeClass nodeClassFromNodeId(const UaNodeId &typeDefinitionUaNodeId);
 
 			ModelOpcUa::BrowseResult_t
 			ReferenceDescriptionToBrowseResult(const OpcUa_ReferenceDescription &referenceDescriptions);
 
 			ModelOpcUa::ModellingRule_t browseModellingRule(const UaNodeId &uaNodeId);
-
-			static void
-			split(const std::string &inputString, std::vector<std::string> &resultContainer, char delimiter);
 
 			static void
 			updateResultContainer(const std::string &inputString, std::vector<std::string> &resultContainer,

@@ -56,6 +56,7 @@ namespace Umati {
 
 		bool MachineObserver::machineListsNotEqual(std::list<ModelOpcUa::BrowseResult_t> &machineList) {
 			if (m_knownMachineToolsMap.size() != machineList.size()) {
+				LOG(INFO) << "Size differs, known != new: " << m_knownMachineToolsMap.size() << " != " << machineList.size();
 				recreateKnownMachineToolsMap(machineList);
 				return true;
 			}
@@ -98,11 +99,7 @@ namespace Umati {
 			try {
 				LOG(INFO) << "Searching for machines";
 				machineList.empty();
-
-				std::string startNodeNamespaceUri = "http://opcfoundation.org/UA/Machinery/";
-				ModelOpcUa::NodeId_t startNode = ModelOpcUa::NodeId_t{startNodeNamespaceUri, "i=1001"};
-				m_pDataClient->CreateMachineListForNamespaceUnderStartNode(machineList, startNodeNamespaceUri,
-																		   startNode);
+				machineList = browseForMachines();
 			}
 			catch (const Umati::Exceptions::OpcUaException &ex) {
 				LOG(ERROR) << "Browse new machines failed with: " << ex.what();
@@ -113,6 +110,17 @@ namespace Umati {
 				return false;
 			}
 			return true;
+		}
+
+		std::list<ModelOpcUa::BrowseResult_t> MachineObserver::browseForMachines()
+		{
+			Umati::Dashboard::IDashboardDataClient::BrowseContext_t ctx;
+			ctx.referenceTypeId = Umati::Dashboard::NodeId_HierarchicalReferences;
+			ctx.nodeClassMask = (std::uint32_t) Umati::Dashboard::IDashboardDataClient::BrowseContext_t::NodeClassMask::OBJECT;
+			return m_pDataClient->Browse(
+					Umati::Dashboard::NodeId_MachinesFolder,
+					ctx
+				);
 		}
 
 		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t> &machineList,

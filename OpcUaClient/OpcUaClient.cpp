@@ -369,75 +369,6 @@ namespace Umati
 			}
 		}
 
-		void
-		OpcUaClient::CreateMachineListForNamespaceUnderStartNode(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-																 const std::string &startNodeNamespaceUri,
-																 const ModelOpcUa::NodeId_t &startNode)
-		{
-			auto startNodeId = UaNodeId::fromXmlString(UaString(startNode.Id.c_str()));
-			UaReferenceDescriptions referenceDescriptions;
-			uint namespaceIndex = m_uriToIndexCache[startNodeNamespaceUri];
-			startNodeId.setNamespaceIndex(namespaceIndex);
-
-			browseUnderStartNode(startNodeId, referenceDescriptions);
-
-			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
-			{
-				auto refDesc = referenceDescriptions[i];
-				try
-				{
-					auto browseRes = ReferenceDescriptionToBrowseResult(refDesc);
-					machineList.emplace_back(browseRes);
-				}
-				catch (std::exception &ex)
-				{
-					LOG(ERROR) << "unable to add machine: " << ex.what();
-				}
-			}
-		}
-
-		void
-		OpcUaClient::FillIdentificationValuesFromBrowseResult(std::list<ModelOpcUa::BrowseResult_t> &identification,
-															  std::list<ModelOpcUa::NodeId_t> &identificationNodes,
-															  std::vector<std::string> &identificationValueKeys)
-		{
-			auto startNodeId = UaNodeId::fromXmlString(UaString(identification.front().NodeId.Id.c_str()));
-			startNodeId.setNamespaceIndex(m_uriToIndexCache[identification.front().NodeId.Uri]);
-
-			UaReferenceDescriptions referenceDescriptions;
-			browseUnderStartNode(startNodeId, referenceDescriptions);
-			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
-			{
-				ModelOpcUa::BrowseResult_t browseResult = ReferenceDescriptionToBrowseResult(
-					referenceDescriptions[i]);
-				identificationValueKeys.push_back(browseResult.BrowseName.Name);
-				identificationNodes.emplace_back(browseResult.NodeId);
-			}
-		}
-
-		void OpcUaClient::browseUnderStartNode(const UaNodeId &startUaNodeId,
-											   UaReferenceDescriptions &referenceDescriptions)
-		{
-			browseUnderStartNode(startUaNodeId, referenceDescriptions, getUaBrowseContext(prepareObjectAndVariableTypeBrowseContext()));
-		}
-
-		void
-		OpcUaClient::browseUnderStartNode(const UaNodeId &startUaNodeId, UaReferenceDescriptions &referenceDescriptions,
-										  const UaClientSdk::BrowseContext &browseContext)
-		{
-			UaByteString continuationPoint;
-			// References -> nodes referenced to this, e.g. child nodes
-			// BrowseName: Readable Name and namespace index
-			auto uaResult = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, startUaNodeId, browseContext,
-														  continuationPoint, referenceDescriptions);
-			if (uaResult.isBad())
-			{
-				LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8() << " for node "
-						   << startUaNodeId.toFullString().toUtf8();
-				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
-			}
-		}
-
 		ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(const UaNodeId &uaNodeId)
 		{
 			UaByteString continuationPoint;
@@ -783,11 +714,12 @@ namespace Umati
 			UaStatusCode uaResultElement(uaBrowsePathResults[0].StatusCode);
 			if (uaResultElement.isBad())
 			{
-				LOG(ERROR) << "Element returned bad status code: " << uaResultElement.toString().toUtf8()
+				std::stringstream ss;
+				ss << "Element returned bad status code: " << uaResultElement.toString().toUtf8()
 						   << " for node: '"
 						   << static_cast<std::string>(startNode) << "' with " << uaResult.toString().toUtf8()
 						   << " (BrowsePath: " << static_cast<std::string>(browseName) << ")";
-				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement);
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResultElement, ss.str());
 			}
 
 			if (uaBrowsePathResults[0].NoOfTargets != 1)
@@ -872,34 +804,6 @@ namespace Umati
 			}
 
 			return readValues;
-		}
-
-		void
-		OpcUaClient::split(const std::string &inputString, std::vector<std::string> &resultContainer, char delimiter)
-		{
-			std::size_t current_char_position, previous_char_position = 0;
-			current_char_position = inputString.find(delimiter);
-			while (current_char_position != std::string::npos)
-			{
-				updateResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
-				previous_char_position = current_char_position + 1;
-				current_char_position = inputString.find(delimiter, previous_char_position);
-			}
-			updateResultContainer(inputString, resultContainer, current_char_position, previous_char_position);
-		}
-
-		void OpcUaClient::updateResultContainer(
-			const std::string &inputString,
-			std::vector<std::string> &resultContainer,
-										   size_t current_char_position,
-										   size_t previous_char_position)
-		{
-			std::string substr = inputString.substr(previous_char_position,
-													current_char_position - previous_char_position);
-			if (!substr.empty())
-			{
-				resultContainer.push_back(substr);
-			}
 		}
 
 		std::vector<std::string> OpcUaClient::Namespaces()
