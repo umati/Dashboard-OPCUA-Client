@@ -27,7 +27,11 @@ namespace Umati {
 			/**
 			* Assumes that all machines are offline / to be removed
 			*/
-			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> toBeRemovedMachines = m_knownMachines;
+			std::set<ModelOpcUa::NodeId_t> toBeRemovedMachines;
+			for(auto & knownMachine: m_knownMachines)
+			{
+				toBeRemovedMachines.insert(knownMachine.first);
+			}
 			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> newMachines;
 			std::list<ModelOpcUa::BrowseResult_t> machineList;
 
@@ -55,29 +59,26 @@ namespace Umati {
 		}
 
 		bool MachineObserver::machineListsNotEqual(std::list<ModelOpcUa::BrowseResult_t> &machineList) {
-			if (m_knownMachineToolsMap.size() != machineList.size()) {
-				LOG(INFO) << "Size differs, known != new: " << m_knownMachineToolsMap.size() << " != " << machineList.size();
+			std::set<ModelOpcUa::NodeId_t> newMachines;
+			// Use a set for a quick compare, as there might be duplicates in machineList!
+			for (const auto &machineTool : machineList) {
+				newMachines.insert(machineTool.NodeId);
+			}
+			if(newMachines != m_knownMachineToolsSet)
+			{
+				LOG(INFO) << "Different set of machines, reset known machines.";
 				recreateKnownMachineToolsMap(machineList);
 				return true;
-			}
-			for (auto &machineTool : machineList) {
-				auto it = m_knownMachineToolsMap.find(machineTool.NodeId);
-				if (it == m_knownMachineToolsMap.end()) {
-					// List differs
-					LOG(INFO) << "Missing an entry in machineList: " << machineTool.BrowseName.Uri;
-					recreateKnownMachineToolsMap(machineList);
-					return true;
-				}
 			}
 			return false;
 		}
 
 		void MachineObserver::recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t> &machineList) {
 			LOG(WARNING) << "Lists differ, recreating known machine tools map";
-			removeOfflineMachines(m_knownMachineToolsMap);
-			m_knownMachineToolsMap.clear();
+			removeOfflineMachines(m_knownMachineToolsSet);
+			m_knownMachineToolsSet.clear();
 			for (const auto &machineTool : machineList) {
-				m_knownMachineToolsMap.insert(std::make_pair(machineTool.NodeId, machineTool));
+				m_knownMachineToolsSet.insert(machineTool.NodeId);
 			}
 		}
 
@@ -124,7 +125,7 @@ namespace Umati {
 		}
 
 		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-														std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &toBeRemovedMachines,
+														std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines,
 														std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines) {
 			LOG(INFO) << "Checking which machines are online / offline";
 
@@ -149,8 +150,8 @@ namespace Umati {
 				}
 					// Catch exceptions during CheckOnline, this will cause that the machine stay in the toBeRemovedMachines list
 				catch (const Umati::Exceptions::OpcUaException &) {
-					LOG(INFO) << "Machine disconnected: '" << it->second.BrowseName.Name << "' ("
-							  << it->second.NodeId.Uri << ")";
+					LOG(INFO) << "Machine disconnected: '" << machineTool.BrowseName.Name << "' ("
+							  << machineTool.NodeId.Uri << ")";
 				}
 			}
 
@@ -167,16 +168,22 @@ namespace Umati {
 			LOG(INFO) << text << "\n" << machinesStringStream.str().c_str();
 		}
 
+		void MachineObserver::logMachinesChanging(const std::string &text,
+												  const std::set<ModelOpcUa::NodeId_t> &machines) {
+			std::stringstream machinesStringStream;
+			for (auto &machine : machines) {
+				machinesStringStream << machine.Uri << "\n";
+			}
+			LOG(INFO) << text << "\n" << machinesStringStream.str().c_str();
+		}
+
 		void MachineObserver::removeOfflineMachines(
-				std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &toBeRemovedMachines) {
-			/**
-			* First: NodeId, Second: BrowseResult_t
-			*/
+				std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines) {
+
 			logMachinesChanging("Removing machines: ", toBeRemovedMachines);
 
 			for (auto &toBeRemovedMachine : toBeRemovedMachines) {
-				removeMachine(toBeRemovedMachine.second);
-				m_knownMachines.erase(toBeRemovedMachine.first);
+				removeMachine(toBeRemovedMachine);
 			}
 		}
 

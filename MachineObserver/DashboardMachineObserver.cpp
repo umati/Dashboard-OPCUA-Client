@@ -174,31 +174,32 @@ namespace Umati
 			return typePair->second;
 		}
 
-		void DashboardMachineObserver::removeMachine(ModelOpcUa::BrowseResult_t machine)
+		void DashboardMachineObserver::removeMachine(ModelOpcUa::NodeId_t machineNodeId)
 		{
 			std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
-			LOG(INFO) << "Remove Machine: " << machine.BrowseName.Name << " NodeId:"
-					  << static_cast<std::string>(machine.NodeId);
-			auto it = m_dashboardClients.find(machine.NodeId);
+			m_knownMachines.erase(machineNodeId);
+
+			LOG(INFO) << "Remove Machine with NodeId:"
+					  << static_cast<std::string>(machineNodeId);
+			auto it = m_dashboardClients.find(machineNodeId);
 			if (it != m_dashboardClients.end())
 			{
 				m_dashboardClients.erase(it);
 			}
 			else
 			{
-				LOG(INFO) << "Machine not known: '" << static_cast<std::string>(machine.NodeId) << "'";
+				LOG(INFO) << "Machine not known: '" << static_cast<std::string>(machineNodeId) << "'";
 			}
 
-			auto itOnlineMachines = m_onlineMachines.find(machine.NodeId);
+			auto itOnlineMachines = m_onlineMachines.find(machineNodeId);
 			if (itOnlineMachines != m_onlineMachines.end())
 			{
-				LOG(INFO) << "Erasing online machine";
 				m_onlineMachines.erase(itOnlineMachines);
 				LOG(INFO) << "Online machine erased";
 			}
 			else
 			{
-				LOG(INFO) << "Machine was not online: '" << static_cast<std::string>(machine.NodeId) << "'";
+				LOG(INFO) << "Machine was not online: '" << static_cast<std::string>(machineNodeId) << "'";
 			}
 		}
 

@@ -38,7 +38,7 @@ namespace Umati
 			// Inherit from MachineObserver
 			void addMachine(ModelOpcUa::BrowseResult_t machine) override;
 
-			void removeMachine(ModelOpcUa::BrowseResult_t machine) override;
+			void removeMachine(ModelOpcUa::NodeId_t machineNodeId) override;
 
 			bool isOnline(
 				const ModelOpcUa::NodeId_t &machineNodeId,

@@ -4,6 +4,7 @@
 #include <map>
 #include <mutex>
 #include <vector>
+#include <set>
 
 namespace Umati {
 	namespace MachineObserver {
@@ -30,17 +31,17 @@ namespace Umati {
 
 			void addNewMachine(std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachine);
 
-			void removeOfflineMachines(std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &toBeRemovedMachines);
+			void removeOfflineMachines(std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines);
 
 			bool canBrowseMachineList(std::list<ModelOpcUa::BrowseResult_t> &machineList);
 
 			void findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-										   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &toBeRemovedMachines,
+										   std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines,
 										   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines);
 
 			virtual void addMachine(ModelOpcUa::BrowseResult_t machine) = 0;
 
-			virtual void removeMachine(ModelOpcUa::BrowseResult_t machine) = 0;
+			virtual void removeMachine(ModelOpcUa::NodeId_t machineNodeId) = 0;
 
 			virtual bool isOnline(
 				const ModelOpcUa::NodeId_t &machineNodeId,
@@ -50,7 +51,7 @@ namespace Umati {
 
 			std::shared_ptr<Dashboard::IDashboardDataClient> m_pDataClient;
 			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> m_knownMachines;
-			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> m_knownMachineToolsMap;
+			std::set<ModelOpcUa::NodeId_t> m_knownMachineToolsSet;
 
 			/// Blacklist of invalid machines, that will not be checked periodically
 			/// The value is decremented each time the machine would be checked and will only be added, when it reaches 0 again.
@@ -58,6 +59,8 @@ namespace Umati {
 
 			static void logMachinesChanging(const std::string &text,
 											const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines);
+			static void logMachinesChanging(const std::string &text,
+											const std::set<ModelOpcUa::NodeId_t> &newMachines);
 
 			std::list<ModelOpcUa::BrowseResult_t> browseForMachines();
 
