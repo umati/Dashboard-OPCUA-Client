@@ -121,7 +121,7 @@ namespace Umati
 				pDashClient->addDataSet(
 					{machineInformation.NamespaceURI, machine.NodeId.Id},
 					p_type,
-					Topics::Machine(p_type, machine.NodeId.Uri));
+					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)));
 
 				LOG(INFO) << "Read model finished";
 
@@ -277,8 +277,8 @@ namespace Umati
 			auto it = m_machineNames.find(machineNodeId);
 			if (it != m_machineNames.end())
 			{
-				identificationAsJson["Topic"] = Topics::Machine(p_type, machineNodeId.Uri);
-				identificationAsJson["Id"] = Umati::Util::UrlEncode(machineNodeId.Uri);
+				identificationAsJson["Topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
+				identificationAsJson["Id"] = Umati::Util::UrlEncode(static_cast<std::string>(machineNodeId));
 				identificationAsJson["Specification"] = p_type->SpecifiedBrowseName.Name;
 			}
 		}
