@@ -53,6 +53,14 @@ add_test(
         WORKING_DIRECTORY $<TARGET_FILE_DIR:TestConfigurationJsonFile>
 )
 
+add_executable(TestUrlEncode TestUrlEncode.cpp)
+target_link_libraries(TestUrlEncode OpcUaClientLib Util GTest::gtest_main)
+add_test(
+        NAME TestUrlEncode
+        COMMAND TestUrlEncode
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:TestUrlEncode>
+)
+
 set(CONFIG_TESTFILES
         data/Configuration.json
         data/Configuration2.json

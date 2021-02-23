@@ -80,9 +80,6 @@ namespace Umati
 			std::shared_ptr<ModelOpcUa::StructureNode>
 			getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &typeDefinition) const;
 
-			static std::string getMachineSubtopic(const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
-												  const std::string &namespaceUri);
-
 			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId);
 		};
 	} // namespace MachineObserver

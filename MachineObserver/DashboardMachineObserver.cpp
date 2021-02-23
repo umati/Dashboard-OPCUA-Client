@@ -2,8 +2,9 @@
 #include <easylogging++.h>
 #include "Exceptions/MachineInvalidException.hpp"
 #include <Exceptions/OpcUaException.hpp>
-#include <Base64.hpp>
 #include <utility>
+#include <Topics.hpp>
+#include <UrlEncode.hpp>
 
 namespace Umati
 {
@@ -91,9 +92,7 @@ namespace Umati
 				}
 			}
 
-			std::stringstream stream;
-			stream << "/umati/list/machineList";
-			m_pPublisher->Publish(stream.str(), publishData.dump(0));
+			m_pPublisher->Publish(Topics::List("MachineTools"), publishData.dump(0));
 		}
 
 		std::string DashboardMachineObserver::getTypeName(const ModelOpcUa::NodeId_t &nodeId)
@@ -119,13 +118,10 @@ namespace Umati
 				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->getTypeOfNamespace(machine.TypeDefinition.Uri);
 				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
-				std::stringstream topic;
-				std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machine.NodeId.Uri, true);
-				topic << "/umati" << Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(p_type, base64ProductInstanceUri);
 				pDashClient->addDataSet(
 					{machineInformation.NamespaceURI, machine.NodeId.Id},
 					p_type,
-					topic.str());
+					Topics::Machine(p_type, machine.NodeId.Uri));
 
 				LOG(INFO) << "Read model finished";
 
@@ -278,13 +274,12 @@ namespace Umati
 				}
 			}
 
-			std::stringstream path;
 			auto it = m_machineNames.find(machineNodeId);
 			if (it != m_machineNames.end())
 			{
-				std::string base64ProductInstanceUri = Util::StringUtils::base64_encode(machineNodeId.Uri, true);
-				identificationAsJson["Path"] = Umati::MachineObserver::DashboardMachineObserver::getMachineSubtopic(
-					p_type, base64ProductInstanceUri);
+				identificationAsJson["Topic"] = Topics::Machine(p_type, machineNodeId.Uri);
+				identificationAsJson["Id"] = Umati::Util::UrlEncode(machineNodeId.Uri);
+				identificationAsJson["Specification"] = p_type->SpecifiedBrowseName.Name;
 			}
 		}
 
@@ -304,14 +299,5 @@ namespace Umati
 			}
 		}
 
-		std::string DashboardMachineObserver::getMachineSubtopic(
-			const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
-			const std::string &namespaceUri)
-		{
-			std::string specification = p_type->SpecifiedBrowseName.Name;
-			std::stringstream subtopic;
-			subtopic << "/" << specification << "/" << namespaceUri;
-			return subtopic.str();
-		}
 	} // namespace MachineObserver
 } // namespace Umati
