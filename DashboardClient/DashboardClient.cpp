@@ -76,7 +76,7 @@ namespace Umati
 					time_t now;
 					time(&now);
 
-					if (jsonPayload != lastMessage.payload || difftime(now, lastMessage.lastSent) > 60)
+					if (jsonPayload != lastMessage.payload || difftime(now, lastMessage.lastSent) > 10)
 					{
 						m_pPublisher->Publish(pDataSetStorage->channel, jsonPayload);
 						lastMessage.payload = jsonPayload;

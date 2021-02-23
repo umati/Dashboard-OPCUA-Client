@@ -34,15 +34,12 @@ namespace Umati
 			}
 
 			// Publish online machines every 30th publish
-			if (m_publishMachinesOnline >= 30)
+			if (++m_publishMachinesOnline >= 30)
 			{
 				this->publishMachinesList();
 				m_publishMachinesOnline = 0;
 			}
-			else
-			{
-				m_publishMachinesOnline = m_publishMachinesOnline + 1;
-			}
+
 		}
 
 		void DashboardMachineObserver::startUpdateMachineThread()
