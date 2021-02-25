@@ -264,22 +264,24 @@ namespace Umati
 				identificationNodes,
 				identificationValueKeys);
 
+			nlohmann::json identificationData;
 			identificationListValues = m_pDataClient->ReadeNodeValues(identificationNodes);
 			for (uint i = 0; i < identificationListValues.size(); i++)
 			{
 				auto value = identificationListValues.at(i);
 				if (value.dump(0) != "null")
 				{
-					identificationAsJson[identificationValueKeys.at(i)] = value;
+					identificationData[identificationValueKeys.at(i)] = value;
 				}
 			}
+			identificationAsJson["data"] = identificationData;
 
 			auto it = m_machineNames.find(machineNodeId);
 			if (it != m_machineNames.end())
 			{
-				identificationAsJson["Topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
-				identificationAsJson["Id"] = Umati::Util::UrlEncode(static_cast<std::string>(machineNodeId));
-				identificationAsJson["Specification"] = p_type->SpecifiedBrowseName.Name;
+				identificationAsJson["topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
+				identificationAsJson["machineId"] = Umati::Util::UrlEncode(static_cast<std::string>(machineNodeId));
+				identificationAsJson["typeId"] = p_type->SpecifiedBrowseName.Name;
 			}
 		}
 
