@@ -269,19 +269,20 @@ namespace Umati
 			for (uint i = 0; i < identificationListValues.size(); i++)
 			{
 				auto value = identificationListValues.at(i);
-				if (value.dump(0) != "null")
+				if (value != nullptr)
 				{
 					identificationData[identificationValueKeys.at(i)] = value;
 				}
 			}
-			identificationAsJson["data"] = identificationData;
+
+			identificationAsJson["Data"] = identificationData;
 
 			auto it = m_machineNames.find(machineNodeId);
 			if (it != m_machineNames.end())
 			{
-				identificationAsJson["topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
-				identificationAsJson["machineId"] = Umati::Util::UrlEncode(static_cast<std::string>(machineNodeId));
-				identificationAsJson["typeId"] = p_type->SpecifiedBrowseName.Name;
+				identificationAsJson["Topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
+				identificationAsJson["MachineId"] = Umati::Util::UrlEncode(static_cast<std::string>(machineNodeId));
+				identificationAsJson["TypeDefinition"] = p_type->SpecifiedBrowseName.Name;
 			}
 		}
 
