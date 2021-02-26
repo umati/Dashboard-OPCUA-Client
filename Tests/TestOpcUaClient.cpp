@@ -151,6 +151,6 @@ TEST(OpcUaClient, Browse) {
 	ModelOpcUa::NodeId_t startNodeId{"", "i=85"};
 	ModelOpcUa::NodeId_t folderTypeNodeId{"", "i=61"};
 	ModelOpcUa::NodeId_t hierarchicalReferenceTypeNodeId{"", "i=33"};
-
-	auto resultBrowse = client.Browse(startNodeId, hierarchicalReferenceTypeNodeId, folderTypeNodeId);
+	auto brCtx = Umati::Dashboard::IDashboardDataClient::BrowseContext_t::WithReference(hierarchicalReferenceTypeNodeId);
+	auto resultBrowse = client.BrowseWithResultTypeFilter(startNodeId, brCtx, folderTypeNodeId);
 }
