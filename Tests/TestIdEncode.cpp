@@ -4,7 +4,7 @@
 namespace Umati {
     namespace Tests {
         TEST(IdEncode, SpecialCharacters) {
-            EXPECT_EQ(Umati::Util::IdEncode("/"), "%2F");
+            EXPECT_EQ(Umati::Util::IdEncode("/"), "_2F");
 
         }
     }
