@@ -1,4 +1,4 @@
-#include "UrlEncode.hpp"
+#include "IdEncode.hpp"
 #include <sstream>
 #include <set>
 #include <iomanip>
@@ -7,17 +7,18 @@ namespace Umati
 {
     namespace Util
     {
-        const std::set<char> Whitelist = {'-', '.', '_', '~'};
+        // These characters are more than a usual urlencode, as mqtt allows more characters in the topic parts
+        const std::set<char> Whitelist = {'-', '.', '_', '~', ':', '#', ';', '='};
         static inline bool requireEncoding(char c)
         {
             return !isalnum(c) && (Whitelist.find(c) == Whitelist.end());
         }
 
-        std::string UrlEncode(const std::string &url)
+        std::string IdEncode(const std::string &id)
         {
             std::stringstream ss;
             ss << std::hex;
-            for (const auto &c : url)
+            for (const auto &c : id)
             {
                 if (requireEncoding(c))
                 {

@@ -4,7 +4,7 @@
 #include <Exceptions/OpcUaException.hpp>
 #include <utility>
 #include <Topics.hpp>
-#include <UrlEncode.hpp>
+#include <IdEncode.hpp>
 
 namespace Umati
 {
@@ -281,7 +281,7 @@ namespace Umati
 			if (it != m_machineNames.end())
 			{
 				identificationAsJson["Topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
-				identificationAsJson["MachineId"] = Umati::Util::UrlEncode(static_cast<std::string>(machineNodeId));
+				identificationAsJson["MachineId"] = Umati::Util::IdEncode(static_cast<std::string>(machineNodeId));
 				identificationAsJson["TypeDefinition"] = p_type->SpecifiedBrowseName.Name;
 			}
 		}

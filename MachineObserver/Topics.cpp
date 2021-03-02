@@ -1,5 +1,5 @@
 #include "Topics.hpp"
-#include <UrlEncode.hpp>
+#include <IdEncode.hpp>
 
 namespace Umati
 {
@@ -12,7 +12,7 @@ namespace Umati
         {
             std::string specification = p_type->SpecifiedBrowseName.Name;
             std::stringstream topic;
-            topic << Topics::Prefix << "/" << specification << "/" << Umati::Util::UrlEncode(namespaceUri);
+            topic << Topics::Prefix << "/" << specification << "/" << Umati::Util::IdEncode(namespaceUri);
             return topic.str();
         }
 
