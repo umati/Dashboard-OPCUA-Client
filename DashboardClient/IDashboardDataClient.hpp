@@ -145,6 +145,7 @@ namespace Umati
 
             virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
+            /// \todo Extract from interface!
             virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
             virtual std::shared_ptr<ValueSubscriptionHandle>
