@@ -24,4 +24,14 @@ This project uses [cmake](cmake.org/) for building.
 
 # NOTE
 
-Check the branch `open62541` for the code.
+The state of the project is not final. There are some parts that needs to be tweaked, especially the security and subscription parts.
+There are also quite some memory leaks that have not been adressed yet because we thought about some abstraction layer for memory management like `Open62541Cpp`.
+We used the docker image from the [Umati Sampel-Server](https://github.com/umati/Sample-Server). 
+The scripts to install each dependency are in the `Tools` folder along with the config we were using.  
+
+Right now, the subscription is disabled by removing the `subscribeValues` function in `DashboardClient/DashboardClient.cpp` on line 44.
+Nevertheless the project can be built and run but it will crash after a while:
+```
+[2021-04-01 15:12:36.584 (UTC+0200)] warn/channel       Connection 8 | SecureChannel 36 | Receiving the response failed with StatusCode BadConnectionClosed
+[2021-04-01 15:12:36.584 (UTC+0200)] info/client        Client Status: ChannelState: Closed, SessionState: Created, ConnectStatus: Good
+```

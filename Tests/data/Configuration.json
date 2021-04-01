@@ -1,0 +1,17 @@
+{
+  "ObjectTypeNamespaces": [
+    "http://www.umati.info"
+  ],
+  "OpcUa": {
+    "Endpoint": "opc.tcp://localhost:4840",
+    "User": "User",
+    "Password": "Password",
+    "Security": 1
+  },
+  "Mqtt": {
+    "Hostname": "localhost",
+    "Port": 1883,
+    "Username": "MyUser",
+    "Password": "MyPassword"
+  }
+}
