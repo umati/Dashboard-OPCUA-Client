@@ -29,6 +29,7 @@ namespace Umati
 		* Identification, JobCurrentStateNumber, ProductionJobList, Stacklight, StateModelList, ToolList
 		*/
 		void DashboardClient::addDataSet(
+			UA_Client *client,
 			const ModelOpcUa::NodeId_t &startNodeId,
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
 			const std::string &channel)
@@ -38,7 +39,9 @@ namespace Umati
 				std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition,
 																						  channel);
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
-				subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
+				LOG(WARNING) << "Disabled Subscription for the moment";
+				//FIXME Subsciptions
+				//subscribeValues(client, pDataSetStorage->node, pDataSetStorage->values);
 				LOG(INFO) << "Values subscribed for  " << channel;
 				m_dataSets.push_back(pDataSetStorage);
 			}
@@ -310,6 +313,7 @@ namespace Umati
 		}
 
 		void DashboardClient::subscribeValues(
+			UA_Client *client,
 			const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
 		{
@@ -318,13 +322,13 @@ namespace Umati
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
 			{
-				subscribeValue(pNode, valueMap);
+				subscribeValue(client, pNode, valueMap);
 			}
 
-			handleSubscribeChildNodes(pNode, valueMap);
+			handleSubscribeChildNodes(client, pNode, valueMap);
 		}
 
-		void DashboardClient::handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
+		void DashboardClient::handleSubscribeChildNodes(UA_Client *client, const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
 														std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
 		{
 			// LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
@@ -339,13 +343,13 @@ namespace Umati
 				case ModelOpcUa::Mandatory:
 				case ModelOpcUa::Optional:
 				{
-					handleSubscribeChildNode(pChildNode, valueMap);
+					handleSubscribeChildNode(client, pChildNode, valueMap);
 					break;
 				}
 				case ModelOpcUa::MandatoryPlaceholder:
 				case ModelOpcUa::OptionalPlaceholder:
 				{
-					handleSubscribePlaceholderChildNode(pChildNode, valueMap);
+					handleSubscribePlaceholderChildNode(client, pChildNode, valueMap);
 					break;
 				}
 				default:
@@ -357,7 +361,7 @@ namespace Umati
 			}
 		}
 
-		void DashboardClient::handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+		void DashboardClient::handleSubscribeChildNode(UA_Client *client, const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
 													   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
 		{
 			// LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
@@ -369,11 +373,11 @@ namespace Umati
 				return;
 			}
 			// recursive call
-			subscribeValues(pSimpleChild, valueMap);
+			subscribeValues(client, pSimpleChild, valueMap);
 		}
 
 		void
-		DashboardClient::handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+		DashboardClient::handleSubscribePlaceholderChildNode(UA_Client *client, const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
 															 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
 		{
 			// LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
@@ -389,11 +393,11 @@ namespace Umati
 			for (const auto &pPlaceholderElement : placeholderElements)
 			{
 				// recursive call
-				subscribeValues(pPlaceholderElement.pNode, valueMap);
+				subscribeValues(client, pPlaceholderElement.pNode, valueMap);
 			}
 		}
 
-		void DashboardClient::subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
+		void DashboardClient::subscribeValue(UA_Client *client, const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
 											 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
 		{ /**
                                              * Creates a lambda function which gets pNode as a copy and valueMap as a reference from this function,
@@ -414,7 +418,7 @@ namespace Umati
 			};
 			try
 			{
-				auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
+				auto subscribedValue = m_pDashboardDataClient->Subscribe(client,pNode->NodeId, callback);
 				m_subscribedValues.push_back(subscribedValue);
 			}
 			catch (std::exception &ex)

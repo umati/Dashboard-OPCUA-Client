@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.9)
 
 message("### opcua_dashboardclient/MachineObserver: loading Machine Observer")
 
-find_package(UaSdkCpp REQUIRED)
 
 set(CLIENT_SRC
         "MachineObserver.cpp"

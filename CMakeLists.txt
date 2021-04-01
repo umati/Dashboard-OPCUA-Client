@@ -5,8 +5,11 @@ message("### opcua_dashboardclient: loading project")
 project(Dashboard_OpcUaClient)
 enable_testing()
 set(CMAKE_CXX_STANDARD 14)
+#Adress sanitizer
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/local/include)
 message("########################### ${CREATE_COVERAGE}")
 if (CREATE_COVERAGE)
     SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
@@ -28,6 +31,8 @@ add_custom_target(Dashboard_OpcUaClient)
 
 add_definitions(-DELPP_THREAD_SAFE -DELPP_USE_STD_THREADING -DELPP_NO_DEFAULT_LOG_FILE)
 find_package(easyloggingpp REQUIRED)
+find_package(open62541 REQUIRED)
+find_package(Open62541Cpp REQUIRED)
 include_directories(${CPP_MOSQUITTO_INCLUDE})
 message("### opcua_dashboardclient: Adding subdirectories")
 add_subdirectory(Util)
@@ -37,7 +42,7 @@ add_subdirectory(OpcUaClient)
 add_subdirectory(MachineObserver)
 
 message("### opcua_dashboardclient: Adding test directory")
-add_subdirectory(Tests)
+#add_subdirectory(Tests)
 
 message("### opcua_dashboardclient: Adding the executable c++ file")
 find_package(Threads)
@@ -127,6 +132,6 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
 
-target_link_libraries(DashboardOpcUaClient PUBLIC pthread)
+target_link_libraries(DashboardOpcUaClient PUBLIC pthread Open62541Cpp)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")
 install(EXPORT DashboardOpcUaClient DESTINATION lib/DashboardOpcUaClient/cmake NAMESPACE DashboardOpcUaClient:: EXPORT_LINK_INTERFACE_LIBRARIES)

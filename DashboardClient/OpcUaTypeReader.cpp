@@ -166,7 +166,6 @@ namespace Umati
 
             information.NamespaceType = typeName;
             information.NamespaceIdentificationType = identificationTypeName;
-
             m_availableObjectTypeNamespaces[namespaceURI] = information;
             LOG(INFO) << "Expected object type namespace " << namespaceURI << " found.";
             createTypeMap(bidirectionalTypeMap, m_typeMap, namespaceURI);

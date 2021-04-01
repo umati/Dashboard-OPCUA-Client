@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	{
 		LOG(ERROR) << "OpcUaInterface couldn't be initialized: " << ex.what();
 	}
-
+ 
 	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(
 		config->OpcUa().Endpoint,
 		config->OpcUa().Username,
@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
 		config->Mqtt().Hostname,
 		config->Mqtt().Port,
 		config->Mqtt().Username,
-		config->Mqtt().Password);
-
+		config->Mqtt().Password); 
+	
 	auto pOpcUaTypeReader = std::make_shared<Umati::Dashboard::OpcUaTypeReader>(
 		pClient,
 		config->ObjectTypeNamespacesVector());
