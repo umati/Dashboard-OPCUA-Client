@@ -41,7 +41,7 @@ namespace Umati
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
 				LOG(WARNING) << "Disabled Subscription for the moment";
 				//FIXME Subsciptions
-				//subscribeValues(client, pDataSetStorage->node, pDataSetStorage->values);
+				subscribeValues(client, pDataSetStorage->node, pDataSetStorage->values);
 				LOG(INFO) << "Values subscribed for  " << channel;
 				m_dataSets.push_back(pDataSetStorage);
 			}

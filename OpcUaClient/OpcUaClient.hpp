@@ -68,6 +68,8 @@ namespace Umati
 
 			std::vector<std::string> Namespaces() override;
 
+			UA_Client *client;
+
 		protected:
 			//FIXME override gives "marked ‘override’, but does not override" error
 			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);// override;
@@ -101,7 +103,6 @@ namespace Umati
 			std::string m_password;
 			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_NONE;
 
-			UA_Client *client;
 			std::shared_ptr<std::thread> m_connectThread;
 			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
 			std::atomic_bool m_isConnected = {false};

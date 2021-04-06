@@ -108,7 +108,8 @@ namespace Umati
 						  << static_cast<std::string>(machine.NodeId);
 
 				auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher, m_pOpcUaTypeReader);
-	            auto _client =(UA_Client*)pDashClient.get();
+				//VERIFY we need to have the client pointer. Maybe replace session object with client object?
+	            auto _client =dynamic_cast<Umati::OpcUa::OpcUaClient*>(m_pOpcUaTypeReader.get()->getClient());
 				MachineInformation_t machineInformation;
 				machineInformation.NamespaceURI = machine.NodeId.Uri;
 				machineInformation.StartNodeId = machine.NodeId;
@@ -118,7 +119,7 @@ namespace Umati
 				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->getTypeOfNamespace(machine.TypeDefinition.Uri);
 				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
-				pDashClient->addDataSet(_client,
+				pDashClient->addDataSet(_client->client,
 					{machineInformation.NamespaceURI, machine.NodeId.Id},
 					p_type,
 					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)));

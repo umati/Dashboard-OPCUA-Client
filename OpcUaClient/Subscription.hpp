@@ -14,9 +14,6 @@ namespace Umati {
 		class Subscription {//: public UA_SubscriptionAcknowledgement{
 		public:
 
-			//VERIFY created because of compiler errors
-			Subscription();
-
 			Subscription(const std::map<std::string, uint16_t> &m_uriToIndexCache,
 						 const std::map<uint16_t, std::string> &m_indexToUriCache);
 

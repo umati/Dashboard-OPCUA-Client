@@ -110,11 +110,12 @@ namespace Umati {
 				auto request = UA_CreateSubscriptionRequest_default();
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(client, request,
                                                                             NULL, NULL, NULL);
-    			if(result.responseHeader.serviceResult == UA_STATUSCODE_GOOD){
-        			LOG(ERROR) << "Create subscription succeeded, id" << result.subscriptionId;
+    			if(!UA_StatusCode_isBad(result.responseHeader.serviceResult)){
+        			LOG(ERROR) << "Create subscription succeeded, id " << result.subscriptionId;
 				} else {
 				LOG(WARNING) << "Subscription is not empty, won't create new subscription.";
 				m_pSubscriptionID = result.subscriptionId;
+				
 			} 
 		  }
 		}
@@ -193,7 +194,7 @@ namespace Umati {
 			//TODO find replacement for uaSubscription. See header
 			//TODO callback conversion from callback parameter to _callback?
 			UA_Client_DataChangeNotificationCallback _callback;
-
+			
 			try {
 			//FIXME SEGV
 			monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client,m_pSubscriptionID,UA_TIMESTAMPSTORETURN_SOURCE,monItemCreateReq,NULL, _callback, NULL);
