@@ -691,10 +691,10 @@ namespace Umati
 				uaBrowsePathResults,
 				uaDiagnosticInfos);
 
-			if (UA_StatusCode_isBad(uaResult))
+			if (UA_StatusCode_isBad(uaResult) && uaResult != UA_STATUSCODE_BADNOMATCH)
 			{
 				LOG(ERROR) << "TranslateBrowsePathToNodeId failed for node: '" << static_cast<std::string>(startNode)
-						   << "' with " << uaResult << "(BrowsePath: "
+						   << "' with " << UA_StatusCode_name(uaResult) << "(BrowsePath: "
 						   << static_cast<std::string>(browseName) << ")";
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
@@ -740,6 +740,11 @@ namespace Umati
 					}
 				}
 			}
+
+		/*	LOG(INFO) << "\n\n***********\nTranslate SUCCESS for "<< static_cast<std::string>(startNode)
+						   << "' with " << UA_StatusCode_name(uaResult) << "(BrowsePath: "
+						   << static_cast<std::string>(browseName) << ") \n\n***********\n"; */
+
 			open62541Cpp::UA_NodeId targetNodeId(uaBrowsePathResults.targets->targetId.nodeId);
 
 			return Converter::UaNodeIdToModelNodeId(targetNodeId, m_indexToUriCache).getNodeId();
