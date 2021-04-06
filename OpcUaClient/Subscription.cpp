@@ -112,10 +112,9 @@ namespace Umati {
                                                                             NULL, NULL, NULL);
     			if(!UA_StatusCode_isBad(result.responseHeader.serviceResult)){
         			LOG(ERROR) << "Create subscription succeeded, id " << result.subscriptionId;
+					m_pSubscriptionID = result.subscriptionId;
 				} else {
-				LOG(WARNING) << "Subscription is not empty, won't create new subscription.";
-				m_pSubscriptionID = result.subscriptionId;
-				
+				LOG(WARNING) << "Subscription is not empty, won't create new subscription.";	
 			} 
 		  }
 		}
@@ -215,7 +214,7 @@ namespace Umati {
 		UA_MonitoredItemCreateRequest &Subscription::prepareMonItemCreateReq(const ModelOpcUa::NodeId_t &nodeId,
 																			 UA_MonitoredItemCreateRequest &monItemCreateReq) const {
 			UA_MonitoredItemCreateRequest_init(&monItemCreateReq);
-			monItemCreateReq.itemToMonitor.attributeId = UA_NODEATTRIBUTESMASK_VALUE;
+			monItemCreateReq.itemToMonitor.attributeId = UA_ATTRIBUTEID_VALUE;
 			monItemCreateReq.monitoringMode = UA_MONITORINGMODE_REPORTING;
 			monItemCreateReq.requestedParameters.clientHandle = nextId++;
 			monItemCreateReq.requestedParameters.samplingInterval = 300;
@@ -234,8 +233,8 @@ namespace Umati {
 												UA_MonitoredItemCreateRequest monItemCreateResult,
 												const ModelOpcUa::NodeId_t &nodeId) {
 			if  (UA_StatusCode_isBad(uaResult)){
-				LOG(ERROR) << "Create Monitored items for " << nodeId.Uri << ";" << nodeId.Uri << " failed with: "
-						   << uaResult;
+				LOG(ERROR) << "Create Monitored items for " << nodeId.Uri << ";" << nodeId.Id << " failed with: "
+						   <<  UA_StatusCode_name(uaResult);
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 
