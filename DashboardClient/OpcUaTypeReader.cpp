@@ -15,6 +15,10 @@ namespace Umati
         {
         }
 
+        Umati::Dashboard::IDashboardDataClient* OpcUaTypeReader::getClient(){
+            return m_pClient.get();
+        }
+
         void OpcUaTypeReader::readTypes()
         {
             std::vector<std::string> notFoundObjectTypeNamespaces;
