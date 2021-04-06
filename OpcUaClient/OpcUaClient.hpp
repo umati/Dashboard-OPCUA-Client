@@ -68,9 +68,7 @@ namespace Umati
 
 			std::vector<std::string> Namespaces() override;
 
-			UA_Client *client;
-
-		protected:
+        protected:
 			//FIXME override gives "marked ‘override’, but does not override" error
 			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);// override;
 			
@@ -122,8 +120,11 @@ namespace Umati
 			std::map<open62541Cpp::UA_NodeId, open62541Cpp::UA_NodeId, UaNodeId_Compare> m_superTypes;
 		
 		private:
-			static int PlatformLayerInitialized;
-
+            static int PlatformLayerInitialized;
+        public:
+            UA_Client *client;  // Zugriff aus dem ConnectThread, dem PublisherThread
+            std::recursive_mutex m_clientMutex;
+private:
 			void on_connected();
 
 			std::vector<UA_DataValue> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);

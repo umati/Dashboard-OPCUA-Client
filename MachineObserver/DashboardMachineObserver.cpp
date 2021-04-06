@@ -119,7 +119,7 @@ namespace Umati
 				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->getTypeOfNamespace(machine.TypeDefinition.Uri);
 				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
-				pDashClient->addDataSet(_client->client,
+                pDashClient->addDataSet(_client->client,/* FIXME FIXME */
 					{machineInformation.NamespaceURI, machine.NodeId.Id},
 					p_type,
 					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)));
