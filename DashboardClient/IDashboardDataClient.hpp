@@ -84,6 +84,16 @@ namespace Umati
                     ret.referenceTypeId = NodeId_HierarchicalReferences;
                     return ret;
                 }
+
+                inline static BrowseContext_t Variable()
+                {
+                    BrowseContext_t ret;
+                    ret.nodeClassMask =
+                    (std::uint32_t)NodeClassMask::VARIABLE |
+                    (std::uint32_t)NodeClassMask::VARIABLE_TYPE;
+                    ret.referenceTypeId = NodeId_HierarchicalReferences;
+                    return ret;
+                }
             };
 
             virtual std::list<ModelOpcUa::BrowseResult_t>
