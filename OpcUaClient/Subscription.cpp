@@ -5,6 +5,16 @@
 #include "Converter/UaDataValueToJsonValue.hpp"
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
+static void thecallback
+    (UA_Client *client, UA_UInt32 subId, void *subContext,
+     UA_UInt32 monId, void *monContext,
+     UA_DataValue *value)
+{
+    LOG(ERROR) << "__callback" << subContext << "|" << monContext;
+    auto* sub = (Umati::OpcUa::Subscription*)subContext;
+
+}
+
 
 namespace Umati {
 	namespace OpcUa {
@@ -109,7 +119,7 @@ namespace Umati {
 			if (m_pSubscription == NULL) {
 				auto request = UA_CreateSubscriptionRequest_default();
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(client, request,
-                                                                            NULL, NULL, NULL);
+                                                                            this, NULL, NULL); // TODO: implement the statuschange callback
     			if(!UA_StatusCode_isBad(result.responseHeader.serviceResult)){
         			LOG(ERROR) << "Create subscription succeeded, id " << result.subscriptionId;
 					m_pSubscriptionID = result.subscriptionId;
@@ -176,7 +186,7 @@ namespace Umati {
 			/*} else {
 				LOG(ERROR) << "UaSubscription m_pSubscription is null, can't execute.";
 			} */
-		}
+        }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
 				UA_Client *client,
@@ -190,20 +200,16 @@ namespace Umati {
 			UA_MonitoredItemCreateResult monItemCreateResult;
 
 			monItemCreateReq = prepareMonItemCreateReq(nodeId, monItemCreateReq);
-			//TODO find replacement for uaSubscription. See header
-			//TODO callback conversion from callback parameter to _callback?
-			UA_Client_DataChangeNotificationCallback _callback;
 			
 			try {
-			//FIXME SEGV
-			monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client,m_pSubscriptionID,UA_TIMESTAMPSTORETURN_SOURCE,monItemCreateReq,NULL, _callback, NULL);
+                monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client, m_pSubscriptionID, UA_TIMESTAMPSTORETURN_SOURCE, monItemCreateReq,
+                                                                                (void*)((uint64_t)monItemCreateReq.requestedParameters.clientHandle), thecallback, NULL); // FIXME ugly casts
 
-			validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateReq, nodeId);
+                validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateResult, nodeId);
 
-				// LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq[0].RequestedParameters.ClientHandle << " for the callback method.";
-			//TODO wrong callback object is stored...
-			m_callbacks.insert(std::make_pair(monItemCreateReq.requestedParameters.clientHandle, callback));
-			return std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult.monitoredItemId,
+                //LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq.requestedParameters.clientHandle << " for the callback method.";
+                m_callbacks.insert(std::make_pair(monItemCreateReq.requestedParameters.clientHandle, callback));
+                return std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult.monitoredItemId,
 																 monItemCreateReq.requestedParameters.clientHandle);
 			}
 			catch (std::exception &ex) {
@@ -230,7 +236,7 @@ namespace Umati {
 
 		void
 		Subscription::validateMonitorItemResult(const UA_StatusCode &uaResult,
-												UA_MonitoredItemCreateRequest monItemCreateResult,
+                                                UA_MonitoredItemCreateResult monItemCreateResult,
 												const ModelOpcUa::NodeId_t &nodeId) {
 			if  (UA_StatusCode_isBad(uaResult)){
 				LOG(ERROR) << "Create Monitored items for " << nodeId.Uri << ";" << nodeId.Id << " failed with: "
@@ -238,16 +244,14 @@ namespace Umati {
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 
-			if (monItemCreateResult.requestedParameters.queueSize != 1) {
+            if (monItemCreateResult.revisedQueueSize != 1) {
 				LOG(ERROR) << "Expect monItemCreateResult.length() == 1 for " << nodeId.Uri << ";" << nodeId.Uri
-						   << " , got:" << monItemCreateResult.requestedParameters.queueSize;
+                           << " , got:" << monItemCreateResult.revisedQueueSize;
 				throw Exceptions::UmatiException("Length mismatch.");
 			}
-			//FIXME get statuscode from result
-			auto uaResultMonItem = UA_StatusCode(monItemCreateResult.itemToMonitor.attributeId);
-			if (UA_StatusCode_isBad(uaResultMonItem)) {
+            if (UA_StatusCode_isBad(monItemCreateResult.statusCode)) {
 				LOG(ERROR) << "Monitored Item status code bad for " << nodeId.Uri << ";" << nodeId.Uri << " : "
-						   << uaResultMonItem;
+                           << monItemCreateResult.statusCode;
 			}
 		}
 	}

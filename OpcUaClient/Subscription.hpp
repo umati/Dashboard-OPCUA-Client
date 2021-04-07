@@ -58,7 +58,7 @@ namespace Umati {
 									UA_MonitoredItemCreateRequest &monItemCreateReq) const;
 
 			static void
-			validateMonitorItemResult(const UA_StatusCode &uaResult, UA_MonitoredItemCreateRequest monItemCreateResult,
+            validateMonitorItemResult(const UA_StatusCode &uaResult, UA_MonitoredItemCreateResult monItemCreateResult,
 									  const ModelOpcUa::NodeId_t &nodeId);
 		};
 
