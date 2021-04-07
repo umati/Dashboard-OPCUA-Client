@@ -1,0 +1,24 @@
+[submodule "deps/paho.mqtt.c"]
+	path = deps/paho.mqtt.c
+	url = https://github.com/eclipse/paho.mqtt.c.git
+[submodule "deps/paho.mqtt.cpp"]
+	path = deps/paho.mqtt.cpp
+	url = https://github.com/eclipse/paho.mqtt.cpp.git
+[submodule "deps/json"]
+	path = deps/json
+	url = https://github.com/nlohmann/json.git
+[submodule "deps/googletest"]
+	path = deps/googletest
+	url = https://github.com/google/googletest
+[submodule "deps/easyloggingpp"]
+	path = deps/easyloggingpp
+	url = https://github.com/amrayn/easyloggingpp
+[submodule "deps/mbedtls"]
+	path = deps/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "deps/open62541"]
+	path = deps/open62541
+	url = https://github.com/open62541/open62541.git
+[submodule "deps/open62541Cpp"]
+	path = deps/open62541Cpp
+	url = https://github.com/umati/open62541Cpp.git

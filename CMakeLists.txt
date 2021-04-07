@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/local/include)
 message("########################### ${CREATE_COVERAGE}")
 if (CREATE_COVERAGE)
     SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
@@ -132,6 +131,6 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
 
-target_link_libraries(DashboardOpcUaClient PUBLIC pthread Open62541Cpp)
+target_link_libraries(DashboardOpcUaClient PUBLIC pthread Open62541Cpp::Open62541Cpp)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")
 install(EXPORT DashboardOpcUaClient DESTINATION lib/DashboardOpcUaClient/cmake NAMESPACE DashboardOpcUaClient:: EXPORT_LINK_INTERFACE_LIBRARIES)
