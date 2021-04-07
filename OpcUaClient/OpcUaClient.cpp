@@ -27,7 +27,8 @@ namespace Umati
 			  m_security(static_cast<UA_MessageSecurityMode>(security)),
 			 m_subscr(m_uriToIndexCache, m_indexToUriCache)
 			 
-		{
+        {
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			client = UA_Client_new();
 			UA_ClientConfig *config = UA_Client_getConfig(client);
 			config->timeout = 10000;
@@ -59,7 +60,7 @@ namespace Umati
 			//TODO use security.. -> UaClientSdk::SessionSecurityInfo sessionSecurityInfo
 			SetupSecurity::setupSecurity();
 
-
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			result = m_opcUaWrapper->DiscoveryGetEndpoints(client,
 															&sURL, 
 															&endpointArraySize,
@@ -152,6 +153,7 @@ namespace Umati
 
 		void OpcUaClient::on_connected()
 		{
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			updateNamespaceCache();
 			m_opcUaWrapper->SubscriptionCreateSubscription(client, m_pSession);
 		}
@@ -163,6 +165,7 @@ namespace Umati
 
 		std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
 		{
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto nodeId = Converter::ModelNodeIdToUaNodeId(_nodeId, m_uriToIndexCache).getNodeId();
 			checkConnection();
 
@@ -182,6 +185,7 @@ namespace Umati
 
 		UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId)
 		{
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			checkConnection();
 
 			UA_NodeClass returnClass;
@@ -235,6 +239,8 @@ namespace Umati
 				LOG(ERROR) << "Invalid NodeClass " << nodeClass;
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
+
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 
 			UA_ByteString continuationPoint;
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
@@ -291,6 +297,7 @@ namespace Umati
 
 		void OpcUaClient::initializeNamespaceCache()
 		{
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			m_opcUaWrapper->SessionUpdateNamespaceTable(client);
 
 			m_uriToIndexCache.clear();
@@ -333,6 +340,7 @@ namespace Umati
 			browseContext2.referenceTypeId.identifier.numeric= UA_NS0ID_HASMODELLINGRULE;
 			ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Optional;
 
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto uaResult2 = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ uaNodeId,
 														   browseContext2,
 														   continuationPoint, referenceDescriptions);
@@ -521,6 +529,7 @@ namespace Umati
 			UA_ByteString continuationPoint;
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
 
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			UA_BrowseResponse uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 
@@ -684,6 +693,7 @@ namespace Umati
 			UA_BrowsePathResult uaBrowsePathResults;
 			UA_DiagnosticInfo uaDiagnosticInfos;
 
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
 				client,
 				/*m_defaultServiceSettings,*/
@@ -781,6 +791,7 @@ namespace Umati
 			UA_DataValue tmpReadValue;
 			UA_DataValue_init(&tmpReadValue);
 
+            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
 
