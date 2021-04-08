@@ -129,12 +129,11 @@ namespace Umati {
 						LOG(ERROR) << "Not implemented conversion to OpcUaType_XmlElement. ";
 						break;
 					}
-					 //FIXME find correct conversion. This one is deprecated
 					case UA_DATATYPEKIND_NODEID: {
-						UA_NodeId nodeId(*(UA_NodeId*)variant.data);
-						UA_String s;
-						UA_NodeId_toString(&nodeId,&s);
-						jsonValue = (char*)s.data;
+						UA_NodeId nodeId;
+						UA_NodeId_init(&nodeId);
+						nodeId = *(UA_NodeId*)variant.data;
+						jsonValue = nodeId.identifier.numeric;
 						break;
 					}
 
