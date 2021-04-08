@@ -51,7 +51,7 @@ namespace Umati {
 								 UA_DataValue &values,
 								 UA_DiagnosticInfo &diagnosticInfos) = 0;
 
-			virtual bool SessionIsConnected() = 0;
+			virtual bool SessionIsConnected(UA_Client *client) = 0;
 
 			virtual UA_BrowseResponse SessionBrowse(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
 					const open62541Cpp::UA_NodeId &nodeToBrowse,
@@ -149,9 +149,15 @@ namespace Umati {
 				return values.status;
 			}
 
-			bool SessionIsConnected() override {
-				//TODO 	return pSession->isConnected(); Find correct Session object 
-				return true;
+			bool SessionIsConnected(UA_Client *client) override {
+				UA_SecureChannelState secureChannelState;
+				UA_SessionState sessionState;
+				UA_StatusCode statusCode;
+
+				UA_Client_getState(client, &secureChannelState, &sessionState, &statusCode);
+				if (!UA_StatusCode_isBad(statusCode) && sessionState == UA_SESSIONSTATE_ACTIVATED && secureChannelState == UA_SECURECHANNELSTATE_OPEN)
+						return true;
+				return false; 
 			}
 
 			void SessionUpdateNamespaceTable(UA_Client *client) override {
