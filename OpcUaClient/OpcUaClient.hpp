@@ -119,8 +119,6 @@ namespace Umati
 			/// Map for chaching super types. Key = Type, Value = Supertype
 			std::map<open62541Cpp::UA_NodeId, open62541Cpp::UA_NodeId, UaNodeId_Compare> m_superTypes;
 		
-		private:
-            static int PlatformLayerInitialized;
         public:
             UA_Client *client;  // Zugriff aus dem ConnectThread, dem PublisherThread
             std::recursive_mutex m_clientMutex;

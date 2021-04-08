@@ -17,9 +17,6 @@ namespace Umati
 
 	namespace OpcUa
 	{
-
-		int OpcUaClient::PlatformLayerInitialized = 0;
-
 		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password,
 								 std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces,
 								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
@@ -36,12 +33,6 @@ namespace Umati
 			UA_ClientConfig_setDefault(config);
 			m_opcUaWrapper = std::move(opcUaWrapper);
 			m_opcUaWrapper->setSubscription(&m_subscr);
-
-			if (++PlatformLayerInitialized == 1)
-			{
-				//TODO find according datatype or funciton
-			//	UaPlatformLayer::init();
-			}
 
 			m_tryConnecting = true;
 			// Try connecting at least once
@@ -314,6 +305,7 @@ namespace Umati
 		
 			fillNamespaceCache(uaNamespaces);
 		}
+
 		void OpcUaClient::fillNamespaceCache(const std::vector<std::string> &uaNamespaces)
 		{
 			for(size_t i = 0; i < uaNamespaces.size(); ++i){
@@ -324,7 +316,7 @@ namespace Umati
 				    m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
 					m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
 				} else {
-				    LOG(INFO) << "Namepsace already in cache";
+                    LOG(INFO) << "Namespace already in cache";
 				}
 		
 				LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
@@ -422,7 +414,6 @@ namespace Umati
 
 		OpcUaClient::~OpcUaClient()
 		{
-			// Destroy all sessions before UaPlatformLayer::cleanup(); is called!
 			m_tryConnecting = false;
 			if (m_connectThread)
 			{
@@ -431,12 +422,7 @@ namespace Umati
 
 			m_pSession = nullptr;
 
-			if (--PlatformLayerInitialized == 0)
-			{
-				//TODO cleanup function?
-				//UaPlatformLayer::cleanup();
-				UA_Client_delete(client);
-			}
+            UA_Client_delete(client);
 		}
 
 		bool OpcUaClient::disconnect()
