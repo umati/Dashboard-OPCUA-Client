@@ -5,16 +5,22 @@
 #include "Converter/UaDataValueToJsonValue.hpp"
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
-static void thecallback
-    (UA_Client *client, UA_UInt32 subId, void *subContext,
-     UA_UInt32 monId, void *monContext,
-     UA_DataValue *value)
+static void createDataChangeCallback(UA_Client *client, UA_UInt32 subId, void *subContext,
+               			UA_UInt32 monId, void *monContext, UA_DataValue *dataValue)
 {
-    LOG(ERROR) << "__callback" << subContext << "|" << monContext;
-    auto* sub = (Umati::OpcUa::Subscription*)subContext;
-
-}
-
+  LOG(INFO) << "createDataChangeCallback " << subContext << " | " << monContext<< " | "<<dataValue;
+  auto* sub = (Umati::OpcUa::Subscription*)subContext;
+  UA_MonitoredItemNotification monitems;
+  UA_MonitoredItemNotification_init(&monitems);
+  int handle = static_cast<int>(reinterpret_cast<std::uintptr_t>(monContext));
+  monitems.clientHandle = (UA_Int32) handle;
+  monitems.value = *dataValue;
+  UA_DataChangeNotification notify;
+  UA_DataChangeNotification_init(&notify);
+  notify.monitoredItems = &monitems;
+  notify.monitoredItemsSize = 1;
+  sub->dataChange(monId, notify, *notify.diagnosticInfos);
+} 
 
 namespace Umati {
 	namespace OpcUa {
@@ -92,7 +98,7 @@ namespace Umati {
 		void Subscription::dataChange(UA_Int32 /*clientSubscriptionHandle*/,
 									  const UA_DataChangeNotification &dataNotifications,
 									  const UA_DiagnosticInfo & /*diagnosticInfos*/) {
-			for (UA_Int32 i = 0; i < dataNotifications.diagnosticInfosSize; ++i) {
+			for (UA_Int32 i = 0; i < dataNotifications.monitoredItemsSize; ++i) {
 				auto clientHandle = dataNotifications.monitoredItems->clientHandle;
 				auto it = m_callbacks.find(clientHandle);
 				if (it == m_callbacks.end()) {
@@ -203,9 +209,8 @@ namespace Umati {
 			
 			try {
                 monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client, m_pSubscriptionID, UA_TIMESTAMPSTORETURN_SOURCE, monItemCreateReq,
-                                                                                (void*)((uint64_t)monItemCreateReq.requestedParameters.clientHandle), thecallback, NULL); // FIXME ugly casts
-
-                validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateResult, nodeId);
+                                                                                (void*)(monItemCreateReq.requestedParameters.clientHandle), createDataChangeCallback, NULL); // FIXME ugly casts
+				validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateResult, nodeId);
 
                 //LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq.requestedParameters.clientHandle << " for the callback method.";
                 m_callbacks.insert(std::make_pair(monItemCreateReq.requestedParameters.clientHandle, callback));
