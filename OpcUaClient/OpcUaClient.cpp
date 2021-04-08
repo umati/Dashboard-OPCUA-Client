@@ -609,6 +609,7 @@ namespace Umati
 																		  m_uriToIndexCache)
 											 .getNodeId();
 			UA_BrowseDescription browseContext;
+            UA_BrowseDescription_init(&browseContext);
 			browseContext.browseDirection = UA_BROWSEDIRECTION_FORWARD;
 			browseContext.includeSubtypes = UA_TRUE;
 			browseContext.nodeClassMask = 0; // ALL
@@ -624,6 +625,7 @@ namespace Umati
 		UA_BrowseDescription OpcUaClient::getUaBrowseContext(const IDashboardDataClient::BrowseContext_t &browseContext)
 		{
 			UA_BrowseDescription ret;
+            UA_BrowseDescription_init(&ret);
 			ret.browseDirection = (decltype(ret.browseDirection))browseContext.browseDirection;
 			ret.includeSubtypes = browseContext.includeSubtypes ?  UA_TRUE : UA_FALSE;
 			ret.nodeClassMask = (decltype(ret.nodeClassMask))browseContext.nodeClassMask;
@@ -663,31 +665,17 @@ namespace Umati
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName,
 																			   m_uriToIndexCache)
 																			   .getQualifiedName();
-			// LOG(INFO) << "translateBrowsePathToNodeId: start from " << startUaNodeId.toString().toUtf8() << " and search " << uaBrowseName.toString().toUtf8();
-
-			/*VERIFY creation of elem. removed all [0] of uaBrowsePathElements and uaBrowsePaths
-			 * uaBrowsePathElements was a container type with size 1. See next comment
-			 * thats why i did not use an container type around UA_RelativePathElement and set the 
-			 * elemtsSize to 1
-			 */
 			UA_RelativePathElement uaBrowsePathElements;
 			UA_RelativePathElement_init(&uaBrowsePathElements);
-			//uaBrowsePathElements.create(1);
-			uaBrowsePathElements.includeSubtypes = UA_TRUE;
+            uaBrowsePathElements.includeSubtypes = UA_TRUE;
 			uaBrowsePathElements.isInverse = UA_FALSE;
 			uaBrowsePathElements.referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
-			UA_QualifiedName_copy(&uaBrowseName,&uaBrowsePathElements.targetName);
+            UA_QualifiedName_copy(&uaBrowseName, &uaBrowsePathElements.targetName);
 
 			UA_BrowsePath uaBrowsePaths;
 			UA_BrowsePath_init(&uaBrowsePaths);
-			//uaBrowsePaths.create(1);
 			uaBrowsePaths.relativePath.elementsSize = 1;
-
-			//UA_RelativePathElement_copy(&uaBrowsePathElements, uaBrowsePaths.relativePath.elements);
 			uaBrowsePaths.relativePath.elements = &uaBrowsePathElements;
-			//FIXME double assignment? Using Copy functions will lead to SEGV
-			uaBrowsePaths.relativePath.elements->targetName = uaBrowsePathElements.targetName;
-			uaBrowsePaths.relativePath.elements->referenceTypeId = uaBrowsePathElements.referenceTypeId;
 			UA_NodeId_copy(startUaNodeId.NodeId, &uaBrowsePaths.startingNode);
 
 			UA_BrowsePathResult uaBrowsePathResults;
