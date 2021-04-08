@@ -689,11 +689,13 @@ namespace Umati
 				uaBrowsePathResults,
 				uaDiagnosticInfos);
 
-			if (UA_StatusCode_isBad(uaResult) && uaResult != UA_STATUSCODE_BADNOMATCH)
+            if (UA_StatusCode_isBad(uaResult))
 			{
-				LOG(ERROR) << "TranslateBrowsePathToNodeId failed for node: '" << static_cast<std::string>(startNode)
+                if (uaResult != UA_STATUSCODE_BADNOMATCH) {
+                    LOG(ERROR) << "TranslateBrowsePathToNodeId failed for node: '" << static_cast<std::string>(startNode)
 						   << "' with " << UA_StatusCode_name(uaResult) << "(BrowsePath: "
 						   << static_cast<std::string>(browseName) << ")";
+                }
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 			if (uaBrowsePathResults.targetsSize != 1)
