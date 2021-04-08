@@ -31,7 +31,8 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			client = UA_Client_new();
 			UA_ClientConfig *config = UA_Client_getConfig(client);
-			config->timeout = 10000;
+			config->connectivityCheckInterval = 2000;
+			config->timeout = 1000;
 			UA_ClientConfig_setDefault(config);
 			m_opcUaWrapper = std::move(opcUaWrapper);
 			m_opcUaWrapper->setSubscription(&m_subscr);
@@ -204,8 +205,9 @@ namespace Umati
 
 		void OpcUaClient::checkConnection()
 		{
-			if (!this->m_isConnected || !m_opcUaWrapper->SessionIsConnected())
+			if (!this->m_isConnected || !m_opcUaWrapper->SessionIsConnected(client))
 			{
+				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
 				throw Exceptions::ClientNotConnected("Need connected client.");
 			}
 		}
@@ -522,7 +524,7 @@ namespace Umati
 			UA_BrowseDescription &browseContext,
 			std::function<bool(const UA_ReferenceDescription &)> filter)
 		{
-			checkConnection();
+			//checkConnection(); //moved down
 			Converter::ModelNodeIdToUaNodeId conv = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache);
 			open62541Cpp::UA_NodeId startUaNodeId = conv.getNodeId();
 
@@ -530,6 +532,7 @@ namespace Umati
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			checkConnection();
 			UA_BrowseResponse uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 
