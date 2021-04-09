@@ -17,6 +17,58 @@ namespace Umati
 
 	namespace OpcUa
 	{
+
+		
+		static void stateCallback(UA_Client *client,
+                          UA_SecureChannelState channelState,
+                          UA_SessionState sessionState,
+                          UA_StatusCode connectStatus)
+		{
+
+			switch(channelState) {
+				case UA_SECURECHANNELSTATE_FRESH:
+				case UA_SECURECHANNELSTATE_CLOSED:
+					LOG(INFO) << "The client is disconnected";
+					//UA_sleep_ms(2000); //Will crash when waiting for timeout...
+					UA_Client_renewSecureChannel(client);
+					//UA_Client_disconnect(client); //client will disconnect and connect a few times at startup so this is not an option
+					break;
+				case UA_SECURECHANNELSTATE_HEL_SENT:
+					LOG(INFO) << "Waiting for ack";
+					break;
+				case UA_SECURECHANNELSTATE_OPN_SENT:
+					LOG(INFO) << "Waiting for OPN Response";
+					break;
+				case UA_SECURECHANNELSTATE_OPEN:
+					LOG(INFO) << "A SecureChannel to the server is open";
+					break;
+				default:
+					break;
+				}
+
+			switch(sessionState) {
+    			case UA_SESSIONSTATE_ACTIVATED: 
+      				LOG(INFO) << "A session with the server is activated";
+					break;
+				case UA_SESSIONSTATE_CLOSED:
+					LOG(INFO) << "Session disconnected";
+					break;
+				default:
+					break;
+				}
+
+			switch(connectStatus){
+				case UA_STATUSCODE_BADDISCONNECT:
+				LOG(INFO) << UA_StatusCode_name(connectStatus);
+				UA_sleep_ms(2000); //wait for timeout that triggers reconnect?
+				//UA_Client_disconnect(client);
+			}
+		}
+
+		static void inactivityCallback (UA_Client *client) {
+		    LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n";
+		}
+
 		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password,
 								 std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces,
 								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
@@ -28,15 +80,16 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			client = UA_Client_new();
 			UA_ClientConfig *config = UA_Client_getConfig(client);
-			config->connectivityCheckInterval = 2000;
-			config->timeout = 1000;
-			UA_ClientConfig_setDefault(config);
+   			UA_ClientConfig_setDefault(config);
+			config->timeout = 2000;
+			config->inactivityCallback = inactivityCallback;
+			config->stateCallback = stateCallback;
 			m_opcUaWrapper = std::move(opcUaWrapper);
 			m_opcUaWrapper->setSubscription(&m_subscr);
 
 			m_tryConnecting = true;
 			// Try connecting at least once
-			this->connect();
+			//this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() { this->threadConnectExecution(); });
 		}
 
