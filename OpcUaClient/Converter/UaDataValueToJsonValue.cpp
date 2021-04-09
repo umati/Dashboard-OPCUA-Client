@@ -153,9 +153,11 @@ namespace Umati {
 					}
 					case UA_DATATYPEKIND_LOCALIZEDTEXT: {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
-						char *loc = "en-US";
+						if (localText.locale.length == 0 ){
+						char *loc = ""; //VERIFY Maybe set this to default "en-US"?
 						localText.locale.length = strlen(loc);
 						localText.locale.data = (UA_Byte*)loc;
+						}
 						jsonValue = {};
 						//FIXME local is empty, leading to SEGV. Setting "en-US" manually.
 						jsonValue["locale"] = std::string((char*)localText.locale.data,localText.locale.length);
@@ -223,6 +225,12 @@ namespace Umati {
 						LOG(ERROR) << "Not implemented conversion to OpcUaType_DiagnosticInfo. ";
 						break;
 					}
+
+					case UA_DATATYPEKIND_STRUCTURE: {
+						LOG(ERROR) << "Not implemented conversion to Structure datatype";
+						break;
+					}
+
 					default: {
 						LOG(ERROR) << "Unknown data type. ";
 						break;
