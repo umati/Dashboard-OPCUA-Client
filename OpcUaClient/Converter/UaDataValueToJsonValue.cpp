@@ -21,7 +21,6 @@ namespace Umati {
 				}
 				
 				auto variant = UA_Variant(dataValue.value);
-				//VERIFY variant.type() == OpcUaType_Null
 				if (UA_Variant_isEmpty(&variant)) {
 					return;
 				}
@@ -35,8 +34,6 @@ namespace Umati {
 					case OpcUaType_Null: {
 						break;
 					}*/
-
-					//VERIFY UA_DATATYPEKIND_BOOLEAN or UA_TYPES_BOOLEAN
 					case UA_DATATYPEKIND_BOOLEAN: {
 						UA_Boolean v(variant.data);
 						jsonValue = static_cast<bool>(v);
@@ -159,7 +156,6 @@ namespace Umati {
 						localText.locale.data = (UA_Byte*)loc;
 						}
 						jsonValue = {};
-						//FIXME local is empty, leading to SEGV. Setting "en-US" manually.
 						jsonValue["locale"] = std::string((char*)localText.locale.data,localText.locale.length);
 						jsonValue["text"] =  std::string((char*)localText.text.data,localText.text.length);
 						break;
