@@ -120,8 +120,6 @@ namespace Umati {
 			UA_StatusCode SessionDisconnect(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
 									   UA_Boolean bDeleteSubscriptions) override {
 				return UA_Client_disconnect(client);
-				//TODO ServiceSettings object..?
-				//return pSession->disconnect(serviceSettings, bDeleteSubscriptions);
 			}
 
 			UA_StatusCode SessionRead(/*UaClientSdk::ServiceSettings &serviceSettings,*/
@@ -217,10 +215,7 @@ namespace Umati {
 				UA_TranslateBrowsePathsToNodeIdsRequest request;
 				UA_TranslateBrowsePathsToNodeIdsRequest_init(&request);
 				request.browsePaths = &browsePaths;
-				//FIXME using copy function will lead to SEGV
-				//UA_BrowsePath_copy(&browsePaths,request.browsePaths);
 				request.browsePathsSize = 1;
-				//VERIFY use of convenience	function from open62541. Used OpcUaInterface::SessionRead() before.			
 				auto response = UA_Client_Service_translateBrowsePathsToNodeIds(client,/*serviceSettings, browsePaths, browsePathResults,
 															   diagnosticInfos,*/ request);
 				//FIXME disgnostic info is not set

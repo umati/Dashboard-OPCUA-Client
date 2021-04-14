@@ -8,7 +8,7 @@
 static void createDataChangeCallback(UA_Client *client, UA_UInt32 subId, void *subContext,
                			UA_UInt32 monId, void *monContext, UA_DataValue *dataValue)
 {
-  LOG(INFO) << "createDataChangeCallback " << subContext << " | " << monContext<< " | "<<dataValue;
+  //LOG(INFO) << "createDataChangeCallback " << subContext << " | " << monContext<< " | "<<dataValue;
   auto* sub = (Umati::OpcUa::Subscription*)subContext;
   UA_MonitoredItemNotification monitems;
   UA_MonitoredItemNotification_init(&monitems);
@@ -209,7 +209,7 @@ namespace Umati {
 			
 			try {
                 monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client, m_pSubscriptionID, UA_TIMESTAMPSTORETURN_SOURCE, monItemCreateReq,
-                                                                                (void*)(monItemCreateReq.requestedParameters.clientHandle), createDataChangeCallback, NULL); // FIXME ugly casts
+                                                                                (void*)(monItemCreateReq.requestedParameters.clientHandle), createDataChangeCallback, NULL);
 				validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateResult, nodeId);
 
                 //LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq.requestedParameters.clientHandle << " for the callback method.";
