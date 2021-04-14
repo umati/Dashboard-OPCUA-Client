@@ -505,7 +505,6 @@ namespace Umati
 				}
 			}
 		}
-
 		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::Browse(
 			ModelOpcUa::NodeId_t startNode,
 			BrowseContext_t browseContext)
@@ -526,10 +525,10 @@ namespace Umati
 											  .getNodeId();
 
 			uaBrowseContext.nodeClassMask = nodeClassFromNodeId(typeDefinitionUaNodeId);
+			//FIXME correct filter function that does not remove placeholders
 			auto filter = [&](const UA_ReferenceDescription &ref) {
-				const open62541Cpp::UA_NodeId browseTypeNodeId;
-				UA_NodeId_copy(&ref.typeDefinition.nodeId,browseTypeNodeId.NodeId);
-				return isSameOrSubtype(typeDefinitionUaNodeId, browseTypeNodeId);
+				//auto browseTypeNodeId = open62541Cpp::UA_NodeId(ref.typeDefinition.nodeId);
+				return true;//isSameOrSubtype(typeDefinitionUaNodeId, browseTypeNodeId);
 			};
 			return BrowseWithContextAndFilter(startNode, uaBrowseContext, filter);
 		}
@@ -597,7 +596,6 @@ namespace Umati
 			std::list<ModelOpcUa::BrowseResult_t> &browseResult,
 			std::function<bool(const UA_ReferenceDescription &)> filter)
 		{
-			//VERIFY use of vector
 				for (UA_Int32 i = 0; i < referenceDescriptions.size(); i++)
 			{
 				if (!filter(referenceDescriptions.at(i)))
@@ -663,7 +661,6 @@ namespace Umati
 				UA_BROWSERESULTMASK_BROWSENAME + UA_BROWSERESULTMASK_TYPEDEFINITION + UA_BROWSERESULTMASK_NODECLASS + UA_BROWSERESULTMASK_REFERENCETYPEID;
 			return browseContext;
 		}
-
 		UA_BrowseDescription OpcUaClient::getUaBrowseContext(const IDashboardDataClient::BrowseContext_t &browseContext)
 		{
 			UA_BrowseDescription ret;
