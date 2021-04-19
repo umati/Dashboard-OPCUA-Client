@@ -311,7 +311,7 @@ namespace Umati
 			}
 		
 			UA_ExpandedNodeId retExpandedNodeId;
-			UA_ExpandedNodeId_copy(&referenceDescriptions.at(0).typeDefinition,&retExpandedNodeId);
+			UA_ExpandedNodeId_copy(&referenceDescriptions.at(0).nodeId,&retExpandedNodeId);
 
 			return open62541Cpp::UA_NodeId(retExpandedNodeId.nodeId);
 		}
@@ -319,12 +319,16 @@ namespace Umati
 		bool
 		OpcUaClient::isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth)
 		{
-			if (UA_NodeId_isNull(checkType.NodeId))
+
+			UA_NodeId checkNode = *checkType.NodeId;
+			UA_NodeId expectedNode = *expectedType.NodeId;
+
+			if (UA_NodeId_isNull(&checkNode))
 			{
 				return false;
 			}
 
-			if (UA_NodeId_equal(expectedType.NodeId,checkType.NodeId))
+			if (UA_NodeId_equal(&expectedNode, &checkNode))
 			{
 				return true;
 			}
@@ -519,7 +523,8 @@ namespace Umati
 			ModelOpcUa::NodeId_t typeDefinition)
 		{
 			UA_BrowseDescription uaBrowseContext = getUaBrowseContext(browseContext);
-			auto typeDefinitionUaNodeId = (open62541Cpp::UA_NodeId) Converter::ModelNodeIdToUaNodeId(
+			//check if set correctly
+			open62541Cpp::UA_NodeId typeDefinitionUaNodeId = Converter::ModelNodeIdToUaNodeId(
 											  typeDefinition,
 											  m_uriToIndexCache)
 											  .getNodeId();
@@ -527,8 +532,8 @@ namespace Umati
 			uaBrowseContext.nodeClassMask = nodeClassFromNodeId(typeDefinitionUaNodeId);
 			//FIXME correct filter function that does not remove placeholders
 			auto filter = [&](const UA_ReferenceDescription &ref) {
-				//auto browseTypeNodeId = open62541Cpp::UA_NodeId(ref.typeDefinition.nodeId);
-				return true;//isSameOrSubtype(typeDefinitionUaNodeId, browseTypeNodeId);
+				open62541Cpp::UA_NodeId browseTypeNodeId = open62541Cpp::UA_NodeId(ref.typeDefinition.nodeId);
+				return isSameOrSubtype(typeDefinitionUaNodeId, browseTypeNodeId);
 			};
 			return BrowseWithContextAndFilter(startNode, uaBrowseContext, filter);
 		}
