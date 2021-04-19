@@ -127,8 +127,8 @@ private:
 
 			std::vector<UA_DataValue> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);
 
-			UA_CreateSessionRequest &
-			prepareSessionConnectInfo(UA_CreateSessionRequest &sessionConnectInfo);
+			UA_ApplicationDescription &
+			prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo);
 			void initializeNamespaceCache();
 
 			UA_BrowseDescription prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);

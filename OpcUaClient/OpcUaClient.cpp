@@ -80,7 +80,12 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			client = UA_Client_new();
 			UA_ClientConfig *config = UA_Client_getConfig(client);
-   			UA_ClientConfig_setDefault(config);
+   		//	UA_ClientConfig_setDefault(config);
+			//VERIFY Security
+			SetupSecurity::setupSecurity(config);
+			UA_ApplicationDescription desc;
+			UA_ApplicationDescription_init(&desc);
+			config->clientDescription = prepareSessionConnectInfo(desc);;
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
@@ -102,8 +107,6 @@ namespace Umati
 			size_t endpointArraySize = 0;
 
 			UA_ApplicationDescription applicationDescriptions;
-			//TODO use security.. -> UaClientSdk::SessionSecurityInfo sessionSecurityInfo
-			SetupSecurity::setupSecurity();
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			result = m_opcUaWrapper->DiscoveryGetEndpoints(client,
@@ -170,7 +173,7 @@ namespace Umati
 
 			//VERIFY sessionConnectInfo is not used in SessionConnect.
 			UA_CreateSessionRequest sessionConnectInfo;
-			sessionConnectInfo = prepareSessionConnectInfo(sessionConnectInfo);
+		//	sessionConnectInfo = prepareSessionConnectInfo(sessionConnectInfo);
 			//TODO security info. 
 			result = m_opcUaWrapper->SessionConnect(client,sURL, sessionConnectInfo /*sessionSecurityInfo, this*/);
 			if (result != UA_STATUSCODE_GOOD)
@@ -186,13 +189,14 @@ namespace Umati
 			return true;
 		}
 		//VERIFY UA_CreateSessionRequest or UA_ApplicationDescription?
-		UA_CreateSessionRequest &
-		OpcUaClient::prepareSessionConnectInfo(UA_CreateSessionRequest &sessionConnectInfo)
+		//TODO Rename function and object
+		UA_ApplicationDescription &
+		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
 		{
-			sessionConnectInfo.clientDescription.applicationName = UA_LOCALIZEDTEXT("en-US","KonI4.0 OPC UA Data Client");
-			sessionConnectInfo.clientDescription.applicationUri = UA_String_fromChars("http://dashboard.umati.app/OPCUA_DataClient");
-			sessionConnectInfo.clientDescription.productUri = UA_String_fromChars("KonI40OpcUaClient_Product");
-			sessionConnectInfo.sessionName = UA_String_fromChars("DefaultSession");
+			sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT("en-US","KonI4.0 OPC UA Data Client");
+			sessionConnectInfo.applicationUri = UA_String_fromChars("urn:open62541.server.application");
+			sessionConnectInfo.productUri = UA_String_fromChars("KonI40OpcUaClient_Product");
+			//sessionConnectInfo.sessionName = UA_String_fromChars("DefaultSession");
 			return sessionConnectInfo;
 		}
 
