@@ -94,7 +94,7 @@ namespace Umati
 
 			m_tryConnecting = true;
 			// Try connecting at least once
-			//this->connect();
+			this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() { this->threadConnectExecution(); });
 		}
 
@@ -106,7 +106,11 @@ namespace Umati
 			UA_EndpointDescription* endpointDescriptions = NULL;
 			size_t endpointArraySize = 0;
 
-			UA_ApplicationDescription applicationDescriptions;
+			UA_EndpointDescription applicationDescriptions;
+			UA_EndpointDescription_init(&applicationDescriptions);
+			//VERIFY do we need this?
+			UA_ConnectionConfig sessionSecurityInfo;
+			//UaClientSdk::ServiceSettings serviceSettings;
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			result = m_opcUaWrapper->DiscoveryGetEndpoints(client,
@@ -130,23 +134,24 @@ namespace Umati
 			} desiredEndpoint;
 
 			//TODO security 
-			// auto desiredSecurity = m_security;
+		    auto desiredSecurity = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;//m_security;
 			for (UA_Int32 iEndpoint = 0; iEndpoint < endpointArraySize; iEndpoint++)
 			{
 
-			/*	if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
+			if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
 				{
+					LOG(INFO) << "Wrong Security mode: " << endpointDescriptions[iEndpoint].securityMode;
 					continue;
 				}
-			*/
+			
 
 				desiredEndpoint.url.String->length = endpointDescriptions[iEndpoint].endpointUrl.length;
 				desiredEndpoint.url.String->data = endpointDescriptions[iEndpoint].endpointUrl.data;
 
 				LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url << std::endl;
-				//sessionSecurityInfo.serverCertificate = endpointDescriptions[iEndpoint].ServerCertificate;
-				//sessionSecurityInfo.sSecurityPolicy = endpointDescriptions[iEndpoint].SecurityPolicyUri;
-				//sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpointDescriptions[iEndpoint].SecurityMode);
+				applicationDescriptions.serverCertificate = endpointDescriptions[iEndpoint].serverCertificate;
+				applicationDescriptions.securityPolicyUri = endpointDescriptions[iEndpoint].securityPolicyUri;
+				applicationDescriptions.securityMode = static_cast<UA_MessageSecurityMode>(endpointDescriptions[iEndpoint].securityMode);
 				break;
 			} 
 		
@@ -160,15 +165,15 @@ namespace Umati
 			///\todo handle security
 
 		    //TODO security 
-			/*sessionSecurityInfo.doServerCertificateVerify = OpcUa_False;
-			sessionSecurityInfo.disableErrorCertificateHostNameInvalid = OpcUa_True;
-			sessionSecurityInfo.disableApplicationUriCheck = OpcUa_True;
+			// sessionSecurityInfo.doServerCertificateVerify = OpcUa_False;
+			// sessionSecurityInfo.disableErrorCertificateHostNameInvalid = OpcUa_True;
+			// sessionSecurityInfo.disableApplicationUriCheck = OpcUa_True;
+			//TODO set username and password in connect?
+			// if (!m_username.empty() && !m_password.empty())
+			// {
+			// 	sessionSecurityInfo.setUserPasswordUserIdentity(m_username.c_str(), m_password.c_str());
+			// }
 
-			if (!m_username.empty() && !m_password.empty())
-			{
-				sessionSecurityInfo.setUserPasswordUserIdentity(m_username.c_str(), m_password.c_str());
-			}
-			*/
 			m_opcUaWrapper->GetNewSession(m_pSession);
 
 			//VERIFY sessionConnectInfo is not used in SessionConnect.
