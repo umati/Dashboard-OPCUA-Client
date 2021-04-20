@@ -99,7 +99,7 @@ namespace Umati
 			std::string m_serverUri;
 			std::string m_username;
 			std::string m_password;
-			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_NONE;
+			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;//UA_MESSAGESECURITYMODE_NONE;
 
 			std::shared_ptr<std::thread> m_connectThread;
 			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
