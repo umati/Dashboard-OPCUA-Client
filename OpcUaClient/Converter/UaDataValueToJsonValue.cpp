@@ -223,7 +223,8 @@ namespace Umati {
 					}
 
 					case UA_DATATYPEKIND_STRUCTURE: {
-						LOG(ERROR) << "Not implemented conversion to Structure datatype";
+						UA_String s(*(UA_String*)variant.data);
+						jsonValue = std::string((char*)s.data,s.length);
 						break;
 					}
 

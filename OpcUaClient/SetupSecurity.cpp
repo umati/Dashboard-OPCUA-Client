@@ -106,7 +106,7 @@ namespace Umati {
 
 			return true;
 		}
-		//VERIFY maybe pass the config and set certificates here
+		//TODO remove hardcoded Path for certs. Integrate cert generation? 
 		bool SetupSecurity::setupSecurity(UA_ClientConfig *config /*UA_SessionSecurityDiagnosticsDataType *sessionSecurityInfo*/) {
 
 			UA_ByteString certificate = loadFile("/home/mdeg/Documents/GitHub/Dashboard-OPCUA-Client/Tools/venv.crt");

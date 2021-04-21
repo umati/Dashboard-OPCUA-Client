@@ -89,8 +89,8 @@ namespace Umati {
 			if (UA_StatusCode_isBad(status)) {
 				// recover subscription
 				LOG(WARNING) << "Deleting subscription " << this;
-				deleteSubscription(client,_pSession);
-				createSubscription(client, _pSession);
+				deleteSubscription(client);
+				createSubscription(client);
 				LOG(WARNING) << "deleted subscription";
 			}
 		}
@@ -117,11 +117,7 @@ namespace Umati {
 			LOG(ERROR) << "Received new Event, Not implemented.";
 		}
 
-		void Subscription::createSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> pSession) {
-			//TODO find service settings datatype in open62541
-			//UaClientSdk::ServiceSettings servSettings;
-			//UaClientSdk::SubscriptionSettings subSettings;
-			_pSession = std::move(pSession);
+		void Subscription::createSubscription(UA_Client *client) {
 			if (m_pSubscription == NULL) {
 				auto request = UA_CreateSubscriptionRequest_default();
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(client, request,
@@ -134,12 +130,9 @@ namespace Umati {
 			} 
 		  }
 		}
-		//TODO find according datatype for session
-		void Subscription::deleteSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> pSession) {
+		void Subscription::deleteSubscription(UA_Client *client) {
 			if (m_pSubscription) {
-				//TODO find service settings datatype in open62541 and use session state?
-				// UaClientSdk::ServiceSettings servsettings;
-				m_pSubscriptionWrapper->SessionDeleteSubscription(client, /*servsettings, &m_pSubscription*/ *m_pDeleteSubscription);
+				m_pSubscriptionWrapper->SessionDeleteSubscription(client, *m_pDeleteSubscription);
 				m_pSubscription = nullptr;
 			}
 		}
@@ -153,30 +146,16 @@ namespace Umati {
 			}
 
 			UA_StatusCode results;
-			UA_Int32 monItems;
-			monItems = monItemId;
-			//TODO find service settings datatype in open62541
-			//UaClientSdk::ServiceSettings servSettings;
-			// the next call causes a segv => cover with unittest
 
-			
 			if (m_pSubscription == NULL) {
-				createSubscription(client, _pSession);
+				createSubscription(client);
 			}
-			//TODO use other datatype for m_pSubscription. See header. 
 			UA_DeleteSubscriptionsResponse response;
 			response = UA_Client_Subscriptions_delete(client, *m_pDeleteSubscription);
 			results = *response.results;
-			//VERIFY what to use?
+			//VERIFY do we need to delte monitored items?
 			//results = UA_Client_MonitoredItems_deleteSingle(client, m_pSubscriptionID, monItemId);
-			/*
-			if (m_pSubscription != NULL) {
-				auto ret = m_pSubscription->deleteMonitoredItems(
-						servSettings,
-						monItems,
-						results
-				);
-			*/
+
 				if (UA_StatusCode_isBad(results)) {
 					LOG(WARNING) << "Removal of subscribed item failed: " << results;
 				}
@@ -189,9 +168,6 @@ namespace Umati {
 				} else {
 					LOG(ERROR) << "Length mismatch, unsubscribe might have failed.";
 				}
-			/*} else {
-				LOG(ERROR) << "UaSubscription m_pSubscription is null, can't execute.";
-			} */
         }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
@@ -200,8 +176,6 @@ namespace Umati {
 				Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback
 		) {
 			 LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
-			//TODO service Settings
-			//UaClientSdk::ServiceSettings servSettings;
 			UA_MonitoredItemCreateRequest monItemCreateReq;
 			UA_MonitoredItemCreateResult monItemCreateResult;
 

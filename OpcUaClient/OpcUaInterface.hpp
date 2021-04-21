@@ -205,15 +205,20 @@ namespace Umati {
 					browseRequest.nodesToBrowseSize = 1;
 					*browseRequest.nodesToBrowse = browseContext;
 					browseRequest.nodesToBrowse[0].nodeId = *nodeToBrowse.NodeId; 
-					UA_BrowseResponse browseResponse = UA_Client_Service_browse(client, browseRequest);
+					UA_BrowseResponse browseResponse;
+					UA_BrowseResponse_init(&browseResponse);
+					//if(){
+					browseResponse = UA_Client_Service_browse(client, browseRequest);
 					
 					for(size_t i = 0; i < browseResponse.resultsSize; ++i) {
 						for(size_t j = 0; j < browseResponse.results[i].referencesSize; ++j) {
 							referenceDescriptions.push_back(browseResponse.results[i].references[j]);
 						}
 					}
+				//	}
+
 					return browseResponse;
-					
+				
 			}
 
 			UA_StatusCode SessionTranslateBrowsePathsToNodeIds(UA_Client *client,
@@ -235,13 +240,13 @@ namespace Umati {
 			}
 
 			void setSubscription(Subscription *p_in_subscr) override { p_subscr = p_in_subscr; }
-
+			//TODO remove session param
 			void SubscriptionCreateSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> &m_pSession) override {
 				if (p_subscr == nullptr) {
 					LOG(ERROR) << "Unable to create subscription, pointer is NULL ";
 					exit(SIGTERM);
 				}
-				p_subscr->createSubscription(client, m_pSession);
+				p_subscr->createSubscription(client);
 			}
 
 			std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
