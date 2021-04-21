@@ -30,7 +30,7 @@ namespace Umati
 				case UA_SECURECHANNELSTATE_CLOSED:
 					LOG(INFO) << "The client is disconnected";
 					//UA_sleep_ms(2000); //Will crash when waiting for timeout...
-					UA_Client_renewSecureChannel(client);
+					//UA_Client_renewSecureChannel(client);
 					//UA_Client_disconnect(client); //client will disconnect and connect a few times at startup so this is not an option
 					break;
 				case UA_SECURECHANNELSTATE_HEL_SENT:
@@ -59,8 +59,8 @@ namespace Umati
 
 			switch(connectStatus){
 				case UA_STATUSCODE_BADDISCONNECT:
-				LOG(INFO) << UA_StatusCode_name(connectStatus);
-				UA_sleep_ms(2000); //wait for timeout that triggers reconnect?
+				LOG(INFO) << "Bad Disconnect";
+			//	UA_sleep_ms(2000); //wait for timeout that triggers reconnect?
 				//UA_Client_disconnect(client);
 			}
 		}
@@ -180,7 +180,7 @@ namespace Umati
 			UA_CreateSessionRequest sessionConnectInfo;
 		//	sessionConnectInfo = prepareSessionConnectInfo(sessionConnectInfo);
 			//TODO security info. 
-			result = m_opcUaWrapper->SessionConnect(client,sURL, sessionConnectInfo /*sessionSecurityInfo, this*/);
+			result = m_opcUaWrapper->SessionConnectUsername(client,sURL, m_username, m_password);// /*sessionSecurityInfo, this*/);
 			if (result != UA_STATUSCODE_GOOD)
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
@@ -857,7 +857,7 @@ namespace Umati
 				}
 				
 			}
-
+			
 			return readValues;
 		}
 
