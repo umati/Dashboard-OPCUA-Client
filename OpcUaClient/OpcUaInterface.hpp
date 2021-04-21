@@ -35,6 +35,9 @@ namespace Umati {
 									UA_CreateSessionRequest &sessionConnectInfo
 									/*UaClientSdk::SessionSecurityInfo &sessionSecurityInfo,*/
 									/*UaClientSdk::UaSessionCallback *pSessionCallback*/) = 0;
+			virtual UA_StatusCode SessionConnectUsername(UA_Client *client,
+									const open62541Cpp::UA_String &sURL,
+									std::string username, std::string password) = 0;
 
 			virtual UA_StatusCode SessionDisconnect(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
 									   UA_Boolean bDeleteSubscriptions) = 0;
@@ -115,6 +118,13 @@ namespace Umati {
 									/*UaClientSdk::UaSessionCallback *pSessionCallback*/) override {
 				//VERIFY check if sessionConnectInfo, callback and sessionsecurityinfo is needed.
 				return UA_Client_connect(client, static_cast<std::string>(sURL).c_str()); //sessionConnectInfo, sessionSecurityInfo, pSessionCallback);
+			}
+
+			UA_StatusCode SessionConnectUsername(
+									UA_Client *client,
+									const open62541Cpp::UA_String &sURL,
+									std::string username, std::string password) override {
+				return UA_Client_connectUsername(client, static_cast<std::string>(sURL).c_str(),username.c_str(),password.c_str()); //sessionConnectInfo, sessionSecurityInfo, pSessionCallback);
 			}
 
 			UA_StatusCode SessionDisconnect(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
