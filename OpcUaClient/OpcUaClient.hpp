@@ -82,11 +82,6 @@ namespace Umati
 
 			// Max search depth
 			bool isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth = 100);
-
-
-			// ------- Default call settings -----------
-			//TODO find according datatype
-			//UaClientSdk::ServiceSettings m_defaultServiceSettings;
 			
 			double m_maxAgeRead_ms = 100.0;
 

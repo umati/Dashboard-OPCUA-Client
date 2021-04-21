@@ -29,9 +29,6 @@ namespace Umati
 				case UA_SECURECHANNELSTATE_FRESH:
 				case UA_SECURECHANNELSTATE_CLOSED:
 					LOG(INFO) << "The client is disconnected";
-					//UA_sleep_ms(2000); //Will crash when waiting for timeout...
-					//UA_Client_renewSecureChannel(client);
-					//UA_Client_disconnect(client); //client will disconnect and connect a few times at startup so this is not an option
 					break;
 				case UA_SECURECHANNELSTATE_HEL_SENT:
 					LOG(INFO) << "Waiting for ack";
@@ -60,8 +57,6 @@ namespace Umati
 			switch(connectStatus){
 				case UA_STATUSCODE_BADDISCONNECT:
 				LOG(INFO) << "Bad Disconnect";
-			//	UA_sleep_ms(2000); //wait for timeout that triggers reconnect?
-				//UA_Client_disconnect(client);
 			}
 		}
 
@@ -80,8 +75,6 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			client = UA_Client_new();
 			UA_ClientConfig *config = UA_Client_getConfig(client);
-   		//	UA_ClientConfig_setDefault(config);
-			//VERIFY Security
 			SetupSecurity::setupSecurity(config);
 			UA_ApplicationDescription desc;
 			UA_ApplicationDescription_init(&desc);
@@ -106,11 +99,8 @@ namespace Umati
 			UA_EndpointDescription* endpointDescriptions = NULL;
 			size_t endpointArraySize = 0;
 
-			UA_EndpointDescription applicationDescriptions;
-			UA_EndpointDescription_init(&applicationDescriptions);
-			//VERIFY do we need this?
-			UA_ConnectionConfig sessionSecurityInfo;
-			//UaClientSdk::ServiceSettings serviceSettings;
+			//UA_EndpointDescription applicationDescriptions;
+			//UA_EndpointDescription_init(&applicationDescriptions);
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			result = m_opcUaWrapper->DiscoveryGetEndpoints(client,
@@ -132,55 +122,38 @@ namespace Umati
 				open62541Cpp::UA_String securityPolicy;
 				UA_Int32 securityMode{};
 			} desiredEndpoint;
+			//VERIFY do we need to save this? applicationDescription is not used outside...
+		    // auto desiredSecurity = m_security;
+			// for (UA_Int32 iEndpoint = 0; iEndpoint < endpointArraySize; iEndpoint++)
+			// {
 
-			//TODO security 
-		    auto desiredSecurity = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;//m_security;
-			for (UA_Int32 iEndpoint = 0; iEndpoint < endpointArraySize; iEndpoint++)
-			{
-
-			if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
-				{
-					LOG(INFO) << "Wrong Security mode: " << endpointDescriptions[iEndpoint].securityMode;
-					continue;
-				}
+			// if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
+			// 	{
+			// 		LOG(INFO) << "Wrong Security mode: " << endpointDescriptions[iEndpoint].securityMode;
+			// 		continue;
+			// 	}
 			
 
-				desiredEndpoint.url.String->length = endpointDescriptions[iEndpoint].endpointUrl.length;
-				desiredEndpoint.url.String->data = endpointDescriptions[iEndpoint].endpointUrl.data;
+			// 	desiredEndpoint.url.String->length = endpointDescriptions[iEndpoint].endpointUrl.length;
+			// 	desiredEndpoint.url.String->data = endpointDescriptions[iEndpoint].endpointUrl.data;
 
-				LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url << std::endl;
-				applicationDescriptions.serverCertificate = endpointDescriptions[iEndpoint].serverCertificate;
-				applicationDescriptions.securityPolicyUri = endpointDescriptions[iEndpoint].securityPolicyUri;
-				applicationDescriptions.securityMode = static_cast<UA_MessageSecurityMode>(endpointDescriptions[iEndpoint].securityMode);
-				break;
-			} 
+			// 	LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url << std::endl;
+			// 	applicationDescriptions.serverCertificate = endpointDescriptions[iEndpoint].serverCertificate;
+			// 	applicationDescriptions.securityPolicyUri = endpointDescriptions[iEndpoint].securityPolicyUri;
+			// 	applicationDescriptions.securityMode = static_cast<UA_MessageSecurityMode>(endpointDescriptions[iEndpoint].securityMode);
+			// 	break;
+			// } 
 		
-			if (desiredEndpoint.url.String->length == 0)
-			{
-				LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
-				UA_Client_delete(client);
-				return false;
-			}
-	
-			///\todo handle security
-
-		    //TODO security 
-			// sessionSecurityInfo.doServerCertificateVerify = OpcUa_False;
-			// sessionSecurityInfo.disableErrorCertificateHostNameInvalid = OpcUa_True;
-			// sessionSecurityInfo.disableApplicationUriCheck = OpcUa_True;
-			//TODO set username and password in connect?
-			// if (!m_username.empty() && !m_password.empty())
+			// if (desiredEndpoint.url.String->length == 0)
 			// {
-			// 	sessionSecurityInfo.setUserPasswordUserIdentity(m_username.c_str(), m_password.c_str());
+			// 	LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
+			// 	UA_Client_delete(client);
+			// 	return false;
 			// }
 
 			m_opcUaWrapper->GetNewSession(m_pSession);
 
-			//VERIFY sessionConnectInfo is not used in SessionConnect.
-			UA_CreateSessionRequest sessionConnectInfo;
-		//	sessionConnectInfo = prepareSessionConnectInfo(sessionConnectInfo);
-			//TODO security info. 
-			result = m_opcUaWrapper->SessionConnectUsername(client,sURL, m_username, m_password);// /*sessionSecurityInfo, this*/);
+			result = m_opcUaWrapper->SessionConnectUsername(client,sURL, m_username, m_password);
 			if (result != UA_STATUSCODE_GOOD)
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
@@ -244,15 +217,17 @@ namespace Umati
 
 			UA_NodeClass returnClass;
 			UA_NodeClass_init(&returnClass);
-
+			try{
+				//TODO sometimes nodeId is null. Better error handling
 			auto uaResult = UA_Client_readNodeClassAttribute(client, *nodeId.NodeId, &returnClass);
 			if (UA_StatusCode_isBad(uaResult))
 			{
-				LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data
-						<< "' with " << UA_StatusCode_name(uaResult);
+				LOG(ERROR) << "readNodeClass failed";
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
-				
+			}catch(...){
+				LOG(ERROR) << "readNodeClass failed";
+			}
 			return returnClass;
 		}
 
@@ -267,7 +242,6 @@ namespace Umati
 
 		open62541Cpp::UA_NodeId OpcUaClient::browseSuperType(const open62541Cpp::UA_NodeId &typeNodeId)
 		{
-			checkConnection();
 			open62541Cpp::UA_NodeId referenceTypeUaNodeId;
 			referenceTypeUaNodeId.NodeId->identifierType = UA_NODEIDTYPE_NUMERIC;
 			referenceTypeUaNodeId.NodeId->identifier.numeric = UA_NS0ID_HASSUBTYPE;
@@ -495,10 +469,7 @@ namespace Umati
 		{
 			if (m_pSession)
 			{
-				//Subscr.deleteSubscription(m_pSession);
-				//VERIFY do we need ServiceSettings object?
-				//UaClientSdk::ServiceSettings servsettings;
-				
+				m_subscr.deleteSubscription(client);
 				return (m_opcUaWrapper->SessionDisconnect(client, UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
 			}
 			return true;
@@ -532,14 +503,12 @@ namespace Umati
 			ModelOpcUa::NodeId_t typeDefinition)
 		{
 			UA_BrowseDescription uaBrowseContext = getUaBrowseContext(browseContext);
-			//check if set correctly
 			open62541Cpp::UA_NodeId typeDefinitionUaNodeId = Converter::ModelNodeIdToUaNodeId(
 											  typeDefinition,
 											  m_uriToIndexCache)
 											  .getNodeId();
 
 			uaBrowseContext.nodeClassMask = nodeClassFromNodeId(typeDefinitionUaNodeId);
-			//FIXME correct filter function that does not remove placeholders
 			auto filter = [&](const UA_ReferenceDescription &ref) {
 				open62541Cpp::UA_NodeId browseTypeNodeId = open62541Cpp::UA_NodeId(ref.typeDefinition.nodeId);
 				return isSameOrSubtype(typeDefinitionUaNodeId, browseTypeNodeId);
@@ -564,9 +533,9 @@ namespace Umati
 				break;
 			}
 			default:
-				LOG(ERROR) << "Invalid NodeClass " << nodeClass
-						   << " expect object or variable type for node "
-						   << typeDefinitionUaNodeId.NodeId->identifier.string.data;
+				LOG(ERROR) << "Invalid NodeClass " //<< nodeClass
+						   << " expect object or variable type for node ";
+						  // << typeDefinitionUaNodeId.NodeId->identifier.string.data;
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
 		}
@@ -576,7 +545,6 @@ namespace Umati
 			UA_BrowseDescription &browseContext,
 			std::function<bool(const UA_ReferenceDescription &)> filter)
 		{
-			//checkConnection(); //moved down
 			Converter::ModelNodeIdToUaNodeId conv = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache);
 			open62541Cpp::UA_NodeId startUaNodeId = conv.getNodeId();
 
@@ -588,8 +556,6 @@ namespace Umati
 			UA_BrowseResponse uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 
-		
-			//referenceDescriptions = uaResult.results->references;
 		    if (UA_StatusCode_isBad(uaResult.results->statusCode))
 			 {
 				LOG(ERROR) << "Bad return from browse: " << uaResult.results->references->browseName.name.data << ", with startUaNodeId "
@@ -737,7 +703,6 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
 				client,
-				/*m_defaultServiceSettings,*/
 				uaBrowsePaths,
 				uaBrowsePathResults,
 				uaDiagnosticInfos);
@@ -794,10 +759,6 @@ namespace Umati
 				}
 			}
 
-		/*	LOG(INFO) << "\n\n***********\nTranslate SUCCESS for "<< static_cast<std::string>(startNode)
-						   << "' with " << UA_StatusCode_name(uaResult) << "(BrowsePath: "
-						   << static_cast<std::string>(browseName) << ") \n\n***********\n"; */
-
 			open62541Cpp::UA_NodeId targetNodeId(uaBrowsePathResults.targets->targetId.nodeId);
 
 			return Converter::UaNodeIdToModelNodeId(targetNodeId, m_indexToUriCache).getNodeId();
@@ -846,7 +807,7 @@ namespace Umati
 
 				if (UA_StatusCode_isBad(tmpReadValue.status))
 				{
-					LOG(ERROR) << "Received non good status for read: " << tmpReadValue.status;
+					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(tmpReadValue.status);
 					std::stringstream ss;
 					ss << "Received non good status  for read: " << tmpReadValue.status;
 					throw Exceptions::OpcUaException(ss.str());

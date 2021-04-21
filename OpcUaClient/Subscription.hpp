@@ -27,9 +27,9 @@ namespace Umati {
 			virtual std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
 			Subscribe(UA_Client *client, ModelOpcUa::NodeId_t, Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback);
 
-			void createSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> pSession);
+			void createSubscription(UA_Client *client);
 
-			void deleteSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> pSession);
+			void deleteSubscription(UA_Client *client);
 
 			void setSubscriptionWrapper(Umati::OpcUa::OpcUaSubscriptionInterface *pSubscriptionWrapper);
 
