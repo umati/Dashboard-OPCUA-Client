@@ -5,32 +5,32 @@
 
 TEST(ConfigurationJsonFile, NormalConfiguration) {
 	Umati::Util::ConfigurationJsonFile conf("Configuration.json");
-	EXPECT_EQ(conf.OpcUa().Endpoint, "opc.tcp://localhost:4840");
-	EXPECT_EQ(conf.OpcUa().Username, "User");
-	EXPECT_EQ(conf.OpcUa().Password, "Password");
-	EXPECT_EQ(conf.OpcUa().Security, 1);
+	EXPECT_EQ(conf.getOpcUa().Endpoint, "opc.tcp://localhost:4840");
+	EXPECT_EQ(conf.getOpcUa().Username, "User");
+	EXPECT_EQ(conf.getOpcUa().Password, "Password");
+	EXPECT_EQ(conf.getOpcUa().Security, 1);
 	std::vector<std::string> objectTypeNamespaces;
 	objectTypeNamespaces.emplace_back("http://www.umati.info");
-	EXPECT_EQ(conf.ObjectTypeNamespacesVector(), objectTypeNamespaces);
-	EXPECT_EQ(conf.Mqtt().Hostname, "localhost");
-	EXPECT_EQ(conf.Mqtt().Port, 1883);
-	EXPECT_EQ(conf.Mqtt().Username, "MyUser");
-	EXPECT_EQ(conf.Mqtt().Password, "MyPassword");
+	EXPECT_EQ(conf.getObjectTypeNamespaces(), objectTypeNamespaces);
+	EXPECT_EQ(conf.getMqtt().Hostname, "localhost");
+	EXPECT_EQ(conf.getMqtt().Port, 1883);
+	EXPECT_EQ(conf.getMqtt().Username, "MyUser");
+	EXPECT_EQ(conf.getMqtt().Password, "MyPassword");
 
 }
 
 TEST(ConfigurationJsonFile, WithoutNamespaces) {
 	Umati::Util::ConfigurationJsonFile conf("Configuration2.json");
-	EXPECT_EQ(conf.OpcUa().Endpoint, "opc.tcp://localhost:4840");
-	EXPECT_EQ(conf.OpcUa().Username, "User");
-	EXPECT_EQ(conf.OpcUa().Password, "Password");
-	EXPECT_EQ(conf.OpcUa().Security, 1);
+	EXPECT_EQ(conf.getOpcUa().Endpoint, "opc.tcp://localhost:4840");
+	EXPECT_EQ(conf.getOpcUa().Username, "User");
+	EXPECT_EQ(conf.getOpcUa().Password, "Password");
+	EXPECT_EQ(conf.getOpcUa().Security, 1);
 	std::vector<std::string> objectTypeNamespaces;
-	EXPECT_EQ(conf.ObjectTypeNamespacesVector(), objectTypeNamespaces);
-	EXPECT_EQ(conf.Mqtt().Hostname, "localhost");
-	EXPECT_EQ(conf.Mqtt().Port, 1883);
-	EXPECT_EQ(conf.Mqtt().Username, "MyUser");
-	EXPECT_EQ(conf.Mqtt().Password, "MyPassword");
+	EXPECT_EQ(conf.getObjectTypeNamespaces(), objectTypeNamespaces);
+	EXPECT_EQ(conf.getMqtt().Hostname, "localhost");
+	EXPECT_EQ(conf.getMqtt().Port, 1883);
+	EXPECT_EQ(conf.getMqtt().Username, "MyUser");
+	EXPECT_EQ(conf.getMqtt().Password, "MyPassword");
 
 }
 

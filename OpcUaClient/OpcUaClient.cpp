@@ -257,6 +257,44 @@ namespace Umati
 			}
 		}
 
+		OpcUa_ExpandedNodeId OpcUaClient::browseTypeDefinition(const UaNodeId &nodeId) {
+			checkConnection();
+
+			auto referenceTypeUaNodeId = UaNodeId(OpcUaId_HasTypeDefinition);
+			UaClientSdk::BrowseContext browseContext;
+			browseContext.browseDirection = OpcUa_BrowseDirection_Forward;
+			browseContext.includeSubtype = OpcUa_True;
+			browseContext.maxReferencesToReturn = 0;
+			browseContext.nodeClassMask = 0; // ALL
+			browseContext.referenceTypeId = referenceTypeUaNodeId;
+
+			UaByteString continuationPoint;
+			UaReferenceDescriptions referenceDescriptions;
+			auto uaResult = m_opcUaWrapper->SessionBrowse(m_defaultServiceSettings, nodeId, browseContext,
+														  continuationPoint, referenceDescriptions);
+			
+			if (uaResult.isBad())
+			{
+				LOG(ERROR) << "Bad return from browse: " << uaResult.toString().toUtf8();
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+			}
+
+			std::list<ModelOpcUa::BrowseResult_t> browseResult;
+
+			if (referenceDescriptions.length() == 0)
+			{	
+				return OpcUa_ExpandedNodeId();
+			}
+
+			if (referenceDescriptions.length() > 1)
+			{
+				LOG(ERROR) << "Found multiple typeDefinitions for " << nodeId.toXmlString().toUtf8();
+				return OpcUa_ExpandedNodeId();
+			}
+
+			return referenceDescriptions[0].NodeId;
+		}
+
 		UaNodeId OpcUaClient::browseSuperType(const UaNodeId &typeNodeId)
 		{
 			checkConnection();
@@ -580,20 +618,28 @@ namespace Umati
 			std::list<ModelOpcUa::BrowseResult_t> &browseResult,
 			std::function<bool(const OpcUa_ReferenceDescription &)> filter)
 		{
-			for (OpcUa_UInt32 i = 0; i < referenceDescriptions.length(); i++)
+			auto refs = referenceDescriptions;
+			for (OpcUa_UInt32 i = 0; i < refs.length(); i++)
 			{
-				if (!filter(referenceDescriptions[i]))
+				auto typeDefinitionUaNodeId = UaNodeId(UaExpandedNodeId(refs[i].TypeDefinition).nodeId());
+				auto typeDefinitionNodeId = Converter::UaNodeIdToModelNodeId(typeDefinitionUaNodeId, m_indexToUriCache).getNodeId();
+				if(typeDefinitionNodeId == Umati::Dashboard::NodeId_UndefinedType) {
+					/// \Workaround:  Rebrowse type definition for faulty servers, which dont provide correct TypeDefinitions on BrowseResults!
+					auto typeDefinition = browseTypeDefinition(referenceDescriptions[i].NodeId.NodeId);
+					refs[i].TypeDefinition = typeDefinition;
+				}
+				if (!filter(refs[i]))
 				{
 					continue;
 				}
-				auto entry = ReferenceDescriptionToBrowseResult(referenceDescriptions[i]);
+				auto entry = ReferenceDescriptionToBrowseResult(refs[i]);
 				browseResult.push_back(entry);
 			}
 		}
 
 		void OpcUaClient::handleContinuationPoint(const UaByteString & /*continuationPoint*/)
 		{
-			LOG(DEBUG) << "Handling continuation point not yet implemented";
+			// LOG(DEBUG) << "Handling continuation point not yet implemented";
 		}
 
 		ModelOpcUa::BrowseResult_t
