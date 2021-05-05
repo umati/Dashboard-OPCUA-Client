@@ -4,6 +4,7 @@
 #include <list>
 #include <memory>
 #include <sstream>
+#include <vector>
 
 namespace ModelOpcUa
 {
@@ -86,7 +87,7 @@ namespace ModelOpcUa
 		}
 	};
 
-	enum ModellingRule_t
+	enum ModellingRule_t : unsigned int
 	{
 		None,
 		Optional,
@@ -94,6 +95,23 @@ namespace ModelOpcUa
 		OptionalPlaceholder,
 		MandatoryPlaceholder,
 	};
+
+	static const std::string ModellingRuleToString(const ModellingRule_t rule) {
+		static std::vector<std::string> modellingRules = {
+			"None",
+			"Optional",
+			"Madatory",
+			"OptionalPlaceholder",
+			"MandatoryPlacehoder"
+		};
+
+		unsigned int idx = rule;
+
+		if (idx >= modellingRules.size()) {
+			idx = 0;
+		}
+		return modellingRules[idx];
+	}
 
 	/*
 			* - OpcUa_NodeClass_Object        = 1,
@@ -105,7 +123,7 @@ namespace ModelOpcUa
 			* - OpcUa_NodeClass_DataType      = 64,
 			* - OpcUa_NodeClass_View          = 128
 			* */
-	enum NodeClass_t
+	enum NodeClass_t: unsigned int
 	{
 		Object = 1 << 0,
 		Variable = 1 << 1,
@@ -116,6 +134,34 @@ namespace ModelOpcUa
 		DataType = 1 << 6,
 		View = 1 << 7
 	};
+
+	static const std::string NodeClassToString(const NodeClass_t nodeClass) {
+		static std::vector<std::string> nodeClasses = {
+			"Object",
+			"Variable",
+			"Method",
+			"ObjectType",
+			"VariableType",
+			"ReferenceType",
+			"DataType",
+			"View",
+		};
+
+		std::string classStr;
+		unsigned int classInt = nodeClass;
+		size_t idx = 0;
+
+		while (classInt > 1) {
+			classInt = classInt >> 1;
+			idx++;
+		} 		
+		if (idx >= nodeClasses.size()) {
+			classStr = "Unknown";
+		} else {
+			classStr = nodeClasses[idx];
+		}
+		return classStr;
+	}
 
 	struct BrowseResult_t
 	{
@@ -188,9 +234,8 @@ namespace ModelOpcUa
 
 		static std::string printType(const std::shared_ptr<StructureNode> &node, const std::string &parentTree);
 
-	private:
-		static std::string
-		printJsonIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree, int tabs);
+		static void
+		printYamlIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree, int tabs, std::ostream &ss);
 	};
 
 	/**
@@ -254,5 +299,4 @@ namespace ModelOpcUa
 		// All predefined subtypes that are handled separately
 		const std::list<std::shared_ptr<const StructureNode>> PossibleTypes;
 	};
-
 } // namespace ModelOpcUa

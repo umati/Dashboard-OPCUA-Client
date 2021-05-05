@@ -1,13 +1,14 @@
 #include "MqttPublisher_Paho.hpp"
 
 #include <easylogging++.h>
+#include <sstream>
 
 namespace Umati {
 	namespace MqttPublisher_Paho {
 
 		MqttPublisher_Paho::MqttPublisher_Paho(const std::string &host, std::uint16_t port, const std::string &username,
 											   const std::string &password)
-				: m_cli(host, getClientId(), 100, nullptr), m_callbacks(this) {
+				: m_cli(getUri(host, port), getClientId(), 100, nullptr), m_callbacks(this) {
 			m_cli.set_callback(m_callbacks);
 
 			mqtt::connect_options opts_conn = getOptions(username, password);
@@ -21,6 +22,13 @@ namespace Umati {
 			catch (const mqtt::exception &ex) {
 				LOG(ERROR) << "Paho Exception:" << ex.what();
 			}
+		}
+
+		std::string MqttPublisher_Paho::getUri(std::string host, std::uint16_t port)
+		{
+			std::stringstream ss;
+			ss << "tcp://" << host << ":" << port;
+			return ss.str();
 		}
 
 		mqtt::connect_options MqttPublisher_Paho::getOptions(const std::string &username, const std::string &password) {

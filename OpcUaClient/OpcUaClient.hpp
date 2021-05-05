@@ -78,6 +78,8 @@ namespace Umati
 			// Max search depth
 			bool isSameOrSubtype(const UaNodeId &expectedType, const UaNodeId &checkType, std::size_t maxDepth = 100);
 
+			OpcUa_ExpandedNodeId browseTypeDefinition(const UaNodeId &nodeId);
+
 			// ------- Default call settings -----------
 			UaClientSdk::ServiceSettings m_defaultServiceSettings;
 			double m_maxAgeRead_ms = 100.0;

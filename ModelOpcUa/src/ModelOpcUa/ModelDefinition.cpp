@@ -101,38 +101,41 @@ namespace ModelOpcUa {
 		return ss.str();
 	}
 
-	std::string
-	StructureNode::printJsonIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree,
-								   int tabs) {
+	void 
+	StructureNode::printYamlIntern(const std::shared_ptr<StructureNode> &node, const std::string &parentTree,
+								   int tabs, std::ostream &ss) {
 		std::stringstream ss_self;
-		std::stringstream ss;
 		std::stringstream tabsstream;
 		for (int i = 0; i < tabs; i++) {
-			tabsstream << "\t";
+			tabsstream << "    ";
 		}
 		std::string tabsString = tabsstream.str();
+		tabsstream << "    ";
+		std::string tabStringPlus2 = tabsstream.str();
 
-		ss_self << tabsString << "\"" << node->SpecifiedBrowseName.Name << "\":";
+		ss_self << tabsString << node->SpecifiedBrowseName.Name << ":" << std::endl;
+		ss_self << tabStringPlus2 << "ModellingRule: " << ModelOpcUa::ModellingRuleToString(node->ModellingRule) << std::endl;
+		ss_self << tabStringPlus2 << "NodeClass: " << ModelOpcUa::NodeClassToString(node->NodeClass) << std::endl;
+		ss_self << tabStringPlus2 << "ReferenceType: " << static_cast<std::string>(node->ReferenceType) << std::endl;
+		ss_self << tabStringPlus2 << "TypeDefinition: " << static_cast<std::string>(node->SpecifiedTypeNodeId) << std::endl;
+		ss_self << tabStringPlus2 << "OfBaseDataVariableType: " << node->ofBaseDataVariableType << std::endl;
+
+
 		if (node->SpecifiedChildNodes->empty()) {
-			ss << ss_self.str() << " null";
+			ss << ss_self.str();
 		} else {
-			ss << ss_self.str() << std::endl;
+			ss << ss_self.str();
+			ss << tabStringPlus2 << "Children:" << std::endl;
+
 			for (auto childNodesIterator = node->SpecifiedChildNodes->begin();
 				 childNodesIterator != node->SpecifiedChildNodes->end(); childNodesIterator++) {
-				if (childNodesIterator == node->SpecifiedChildNodes->begin()) {
-					ss << tabsString << "{" << std::endl;
-				}
-				ss << printJsonIntern(childNodesIterator.operator*(), ss_self.str(), tabs + 1);
+
+				printYamlIntern(childNodesIterator.operator*(), ss_self.str(), tabs + 2, ss);
 				if ((childNodesIterator != node->SpecifiedChildNodes->end()) &&
 					(childNodesIterator != --node->SpecifiedChildNodes->end())) {
-					ss << "," << std::endl;
-				} else {
-					ss << std::endl << tabsString << "}";
 				}
 			}
 		}
-
-		return ss.str();
 	}
 
 	StructureNode::StructureNode(StructureNode *structureNode, bool ofBaseDataVariableType,

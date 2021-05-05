@@ -5,6 +5,10 @@
 #include <map>
 #include <ModelOpcUa/ModelInstance.hpp>
 #include "IDashboardDataClient.hpp"
+#include <Configuration.hpp>
+#include "../MachineObserver/Exceptions/MachineInvalidException.hpp"
+#include <sstream>
+#include <iostream>
 
 namespace Umati
 {
@@ -15,67 +19,57 @@ namespace Umati
         public:
             OpcUaTypeReader(
                 std::shared_ptr<IDashboardDataClient> pIClient,
-                std::vector<std::string> expectedObjectTypeNamespaces);
+                std::vector<std::string> expectedObjectTypeNamespaces, std::vector<Umati::Util::NamespaceInformation> namespaceInformations);
             void readTypes();
-            struct NamespaceInformation_t
-            {
-                std::string Namespace;
-                std::string NamespaceUri;
-                std::string NamespaceType;
-                std::string NamespaceIdentificationType;
-            };
+            using NamespaceInformation_t = Util::NamespaceInformation;
 
             /// \todo make the following internal structures private and provide access via funcitons
-            // Key: NsUri
+            std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_identificationTypeOfTypeDefinition;
             std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNamespaces;
-            std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>>();
+            std::vector<std::string> m_expectedObjectTypeNames;
+            std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap = std::make_shared<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>>();
             std::shared_ptr<std::map<std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map<std::string, ModelOpcUa::NodeId_t>>();
-            std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(const std::string &namespaceUri) const;
+            std::shared_ptr<ModelOpcUa::StructureNode> typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
+            std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationTypeStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
+            ModelOpcUa::NodeId_t getIdentificationTypeNodeId(const ModelOpcUa::NodeId_t &typeDefinition) const;
         protected:
+            /// Map of <TypeName, StructureBiNode>
+            typedef std::shared_ptr<std::map<ModelOpcUa::NodeId_t,
+                                         std::shared_ptr<
+                                             ModelOpcUa::StructureBiNode>>> BiDirTypeMap_t;
             std::shared_ptr<Umati::Dashboard::IDashboardDataClient> m_pClient;
             const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"", ""};
             void initialize(std::vector<std::string> &notFoundObjectTypeNamespaces);
             void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(
-                const ModelOpcUa::NodeId_t &basicTypeNode,
-                std::shared_ptr<std::map<std::string,
-                                         std::shared_ptr<
-                                             ModelOpcUa::StructureBiNode>>>
-                    bidirectionalTypeMap,
+                const ModelOpcUa::NodeId_t &startNodeId,
+                BiDirTypeMap_t bidirectionalTypeMap,
                 bool ofBaseDataVariableType);
 
+            void printTypeMapYaml();
+            void updateObjectTypeNames();
             void updateTypeMap();
             void findObjectTypeNamespacesAndCreateTypeMap(
                 const std::string &namespaceURI,
-                std::shared_ptr<
-                    std::map<
-                        std::string,
-                        std::shared_ptr<ModelOpcUa::StructureBiNode>>>
-                    bidirectionalTypeMap =
-                        std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>>());
-            static void
-            createTypeMap(std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, const std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>> &sharedPtr,
-                          std::string namespaceUri);
+                BiDirTypeMap_t bidirectionalTypeMap =
+                        std::make_shared<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureBiNode>>>());
+            void
+            setupTypeMap(std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureBiNode>>> &bidirectionalTypeMap, std::string namespaceUri);
 
             std::shared_ptr<ModelOpcUa::StructureBiNode> handleBrowseTypeResult(
-                std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureBiNode>>
-
-                                > &bidirectionalTypeMap,
+                BiDirTypeMap_t &bidirectionalTypeMap,
                 const ModelOpcUa::BrowseResult_t &entry,
                 const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
                 bool ofBaseDataVariableType);
 
+            /// Browse all Nodes (Object, Variables, ObjectTypes, VariablesTypes) and fill the BiDirectionalTypeMap
             void browseTypes(
-                std::shared_ptr<
-                    std::map<
-                        std::string,
-                        std::shared_ptr<ModelOpcUa::StructureBiNode>>>
-                    bidirectionalTypeMap,
-                const IDashboardDataClient::BrowseContext_t &browseContext,
+                BiDirTypeMap_t bidirectionalTypeMap,
                 const ModelOpcUa::NodeId_t &startNodeId,
                 const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent,
                 bool ofBaseDataVariableType);
             
+            /// \return Companion Specification Name
             static std::string CSNameFromUri(std::string nsUri);
         };
     } // namespace OpcUa

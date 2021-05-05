@@ -7,12 +7,21 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 14)
 
 
-message("########################### ${CREATE_COVERAGE}")
+message("########################### CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+message("########################### CREATE_COVERAGE=${CREATE_COVERAGE}")
 if (CREATE_COVERAGE)
+    message("########################### COVERAGE enabled")
     SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
     SET(GCC_COVERAGE_LINK_FLAGS "-lgcov --coverage -fprofile-arcs -ftest-coverage")
     SET(CMAKE_CXX_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_CXX_FLAGS}")
     SET(CMAKE_C_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} ${CMAKE_C_FLAGS}")
+endif ()
+
+message("########################### MEMORY_SANITZER=${MEMORY_SANITZER}")
+if (MEMORY_SANITZER)
+    message("########################### MEMORY_SANITZER enabled")
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fno-omit-frame-pointer -fsanitize=leak")
+    set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -g -fno-omit-frame-pointer -fsanitize=leak")
 endif ()
 
 message("### opcua_dashboardclient: adding cmake files to find used libraries from /cmake directory")
