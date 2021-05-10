@@ -621,13 +621,6 @@ namespace Umati
 			auto refs = referenceDescriptions;
 			for (OpcUa_UInt32 i = 0; i < refs.length(); i++)
 			{
-				auto typeDefinitionUaNodeId = UaNodeId(UaExpandedNodeId(refs[i].TypeDefinition).nodeId());
-				auto typeDefinitionNodeId = Converter::UaNodeIdToModelNodeId(typeDefinitionUaNodeId, m_indexToUriCache).getNodeId();
-				if(typeDefinitionNodeId == Umati::Dashboard::NodeId_UndefinedType) {
-					/// \Workaround:  Rebrowse type definition for faulty servers, which dont provide correct TypeDefinitions on BrowseResults!
-					auto typeDefinition = browseTypeDefinition(referenceDescriptions[i].NodeId.NodeId);
-					refs[i].TypeDefinition = typeDefinition;
-				}
 				if (!filter(refs[i]))
 				{
 					continue;
