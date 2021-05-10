@@ -55,7 +55,7 @@ namespace Umati {
 					this->setUnsubscribed();
 					return;
 				}
-				//TODO get client object
+				//TODO get client object. Do we need to unsubscripe here? is deleteSubscription sufficient?
 				//m_pClientSubscription->Unsubscribe(client, m_monitoredItemId, m_clientHandle);
 				this->setUnsubscribed();
 			}
@@ -81,7 +81,7 @@ namespace Umati {
 		}
 
 		void Subscription::subscriptionStatusChanged(UA_Client *client,UA_Int32 clientSubscriptionHandle, const UA_StatusCode &status) {
-			//FIXME compiler error
+			//VERIFY do we need clientSubscription handle?
 			//UA_ReferenceTypeAttributes(clientSubscriptionHandle);// We use the callback only for this subscription
 			std::stringstream str;
 			str << "SubscriptionStatus changed to " << status;
@@ -121,7 +121,7 @@ namespace Umati {
 			if (m_pSubscription == NULL) {
 				auto request = UA_CreateSubscriptionRequest_default();
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(client, request,
-                                                                            this, NULL, NULL); // TODO: implement the statuschange callback
+                                                                            this, NULL, NULL);
     			if(!UA_StatusCode_isBad(result.responseHeader.serviceResult)){
         			LOG(ERROR) << "Create subscription succeeded, id " << result.subscriptionId;
 					m_pSubscriptionID = result.subscriptionId;
@@ -153,13 +153,9 @@ namespace Umati {
 			UA_DeleteSubscriptionsResponse response;
 			response = UA_Client_Subscriptions_delete(client, *m_pDeleteSubscription);
 			results = *response.results;
-			//VERIFY do we need to delte monitored items?
-			//results = UA_Client_MonitoredItems_deleteSingle(client, m_pSubscriptionID, monItemId);
-
 				if (UA_StatusCode_isBad(results)) {
 					LOG(WARNING) << "Removal of subscribed item failed: " << results;
 				}
-				//VERIFY double check on same object?
 				if (response.resultsSize == 1) {
 					UA_StatusCode resultCode(results);
 					if (UA_StatusCode_isBad(resultCode)) {

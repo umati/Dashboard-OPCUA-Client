@@ -43,11 +43,8 @@ namespace Umati {
 			const std::map<std::string, uint16_t> &m_uriToIndexCache;
 			const std::map<uint16_t, std::string> &m_indexToUriCache;
 			static std::atomic_uint nextId;
-			//VERIFY was uaSubscription
 			UA_CreateSubscriptionRequest *m_pSubscription = nullptr;
-			//VERIFY extra datatype 
 			UA_DeleteSubscriptionsRequest *m_pDeleteSubscription = nullptr;
-			//VERIFY extra datatype to store subscription ID
 			UA_Int32 m_pSubscriptionID;
 			Umati::OpcUa::OpcUaSubscriptionInterface *m_pSubscriptionWrapper = new OpcUaSubscriptionWrapper();
 

@@ -32,14 +32,17 @@ namespace Umati {
 
 				case NODEID_GUID:
 					LOG(ERROR) << "Conversion to GUID not implemented.";
+					throw "Conversion to GUID not implemented.";
 					break;
 
 				case NODEID_BYTESTRING:
 					LOG(ERROR) << "Conversion to ByteString not implemented.";
+					throw "Conversion to ByteString not implemented.";
 					break;
 				
 				default:
 					LOG(ERROR) << "Identifier type not valid";
+					throw "Identifier type not valid";
 					break;
 				}
 

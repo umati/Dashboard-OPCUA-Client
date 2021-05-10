@@ -16,15 +16,13 @@ namespace Umati {
 
 		public:
 
-			virtual UA_StatusCode DiscoveryGetEndpoints(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
+			virtual UA_StatusCode DiscoveryGetEndpoints(UA_Client *client,
 										   const open62541Cpp::UA_String *sDiscoveryURL,
-										   /*UaClientSdk::ClientSecurityInfo &clientSecurityInfo,*/
 										   size_t *endpointDescriptionsSize,
 										   UA_EndpointDescription **endpointDescriptions) = 0;
 
-			virtual UA_StatusCode DiscoveryFindServers(UA_Client *client,/*	UaClientSdk::ServiceSettings &serviceSettings,*/
+			virtual UA_StatusCode DiscoveryFindServers(UA_Client *client,
 											const open62541Cpp::UA_String &sDiscoveryURL,
-											/*UaClientSdk::ClientSecurityInfo &clientSecurityInfo,*/
 											size_t *registerdServerSize,
 											UA_ApplicationDescription **applicationDescriptions) = 0;
 
@@ -32,22 +30,20 @@ namespace Umati {
 
 			virtual UA_StatusCode SessionConnect(UA_Client *client,
 									const open62541Cpp::UA_String &sURL,
-									UA_CreateSessionRequest &sessionConnectInfo
-									/*UaClientSdk::SessionSecurityInfo &sessionSecurityInfo,*/
-									/*UaClientSdk::UaSessionCallback *pSessionCallback*/) = 0;
+									UA_CreateSessionRequest &sessionConnectInfo) = 0;
+
 			virtual UA_StatusCode SessionConnectUsername(UA_Client *client,
 									const open62541Cpp::UA_String &sURL,
 									std::string username, std::string password) = 0;
 
-			virtual UA_StatusCode SessionDisconnect(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
+			virtual UA_StatusCode SessionDisconnect(UA_Client *client,
 									   UA_Boolean bDeleteSubscriptions) = 0;
 
 			virtual void SessionUpdateNamespaceTable(UA_Client *client) = 0;
 
 			virtual std::vector<std::string> SessionGetNamespaceTable() = 0;
 
-			virtual UA_StatusCode SessionRead(/*UaClientSdk::ServiceSettings &serviceSettings,*/
-								 UA_Client *client,
+			virtual UA_StatusCode SessionRead(UA_Client *client,
 								 UA_Double maxAge,
 								 UA_TimestampsToReturn timeStamps,
 								 const UA_ReadValueId &nodesToRead,
@@ -56,21 +52,20 @@ namespace Umati {
 
 			virtual bool SessionIsConnected(UA_Client *client) = 0;
 
-			virtual UA_BrowseResponse SessionBrowse(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
+			virtual UA_BrowseResponse SessionBrowse(UA_Client *client,
 					const open62541Cpp::UA_NodeId &nodeToBrowse,
 					const UA_BrowseDescription &browseContext,
 					UA_ByteString &continuationPoint,
 					std::vector<UA_ReferenceDescription> &referenceDescriptions) = 0;
 
 			virtual UA_StatusCode SessionTranslateBrowsePathsToNodeIds(UA_Client *client,
-					/*UaClientSdk::ServiceSettings &serviceSettings,*/
 					UA_BrowsePath &browsePaths,
 					UA_BrowsePathResult &browsePathResults,
 					UA_DiagnosticInfo &diagnosticInfos) = 0;
 
 			virtual void setSubscription(Subscription *p_in_subscr) = 0;
-			//TODO find right datatype for the session
-			virtual void SubscriptionCreateSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> &m_pSession) = 0;
+
+			virtual void SubscriptionCreateSubscription(UA_Client *client) = 0;
 
 			virtual std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
 			SubscriptionSubscribe(UA_Client *client, ModelOpcUa::NodeId_t nodeId,
@@ -83,22 +78,13 @@ namespace Umati {
 
 		class OpcUaWrapper : public OpcUaInterface {
 		public:
-			/*TODO
-			 * 
-			 * use service settings and security info when datatype is found
-			 * 
-			 */
-			UA_StatusCode DiscoveryGetEndpoints(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
-										   const open62541Cpp::UA_String *sDiscoveryURL,
-										   /*UaClientSdk::ClientSecurityInfo &clientSecurityInfo,*/
+			UA_StatusCode DiscoveryGetEndpoints(UA_Client *client, const open62541Cpp::UA_String *sDiscoveryURL,
 										   size_t *endpointDescriptionsSize,
 										   UA_EndpointDescription **endpointDescriptions) override {		
 				return UA_Client_getEndpoints(client, static_cast<std::string>(*sDiscoveryURL).c_str() , endpointDescriptionsSize, endpointDescriptions);
 			};
 
-			UA_StatusCode DiscoveryFindServers(UA_Client *client,/*	UaClientSdk::ServiceSettings &serviceSettings,*/
-											const open62541Cpp::UA_String &sDiscoveryURL,
-											/*UaClientSdk::ClientSecurityInfo &clientSecurityInfo,*/
+			UA_StatusCode DiscoveryFindServers(UA_Client *client, const open62541Cpp::UA_String &sDiscoveryURL,
 											size_t *registerdServerSize,
 											UA_ApplicationDescription **applicationDescriptions) override {
 				 
@@ -113,27 +99,23 @@ namespace Umati {
 			UA_StatusCode SessionConnect(
 									UA_Client *client,
 									const open62541Cpp::UA_String &sURL,
-									UA_CreateSessionRequest &sessionConnectInfo
-									/*UaClientSdk::SessionSecurityInfo &sessionSecurityInfo,*/
-									/*UaClientSdk::UaSessionCallback *pSessionCallback*/) override {
-				//VERIFY check if sessionConnectInfo, callback and sessionsecurityinfo is needed.
-				return UA_Client_connect(client, static_cast<std::string>(sURL).c_str()); //sessionConnectInfo, sessionSecurityInfo, pSessionCallback);
+									UA_CreateSessionRequest &sessionConnectInfo) override {
+				return UA_Client_connect(client, static_cast<std::string>(sURL).c_str());
 			}
 
 			UA_StatusCode SessionConnectUsername(
 									UA_Client *client,
 									const open62541Cpp::UA_String &sURL,
 									std::string username, std::string password) override {
-				return UA_Client_connectUsername(client, static_cast<std::string>(sURL).c_str(),username.c_str(),password.c_str()); //sessionConnectInfo, sessionSecurityInfo, pSessionCallback);
+				return UA_Client_connectUsername(client, static_cast<std::string>(sURL).c_str(),username.c_str(),password.c_str());
 			}
 
-			UA_StatusCode SessionDisconnect(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
+			UA_StatusCode SessionDisconnect(UA_Client *client,
 									   UA_Boolean bDeleteSubscriptions) override {
 				return UA_Client_disconnect(client);
 			}
 
-			UA_StatusCode SessionRead(/*UaClientSdk::ServiceSettings &serviceSettings,*/
-								 UA_Client *client,
+			UA_StatusCode SessionRead(UA_Client *client,
 								 UA_Double maxAge,
 								 UA_TimestampsToReturn timeStamps,
 								 const UA_ReadValueId &nodesToRead,
@@ -191,8 +173,7 @@ namespace Umati {
 			std::vector<std::string> SessionGetNamespaceTable() override {
 					return namespaceArray;
 			}
-			//TODO check unused params
-			UA_BrowseResponse SessionBrowse(UA_Client *client,/*UaClientSdk::ServiceSettings &serviceSettings,*/
+			UA_BrowseResponse SessionBrowse(UA_Client *client,
 					const open62541Cpp::UA_NodeId &nodeToBrowse,
 					const UA_BrowseDescription &browseContext,
 					UA_ByteString &continuationPoint,
@@ -207,7 +188,6 @@ namespace Umati {
 					browseRequest.nodesToBrowse[0].nodeId = *nodeToBrowse.NodeId; 
 					UA_BrowseResponse browseResponse;
 					UA_BrowseResponse_init(&browseResponse);
-					//if(){
 					browseResponse = UA_Client_Service_browse(client, browseRequest);
 					
 					for(size_t i = 0; i < browseResponse.resultsSize; ++i) {
@@ -215,14 +195,10 @@ namespace Umati {
 							referenceDescriptions.push_back(browseResponse.results[i].references[j]);
 						}
 					}
-				//	}
-
 					return browseResponse;
-				
 			}
 
 			UA_StatusCode SessionTranslateBrowsePathsToNodeIds(UA_Client *client,
-					/*UaClientSdk::ServiceSettings &serviceSettings,*/
 					UA_BrowsePath &browsePaths,
 					UA_BrowsePathResult &browsePathResults,
 					UA_DiagnosticInfo &diagnosticInfos
@@ -231,17 +207,14 @@ namespace Umati {
 				UA_TranslateBrowsePathsToNodeIdsRequest_init(&request);
 				request.browsePaths = &browsePaths;
 				request.browsePathsSize = 1;
-				auto response = UA_Client_Service_translateBrowsePathsToNodeIds(client,/*serviceSettings, browsePaths, browsePathResults,
-															   diagnosticInfos,*/ request);
-				//FIXME disgnostic info is not set
-				//UA_DiagnosticInfo_copy(response.diagnosticInfos, &diagnosticInfos);
+				auto response = UA_Client_Service_translateBrowsePathsToNodeIds(client, request);
 				UA_BrowsePathResult_copy(response.results, &browsePathResults);		
 				return response.results->statusCode;				
 			}
 
 			void setSubscription(Subscription *p_in_subscr) override { p_subscr = p_in_subscr; }
-			//TODO remove session param
-			void SubscriptionCreateSubscription(UA_Client *client, std::shared_ptr<UA_SessionState> &m_pSession) override {
+
+			void SubscriptionCreateSubscription(UA_Client *client) override {
 				if (p_subscr == nullptr) {
 					LOG(ERROR) << "Unable to create subscription, pointer is NULL ";
 					exit(SIGTERM);

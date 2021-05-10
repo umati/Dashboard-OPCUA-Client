@@ -23,7 +23,7 @@ namespace Umati {
 				std::string IssuerRevokedCerts;
 			};
 
-			static bool setupSecurity(UA_ClientConfig *config /*UA_SessionSecurityDiagnosticsDataType *sessionSecurityInfo*/);
+			static bool setupSecurity(UA_ClientConfig *config, UA_Client *client);
 
 			static bool createNewClientCert();
 

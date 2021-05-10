@@ -30,7 +30,7 @@ namespace Umati
 	{
 		class OpcUaClient : public Dashboard::IDashboardDataClient
 		{
-		//VERIFY 
+		//TODO do we need to disable copying of the constructor and assignment operator?
 		//UA_DISABLE_COPY(OpcUaClient);
 		public:
 			explicit OpcUaClient(std::string serverURI, std::string Username = std::string(),
@@ -69,9 +69,8 @@ namespace Umati
 			std::vector<std::string> Namespaces() override;
 
         protected:
-			//FIXME override gives "marked ‘override’, but does not override" error
-			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);// override;
-			
+			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus); 
+
 			bool connect();
 
 			UA_NodeClass readNodeClass(const open62541Cpp::UA_NodeId &nodeId);
@@ -94,7 +93,7 @@ namespace Umati
 			std::string m_serverUri;
 			std::string m_username;
 			std::string m_password;
-			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;//UA_MESSAGESECURITYMODE_NONE;
+			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_NONE;
 
 			std::shared_ptr<std::thread> m_connectThread;
 			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;

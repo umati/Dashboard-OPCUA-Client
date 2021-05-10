@@ -106,11 +106,11 @@ namespace Umati {
 
 			return true;
 		}
-		//TODO remove hardcoded Path for certs. Integrate cert generation? 
-		bool SetupSecurity::setupSecurity(UA_ClientConfig *config /*UA_SessionSecurityDiagnosticsDataType *sessionSecurityInfo*/) {
+		//TODO remove hardcoded Path for certs. Integrate cert generation? Use the provided paths 
+		bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
 
-			UA_ByteString certificate = loadFile("/home/mdeg/Documents/GitHub/Dashboard-OPCUA-Client/Tools/venv.crt");
-    		UA_ByteString privateKey  = loadFile("/home/mdeg/Documents/GitHub/Dashboard-OPCUA-Client/Tools/venv.key");
+			UA_ByteString certificate = loadFile("./Tools/venv.crt");
+    		UA_ByteString privateKey  = loadFile("./Tools/venv.key");
 
 			//VERIFY do we need the trustlist?
 			size_t trustListSize = 0;
