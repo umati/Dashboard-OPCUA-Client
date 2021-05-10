@@ -151,7 +151,7 @@ namespace Umati {
 					case UA_DATATYPEKIND_LOCALIZEDTEXT: {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
 						if (localText.locale.length == 0 ){
-						char *loc = ""; //VERIFY Maybe set this to default "en-US"?
+						char *loc = "";
 						localText.locale.length = strlen(loc);
 						localText.locale.data = (UA_Byte*)loc;
 						}

@@ -75,7 +75,7 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			client = UA_Client_new();
 			UA_ClientConfig *config = UA_Client_getConfig(client);
-			SetupSecurity::setupSecurity(config);
+			SetupSecurity::setupSecurity(config,client);
 			UA_ApplicationDescription desc;
 			UA_ApplicationDescription_init(&desc);
 			config->clientDescription = prepareSessionConnectInfo(desc);;
@@ -96,11 +96,12 @@ namespace Umati
 			open62541Cpp::UA_String sURL(m_serverUri.c_str());
 			UA_StatusCode  result;
 
+			UA_ClientConfig *config = UA_Client_getConfig(client);
 			UA_EndpointDescription* endpointDescriptions = NULL;
 			size_t endpointArraySize = 0;
 
-			//UA_EndpointDescription applicationDescriptions;
-			//UA_EndpointDescription_init(&applicationDescriptions);
+			UA_EndpointDescription applicationDescriptions;
+			UA_EndpointDescription_init(&applicationDescriptions);
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			result = m_opcUaWrapper->DiscoveryGetEndpoints(client,
@@ -122,34 +123,32 @@ namespace Umati
 				open62541Cpp::UA_String securityPolicy;
 				UA_Int32 securityMode{};
 			} desiredEndpoint;
-			//VERIFY do we need to save this? applicationDescription is not used outside...
-		    // auto desiredSecurity = m_security;
-			// for (UA_Int32 iEndpoint = 0; iEndpoint < endpointArraySize; iEndpoint++)
-			// {
+		    auto desiredSecurity = m_security;
+			for (UA_Int32 iEndpoint = 0; iEndpoint < endpointArraySize; iEndpoint++)
+			{
 
-			// if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
-			// 	{
-			// 		LOG(INFO) << "Wrong Security mode: " << endpointDescriptions[iEndpoint].securityMode;
-			// 		continue;
-			// 	}
-			
+			if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
+				{
+					LOG(INFO) << "Wrong Security mode: " << endpointDescriptions[iEndpoint].securityMode;
+					continue;
+				}
 
-			// 	desiredEndpoint.url.String->length = endpointDescriptions[iEndpoint].endpointUrl.length;
-			// 	desiredEndpoint.url.String->data = endpointDescriptions[iEndpoint].endpointUrl.data;
+				desiredEndpoint.url.String->length = endpointDescriptions[iEndpoint].endpointUrl.length;
+				desiredEndpoint.url.String->data = endpointDescriptions[iEndpoint].endpointUrl.data;
 
-			// 	LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url << std::endl;
-			// 	applicationDescriptions.serverCertificate = endpointDescriptions[iEndpoint].serverCertificate;
-			// 	applicationDescriptions.securityPolicyUri = endpointDescriptions[iEndpoint].securityPolicyUri;
-			// 	applicationDescriptions.securityMode = static_cast<UA_MessageSecurityMode>(endpointDescriptions[iEndpoint].securityMode);
-			// 	break;
-			// } 
+				LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url << std::endl;
+				applicationDescriptions.serverCertificate = endpointDescriptions[iEndpoint].serverCertificate;
+				applicationDescriptions.securityPolicyUri = endpointDescriptions[iEndpoint].securityPolicyUri;
+				applicationDescriptions.securityMode = static_cast<UA_MessageSecurityMode>(endpointDescriptions[iEndpoint].securityMode);
+				break;
+			} 
 		
-			// if (desiredEndpoint.url.String->length == 0)
-			// {
-			// 	LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
-			// 	UA_Client_delete(client);
-			// 	return false;
-			// }
+			if (desiredEndpoint.url.String->length == 0)
+			{
+				LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
+				UA_Client_delete(client);
+				return false;
+			}
 
 			m_opcUaWrapper->GetNewSession(m_pSession);
 
@@ -157,7 +156,6 @@ namespace Umati
 			if (result != UA_STATUSCODE_GOOD)
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
-				//VERIFY ConnectionStatusChanged wont be called otherwise
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
 				UA_Client_delete(client);
 				return false;	
@@ -166,8 +164,6 @@ namespace Umati
 
 			return true;
 		}
-		//VERIFY UA_CreateSessionRequest or UA_ApplicationDescription?
-		//TODO Rename function and object
 		UA_ApplicationDescription &
 		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
 		{
@@ -182,7 +178,7 @@ namespace Umati
 		{
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			updateNamespaceCache();
-			m_opcUaWrapper->SubscriptionCreateSubscription(client, m_pSession);
+			m_opcUaWrapper->SubscriptionCreateSubscription(client);
 		}
 
 		std::string OpcUaClient::getTypeName(const ModelOpcUa::NodeId_t &nodeId)
@@ -218,7 +214,6 @@ namespace Umati
 			UA_NodeClass returnClass;
 			UA_NodeClass_init(&returnClass);
 			try{
-				//TODO sometimes nodeId is null. Better error handling
 			auto uaResult = UA_Client_readNodeClassAttribute(client, *nodeId.NodeId, &returnClass);
 			if (UA_StatusCode_isBad(uaResult))
 			{
