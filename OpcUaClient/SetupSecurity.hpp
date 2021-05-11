@@ -13,6 +13,8 @@ namespace Umati {
 		class SetupSecurity {
 		public:
 			struct paths_t {
+				std::string PkiRoot;
+
 				std::string ServerTrustedCerts;
 				std::string ServerRevokedCerts;
 
@@ -25,7 +27,7 @@ namespace Umati {
 
 			static bool setupSecurity(UA_ClientConfig *config, UA_Client *client);
 
-			static bool createNewClientCert();
+			static void createNewClientCert();
 
 		protected:
 			static paths_t paths;

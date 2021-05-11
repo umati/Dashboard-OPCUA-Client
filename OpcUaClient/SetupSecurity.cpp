@@ -1,8 +1,9 @@
 
 #include "SetupSecurity.hpp"
 
+// #include <python3.8/Python.h>
+#include <stdlib.h>
 #include <string>
-
 #include <fstream>
 #include <iostream>
 #include <easylogging++.h>
@@ -12,10 +13,11 @@
 namespace Umati {
 	namespace OpcUa {
 		SetupSecurity::paths_t SetupSecurity::paths = {
+				"./pki/",
 				"./pki/server/trusted/",
 				"./pki/server/revoked/",
-				"./pki/clientPub.der",
-				"./pki/clientpriv.pem",
+				"./pki/client_cert.der",
+				"./pki/client_key.der",
 				"./pki/issuer/trusted/",
 				"./pki/issuer/revoked/"
 		};
@@ -56,7 +58,7 @@ namespace Umati {
 
 			return fileContents;
 		}
-
+		//FIXME 777 does not seem to work
 		static bool createDirs(std::string directory) {
 			if (directory.empty()) {
 				return true;
@@ -96,7 +98,7 @@ namespace Umati {
 					continue;
 				}
 
-				if (mkdir(ss.str().c_str(), 0x777) != 0) {
+				if (mkdir(ss.str().c_str(), mode_t(0777)) != 0) {
 					if (errno != EEXIST) {
 						return false;
 					}
@@ -106,11 +108,20 @@ namespace Umati {
 
 			return true;
 		}
-		//TODO remove hardcoded Path for certs. Integrate cert generation? Use the provided paths 
 		bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
+			std::ifstream f(paths.ClientPrivCert.c_str());
+				if (!f.good()) {
+					createDirs(paths.ServerRevokedCerts);
+					createDirs(paths.ServerTrustedCerts);
+					createDirs(paths.IssuerRevokedCerts);
+					createDirs(paths.IssuerTrustedCerts);
+					createNewClientCert(); 
+				}
+			
 
-			UA_ByteString certificate = loadFile("./Tools/venv.crt");
-    		UA_ByteString privateKey  = loadFile("./Tools/venv.key");
+
+			UA_ByteString certificate = loadFile(paths.ClientPubCert.c_str());
+    		UA_ByteString privateKey  = loadFile(paths.ClientPrivCert.c_str());
 
 			//VERIFY do we need the trustlist?
 			size_t trustListSize = 0;
@@ -126,10 +137,36 @@ namespace Umati {
 
 			return true;
 		}
+		//TODO use python-dev C lib to execute the script instaed of system()
+		void SetupSecurity::createNewClientCert() {
+			    // FILE* file;
+				// int argc;
+				// char * argv[3];
+				// std::string str = "outdir" + paths.ClientPubCert;
+				// char *cstr = new char[str.length() + 1];
+				// strcpy(cstr, str.c_str());
 
-		bool SetupSecurity::createNewClientCert() {
-			
-			return true;
+				// argc = 3;
+				// argv[0] = "create_self-signed.py";
+				// argv[1] = cstr;
+				// argv[2] = "-u urn:open62541.server.application";
+				// argv[3] = "-k 2048";
+				// argv[4] = "-c client";
+
+				// Py_SetProgramName(argv[0]);
+				// Py_Initialize();
+				// PySys_SetArgv(argc, argv);
+				// file = fopen("./Tools/create_self-signed.py","r");
+				// PyRun_SimpleFile(file, "create_self-signed.py");
+				// Py_Finalize();
+
+				// delete [] cstr;
+				std::string command = "./Tools/create_self-signed.py -u urn:open62541.server.application -k 2048 -c client " + paths.PkiRoot;
+				int retVal = system(command.c_str());
+				if (retVal != 0){
+					LOG(INFO) << "Creating for certs failed";
+				}
+			return;
 		}
 
 	}
