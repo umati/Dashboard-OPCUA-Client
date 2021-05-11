@@ -78,7 +78,8 @@ namespace Umati
 			SetupSecurity::setupSecurity(config,client);
 			UA_ApplicationDescription desc;
 			UA_ApplicationDescription_init(&desc);
-			config->clientDescription = prepareSessionConnectInfo(desc);;
+			//FIXME leads to SEGV when deleting the client
+			//config->clientDescription = prepareSessionConnectInfo(desc);;
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
@@ -161,7 +162,6 @@ namespace Umati
 				return false;	
 			} 
 			connectionStatusChanged(0,UA_SERVERSTATE_RUNNING);
-
 			return true;
 		}
 		UA_ApplicationDescription &
@@ -169,8 +169,8 @@ namespace Umati
 		{
 			sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT("en-US","KonI4.0 OPC UA Data Client");
 			sessionConnectInfo.applicationUri = UA_String_fromChars("urn:open62541.server.application");
-			sessionConnectInfo.productUri = UA_String_fromChars("KonI40OpcUaClient_Product");
-			//sessionConnectInfo.sessionName = UA_String_fromChars("DefaultSession");
+		 	sessionConnectInfo.productUri = UA_String_fromChars("KonI40OpcUaClient_Product");
+			sessionConnectInfo.applicationType = UA_APPLICATIONTYPE_CLIENT;
 			return sessionConnectInfo;
 		}
 
@@ -456,8 +456,9 @@ namespace Umati
 			}
 
 			m_pSession = nullptr;
-
-            UA_Client_delete(client);
+			disconnect();
+			UA_Client_delete(client);
+            
 		}
 
 		bool OpcUaClient::disconnect()
@@ -562,7 +563,6 @@ namespace Umati
 			std::list<ModelOpcUa::BrowseResult_t> browseResult;
 			ReferenceDescriptionsToBrowseResults(referenceDescriptions, browseResult, filter);
 			handleContinuationPoint(continuationPoint);
-
 			return browseResult;
 		}
 
