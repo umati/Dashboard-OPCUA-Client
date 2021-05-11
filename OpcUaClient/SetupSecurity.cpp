@@ -58,7 +58,6 @@ namespace Umati {
 
 			return fileContents;
 		}
-		//FIXME 777 does not seem to work
 		static bool createDirs(std::string directory) {
 			if (directory.empty()) {
 				return true;
@@ -115,10 +114,9 @@ namespace Umati {
 					createDirs(paths.ServerTrustedCerts);
 					createDirs(paths.IssuerRevokedCerts);
 					createDirs(paths.IssuerTrustedCerts);
-					createNewClientCert(); 
 				}
 			
-
+			createNewClientCert(); 
 
 			UA_ByteString certificate = loadFile(paths.ClientPubCert.c_str());
     		UA_ByteString privateKey  = loadFile(paths.ClientPrivCert.c_str());
@@ -137,30 +135,8 @@ namespace Umati {
 
 			return true;
 		}
-		//TODO use python-dev C lib to execute the script instaed of system()
+		//TODO use python-dev C lib to execute the script instaed of system(), dont use Hardcoded path
 		void SetupSecurity::createNewClientCert() {
-			    // FILE* file;
-				// int argc;
-				// char * argv[3];
-				// std::string str = "outdir" + paths.ClientPubCert;
-				// char *cstr = new char[str.length() + 1];
-				// strcpy(cstr, str.c_str());
-
-				// argc = 3;
-				// argv[0] = "create_self-signed.py";
-				// argv[1] = cstr;
-				// argv[2] = "-u urn:open62541.server.application";
-				// argv[3] = "-k 2048";
-				// argv[4] = "-c client";
-
-				// Py_SetProgramName(argv[0]);
-				// Py_Initialize();
-				// PySys_SetArgv(argc, argv);
-				// file = fopen("./Tools/create_self-signed.py","r");
-				// PyRun_SimpleFile(file, "create_self-signed.py");
-				// Py_Finalize();
-
-				// delete [] cstr;
 				std::string command = "./Tools/create_self-signed.py -u urn:open62541.server.application -k 2048 -c client " + paths.PkiRoot;
 				int retVal = system(command.c_str());
 				if (retVal != 0){
