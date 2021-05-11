@@ -791,7 +791,7 @@ namespace Umati
 			std::vector<nlohmann::json> ret;
 			std::vector<UA_DataValue> readValues = readValues2(modelNodeIds);
 
-			for (uint i = 0; i < readValues.size(); ++i) 
+			for (size_t i = 0; i < readValues.size(); ++i)
 			{
 				auto value = readValues[i];
 				auto valu = Converter::UaDataValueToJsonValue(value, false);

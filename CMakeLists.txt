@@ -27,7 +27,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 message("### opcua_dashboardclient: Set common directories for all executables in this project")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 message("### opcua_dashboardclient: Adding the target")
 add_custom_target(Dashboard_OpcUaClient)
@@ -75,48 +75,12 @@ if (DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
     target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher_Paho)
 endif ()
 
-
-if (WIN32)
-    message("### opcua_dashboardclient: Adding custom command to add windows opcua libs")
-    #Copy UA-SDK dlls to output directory
-    add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-            libeay32.dll
-            libeay32d.dll
-            libxml2.dll
-            libxml2d.dll
-            ssleay32.dll
-            ssleay32d.dll
-            uastack.dll
-            uastackd.dll
-            $<TARGET_FILE_DIR:DashboardOpcUaClient>
-            WORKING_DIRECTORY "${UASDK_BASE_DIR}/bin/"
-            COMMENT "Copy UA Dlls to bin"
-            )
-endif ()
-
-if (WIN32)
-    if (DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
-        message("### opcua_dashboardclient: Adding custom command to add windows mosquitto libs")
-        add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                libcrypto-1_1.dll
-                libssl-1_1.dll
-                mosquitto.dll
-                mosquittopp.dll
-                $<TARGET_FILE_DIR:DashboardOpcUaClient>
-                WORKING_DIRECTORY "${CPP_MOSQUITTO_DIR}/bin/"
-                COMMENT "Copy Mosquitto Dlls to bin"
-                )
-    endif ()
-endif ()
-
 if (WIN32)
     if (DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
         message("### opcua_dashboardclient: Adding custom command to add windows paho libs")
         add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE_DIR:PahoMqttC::PahoMqttC>/../bin/paho-mqtt3a.dll
+                $<TARGET_FILE_DIR:PahoMqttC::PahoMqttC>/../bin/libpaho-mqtt3a.dll
                 $<TARGET_FILE_DIR:DashboardOpcUaClient>
                 COMMENT "Copy PahoMqttC::PahoMqttC shared library to bin"
                 )

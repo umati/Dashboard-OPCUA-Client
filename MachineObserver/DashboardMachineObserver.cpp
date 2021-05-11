@@ -270,7 +270,7 @@ namespace Umati
 
 			nlohmann::json identificationData;
 			identificationListValues = m_pDataClient->ReadeNodeValues(identificationNodes);
-			for (uint i = 0; i < identificationListValues.size(); i++)
+			for (size_t i = 0; i < identificationListValues.size(); i++)
 			{
 				auto value = identificationListValues.at(i);
 				if (value != nullptr)
