@@ -20,6 +20,10 @@ static void createDataChangeCallback(UA_Client *client, UA_UInt32 subId, void *s
   notify.monitoredItems = &monitems;
   notify.monitoredItemsSize = 1;
   sub->dataChange(monId, notify, *notify.diagnosticInfos);
+
+  UA_MonitoredItemNotification_clear(&monitems);
+  UA_DataChangeNotification_clear(&notify);
+
 } 
 
 namespace Umati {
