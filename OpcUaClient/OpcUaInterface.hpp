@@ -136,6 +136,10 @@ namespace Umati {
 
 				UA_DataValue_copy(response.results,&values);
 				UA_DiagnosticInfo_copy(response.diagnosticInfos,&diagnosticInfos);
+
+				UA_ReadRequest_clear(&req);
+				UA_ReadResponse_clear(&response);
+
 				return values.status;
 			}
 
@@ -168,6 +172,10 @@ namespace Umati {
 				for(size_t i = 0; i < response.results[0].value.arrayLength; ++i){
 						namespaceArray.push_back(std::string(ns[i].data, ns[i].data + ns[i].length));
 				}
+				//FIXME free of not allocated
+				//UA_ReadRequest_clear(&request);
+				UA_ReadValueId_clear(&id);
+
 			}
 
 			std::vector<std::string> SessionGetNamespaceTable() override {
@@ -195,6 +203,9 @@ namespace Umati {
 							referenceDescriptions.push_back(browseResponse.results[i].references[j]);
 						}
 					}
+					//FIXME Double free
+   					//UA_BrowseRequest_clear(&browseRequest);
+
 					return browseResponse;
 			}
 
@@ -209,7 +220,12 @@ namespace Umati {
 				request.browsePathsSize = 1;
 				auto response = UA_Client_Service_translateBrowsePathsToNodeIds(client, request);
 				UA_BrowsePathResult_copy(response.results, &browsePathResults);		
-				return response.results->statusCode;				
+				UA_StatusCode retCode = response.results->statusCode;
+				//FIXME not allocated
+				//UA_TranslateBrowsePathsToNodeIdsRequest_clear(&request);
+				UA_TranslateBrowsePathsToNodeIdsResponse_clear(&response);
+
+				return retCode;				
 			}
 
 			void setSubscription(Subscription *p_in_subscr) override { p_subscr = p_in_subscr; }

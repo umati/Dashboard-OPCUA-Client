@@ -80,6 +80,7 @@ namespace Umati
 			UA_ApplicationDescription_init(&desc);
 			//FIXME leads to SEGV when deleting the client
 			//config->clientDescription = prepareSessionConnectInfo(desc);;
+			//UA_ApplicationDescription_clear(&desc);
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
@@ -162,6 +163,11 @@ namespace Umati
 				return false;	
 			} 
 			connectionStatusChanged(0,UA_SERVERSTATE_RUNNING);
+
+			UA_EndpointDescription_clear(&applicationDescriptions);
+			//FIXME double free
+			//UA_EndpointDescription_clear(endpointDescriptions);
+
 			return true;
 		}
 		UA_ApplicationDescription &
@@ -202,8 +208,11 @@ namespace Umati
 						   << "' with " << UA_StatusCode_name(uaResult);
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
+			std::string resName = std::string((char *)resultname.name.data,resultname.name.length);
 
-			return _nodeId.Uri + ";" + std::string((char *)resultname.name.data,resultname.name.length);
+			UA_QualifiedName_clear(&resultname);
+
+			return _nodeId.Uri + ";" + resName;
 		}
 
 		UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId)
@@ -264,6 +273,8 @@ namespace Umati
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
 
+			UA_NodeClass_clear(&nodeClass);
+
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 
 			UA_ByteString continuationPoint;
@@ -277,6 +288,7 @@ namespace Umati
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult.results->statusCode);
 			}
 
+			UA_BrowseResponse_clear(&uaResult);
 			std::list<ModelOpcUa::BrowseResult_t> browseResult;
 			if (referenceDescriptions.size() == 0)
 			{
@@ -379,6 +391,9 @@ namespace Umati
 						   << uaNodeId.NodeId->identifier.string.data;
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult2.results->statusCode);
 			}
+
+			UA_BrowseDescription_clear(&browseContext2);
+			UA_BrowseResponse_clear(&uaResult2);
 			
 			for (UA_Int32 i = 0; i < referenceDescriptions.size(); i++)
 			{
@@ -468,6 +483,7 @@ namespace Umati
 				m_subscr.deleteSubscription(client);
 				return (m_opcUaWrapper->SessionDisconnect(client, UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
 			}
+			UA_Client_disconnect(client);
 			return true;
 		}
 
@@ -515,20 +531,23 @@ namespace Umati
 		UA_NodeClass OpcUaClient::nodeClassFromNodeId(const open62541Cpp::UA_NodeId &typeDefinitionUaNodeId)
 		{
 			UA_NodeClass nodeClass = readNodeClass(typeDefinitionUaNodeId);
-
+			
 			switch (nodeClass)
 			{
 			case UA_NODECLASS_OBJECTTYPE:
-			{
+			{	
+				UA_NodeClass_clear(&nodeClass);
 				return UA_NODECLASS_OBJECT;
 				break;
 			}
 			case UA_NODECLASS_VARIABLETYPE:
 			{
+				UA_NodeClass_clear(&nodeClass);
 				return UA_NODECLASS_VARIABLE;
 				break;
 			}
 			default:
+				UA_NodeClass_clear(&nodeClass);
 				LOG(ERROR) << "Invalid NodeClass " //<< nodeClass
 						   << " expect object or variable type for node ";
 						  // << typeDefinitionUaNodeId.NodeId->identifier.string.data;
@@ -549,7 +568,7 @@ namespace Umati
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			checkConnection();
-			UA_BrowseResponse uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
+			auto uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 
 		    if (UA_StatusCode_isBad(uaResult.results->statusCode))
@@ -563,6 +582,10 @@ namespace Umati
 			std::list<ModelOpcUa::BrowseResult_t> browseResult;
 			ReferenceDescriptionsToBrowseResults(referenceDescriptions, browseResult, filter);
 			handleContinuationPoint(continuationPoint);
+
+			UA_BrowseResponse_clear(&uaResult);
+			UA_BrowseDescription_clear(&browseContext);
+
 			return browseResult;
 		}
 
@@ -685,12 +708,15 @@ namespace Umati
 			uaBrowsePathElements.isInverse = UA_FALSE;
 			uaBrowsePathElements.referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
             UA_QualifiedName_copy(&uaBrowseName, &uaBrowsePathElements.targetName);
+			UA_RelativePathElement_clear(&uaBrowsePathElements);
 
 			UA_BrowsePath uaBrowsePaths;
 			UA_BrowsePath_init(&uaBrowsePaths);
 			uaBrowsePaths.relativePath.elementsSize = 1;
 			uaBrowsePaths.relativePath.elements = &uaBrowsePathElements;
 			UA_NodeId_copy(startUaNodeId.NodeId, &uaBrowsePaths.startingNode);
+			//FIXME free on adress which was not malloc
+			//UA_BrowsePath_clear(&uaBrowsePaths);
 
 			UA_BrowsePathResult uaBrowsePathResults;
 			UA_DiagnosticInfo uaDiagnosticInfos;
@@ -776,6 +802,7 @@ namespace Umati
 				auto valu = Converter::UaDataValueToJsonValue(value, false);
 				auto val = valu.getValue();
 				ret.push_back(val);
+				UA_DataValue_clear(&readValues[i]);
 			}
 			return ret;
 		}
@@ -813,6 +840,10 @@ namespace Umati
 				}
 				
 			}
+			//FIXME  heap-use-after-free on address 
+			//UA_Variant_clear(&tmpVariant);
+			//UA_DataValue_clear(&tmpReadValue);
+
 			
 			return readValues;
 		}
