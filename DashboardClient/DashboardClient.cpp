@@ -22,7 +22,8 @@ namespace Umati
 		{
 			// Ensure that everything is unsubscribed before deleting m_dataSets
 			m_subscribedValues.clear();
-			m_dataSets.clear();
+			//FIXME Heap use after free
+			//m_dataSets.clear();
 			m_latestMessages.clear();
 		}
 
