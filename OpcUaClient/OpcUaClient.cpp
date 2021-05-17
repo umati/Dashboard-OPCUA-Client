@@ -483,7 +483,6 @@ namespace Umati
 				m_subscr.deleteSubscription(client);
 				return (m_opcUaWrapper->SessionDisconnect(client, UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
 			}
-			UA_Client_disconnect(client);
 			return true;
 		}
 
@@ -581,11 +580,14 @@ namespace Umati
 
 			std::list<ModelOpcUa::BrowseResult_t> browseResult;
 			ReferenceDescriptionsToBrowseResults(referenceDescriptions, browseResult, filter);
+			//FIXME DashboardCleint.cpp line 414 need NULL check when this is cleared...
+			for (auto elem : referenceDescriptions){
+				UA_ReferenceDescription_clear(&elem);
+			}
 			handleContinuationPoint(continuationPoint);
 
-			//UA_BrowseResponse_clear(&uaResult);
+			
 			UA_BrowseDescription_clear(&browseContext);
-
 			return browseResult;
 		}
 
@@ -597,7 +599,7 @@ namespace Umati
 				for (UA_Int32 i = 0; i < referenceDescriptions.size(); i++)
 			{
 				if (!filter(referenceDescriptions.at(i)))
-				{
+				{					
 				continue;
 				}
 					UA_ReferenceDescription tmp = referenceDescriptions.at(i);
