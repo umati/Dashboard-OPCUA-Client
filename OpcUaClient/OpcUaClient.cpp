@@ -583,7 +583,7 @@ namespace Umati
 			ReferenceDescriptionsToBrowseResults(referenceDescriptions, browseResult, filter);
 			handleContinuationPoint(continuationPoint);
 
-			UA_BrowseResponse_clear(&uaResult);
+			//UA_BrowseResponse_clear(&uaResult);
 			UA_BrowseDescription_clear(&browseContext);
 
 			return browseResult;
@@ -708,7 +708,7 @@ namespace Umati
 			uaBrowsePathElements.isInverse = UA_FALSE;
 			uaBrowsePathElements.referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
             UA_QualifiedName_copy(&uaBrowseName, &uaBrowsePathElements.targetName);
-			UA_RelativePathElement_clear(&uaBrowsePathElements);
+			//UA_RelativePathElement_clear(&uaBrowsePathElements);
 
 			UA_BrowsePath uaBrowsePaths;
 			UA_BrowsePath_init(&uaBrowsePaths);
