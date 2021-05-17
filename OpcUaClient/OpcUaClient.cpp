@@ -165,9 +165,8 @@ namespace Umati
 			connectionStatusChanged(0,UA_SERVERSTATE_RUNNING);
 
 			UA_EndpointDescription_clear(&applicationDescriptions);
-			//FIXME double free
-			//UA_EndpointDescription_clear(endpointDescriptions);
-
+			UA_EndpointDescription_clear(endpointDescriptions);
+			UA_StatusCode_clear(&result);
 			return true;
 		}
 		UA_ApplicationDescription &
@@ -586,7 +585,6 @@ namespace Umati
 			}
 			handleContinuationPoint(continuationPoint);
 
-			
 			UA_BrowseDescription_clear(&browseContext);
 			return browseResult;
 		}

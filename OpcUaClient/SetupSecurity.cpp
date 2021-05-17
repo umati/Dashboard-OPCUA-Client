@@ -133,6 +133,9 @@ namespace Umati {
 												 trustList, trustListSize,
 												 revocationList, revocationListSize);
 
+			UA_ByteString_clear(&certificate);
+			UA_ByteString_clear(&privateKey);
+
 			return true;
 		}
 		//TODO use python-dev C lib to execute the script instaed of system(), dont use Hardcoded path
