@@ -151,9 +151,10 @@ namespace Umati {
 					case UA_DATATYPEKIND_LOCALIZEDTEXT: {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
 						if (localText.locale.length == 0 ){
-						char *loc = "";
-						localText.locale.length = strlen(loc);
-						localText.locale.data = (UA_Byte*)loc;
+
+						localText.locale.length = strlen("");
+						localText.locale.data = (UA_Byte*)"";
+						
 						}
 						jsonValue = {};
 						jsonValue["locale"] = std::string((char*)localText.locale.data,localText.locale.length);
