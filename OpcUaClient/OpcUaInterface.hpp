@@ -186,14 +186,17 @@ namespace Umati {
 					const UA_BrowseDescription &browseContext,
 					UA_ByteString &continuationPoint,
 					std::vector<UA_ReferenceDescription> &referenceDescriptions) override {
-						
+					UA_NodeId tmpNode;
+					UA_NodeId_init(&tmpNode);
+					UA_NodeId_copy(nodeToBrowse.NodeId,&tmpNode);
+
 					UA_BrowseRequest browseRequest;
 					UA_BrowseRequest_init(&browseRequest);
 					browseRequest.requestedMaxReferencesPerNode = 0;
 					browseRequest.nodesToBrowse = UA_BrowseDescription_new();
 					browseRequest.nodesToBrowseSize = 1;
 					*browseRequest.nodesToBrowse = browseContext;
-					browseRequest.nodesToBrowse[0].nodeId = *nodeToBrowse.NodeId; 
+					browseRequest.nodesToBrowse[0].nodeId = tmpNode; 
 					UA_BrowseResponse browseResponse;
 					UA_BrowseResponse_init(&browseResponse);
 					browseResponse = UA_Client_Service_browse(client, browseRequest);
@@ -203,8 +206,7 @@ namespace Umati {
 							referenceDescriptions.push_back(browseResponse.results[i].references[j]);
 						}
 					}
-					//FIXME Double free
-   					//UA_BrowseRequest_clear(&browseRequest);
+   					UA_BrowseRequest_clear(&browseRequest);
 
 					return browseResponse;
 			}

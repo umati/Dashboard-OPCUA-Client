@@ -93,6 +93,7 @@ namespace Umati
 			}
 
 			m_pPublisher->Publish(Topics::List("MachineTools"), publishData.dump(0));
+			publishData.clear();
 		}
 
 		std::string DashboardMachineObserver::getTypeName(const ModelOpcUa::NodeId_t &nodeId)

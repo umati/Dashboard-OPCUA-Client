@@ -341,7 +341,9 @@ namespace Umati
                 auto current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule,
                                                       ofBaseDataVariableType);
                 browseTypes(bidirectionalTypeMap, browseContext, browseResult.NodeId, current, ofBaseDataVariableType);
+                current.reset();
             }
+            
         }
 
         std::shared_ptr<ModelOpcUa::StructureNode> OpcUaTypeReader::getTypeOfNamespace(const std::string &namespaceUri) const
