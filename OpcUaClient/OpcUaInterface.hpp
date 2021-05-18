@@ -177,8 +177,7 @@ namespace Umati {
 				for(size_t i = 0; i < response.results[0].value.arrayLength; ++i){
 						namespaceArray.push_back(std::string(ns[i].data, ns[i].data + ns[i].length));
 				}
-				//FIXME free of not allocated
-				//UA_ReadRequest_clear(&request);
+				UA_String_delete(ns);
 				UA_ReadValueId_clear(&id);
 
 			}
