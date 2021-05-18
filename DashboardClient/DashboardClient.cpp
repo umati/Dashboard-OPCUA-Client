@@ -22,9 +22,12 @@ namespace Umati
 		{
 			// Ensure that everything is unsubscribed before deleting m_dataSets
 			m_subscribedValues.clear();
-			//FIXME Heap use after free
-			//m_dataSets.clear();
+			m_dataSets.clear();
 			m_latestMessages.clear();
+			m_pTypeReader.reset();
+			m_pDashboardDataClient.reset();
+			m_pPublisher.reset();
+			
 		}
 
 		/**
@@ -42,7 +45,6 @@ namespace Umati
 				std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition,
 																						  channel);
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
-				LOG(WARNING) << "Disabled Subscription for the moment";
 				subscribeValues(client, pDataSetStorage->node, pDataSetStorage->values);
 				LOG(INFO) << "Values subscribed for  " << channel;
 				m_dataSets.push_back(pDataSetStorage);

@@ -132,6 +132,9 @@ namespace Umati
 					m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
 					m_machineNames.insert(std::make_pair(machine.NodeId, machine.BrowseName.Name));
 				}
+
+				_client = NULL;
+				delete _client;
 			}
 			catch (const Umati::Exceptions::OpcUaException &ex)
 			{
