@@ -78,6 +78,13 @@ namespace Umati {
 
 		class OpcUaWrapper : public OpcUaInterface {
 		public:
+
+			~OpcUaWrapper(){
+				p_subscr = NULL;
+				delete p_subscr;
+				pSession.reset();
+			}
+
 			UA_StatusCode DiscoveryGetEndpoints(UA_Client *client, const open62541Cpp::UA_String *sDiscoveryURL,
 										   size_t *endpointDescriptionsSize,
 										   UA_EndpointDescription **endpointDescriptions) override {		
