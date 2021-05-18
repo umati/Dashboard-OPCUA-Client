@@ -78,9 +78,7 @@ namespace Umati
 			SetupSecurity::setupSecurity(config,client);
 			UA_ApplicationDescription desc;
 			UA_ApplicationDescription_init(&desc);
-			//FIXME leads to SEGV when deleting the client
-			//config->clientDescription = prepareSessionConnectInfo(desc);;
-			//UA_ApplicationDescription_clear(&desc);
+			config->clientDescription = prepareSessionConnectInfo(desc);;
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
@@ -171,8 +169,9 @@ namespace Umati
 		}
 		UA_ApplicationDescription &
 		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
-		{
-			sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT("en-US","KonI4.0 OPC UA Data Client");
+		{	
+			sessionConnectInfo.applicationName.locale = UA_String_fromChars("en-US");
+			sessionConnectInfo.applicationName.text = UA_String_fromChars("KonI4.0 OPC UA Data Client");
 			sessionConnectInfo.applicationUri = UA_String_fromChars("urn:open62541.server.application");
 		 	sessionConnectInfo.productUri = UA_String_fromChars("KonI40OpcUaClient_Product");
 			sessionConnectInfo.applicationType = UA_APPLICATIONTYPE_CLIENT;
@@ -470,6 +469,7 @@ namespace Umati
 			}
 
 			m_pSession = nullptr;
+			m_subscr.deleteSubscription(client);
 			disconnect();
 			UA_Client_delete(client);
             
