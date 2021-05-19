@@ -66,7 +66,7 @@ namespace Umati {
 			std::vector<std::string> parts;
 
 			std::string pathPart = "";
-			uint i = 0;
+			unsigned int i = 0;
 
 			// Directory must end with a '/', otherwise last part is ignored (expected file)
 			while (i < directory.size()) {
@@ -96,8 +96,12 @@ namespace Umati {
 				if (part == "." || part == "..") {
 					continue;
 				}
-
-				if (mkdir(ss.str().c_str(), mode_t(0777)) != 0) {
+#if defined(_WIN32)
+				if (_mkdir(ss.str().c_str()) != 0)
+#else
+				if (mkdir(ss.str().c_str(), mode_t(0x777)) != 0)
+#endif
+				{
 					if (errno != EEXIST) {
 						return false;
 					}
