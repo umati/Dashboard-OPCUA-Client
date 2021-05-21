@@ -184,7 +184,6 @@ namespace Umati {
 								jsonValue["unitId"] = euInfo.unitId;
 								
 								{
-									//VERIFY text = displayName and description = locale?
 									UA_DataValue dataVal(*(UA_DataValue*)euInfo.displayName.text.data);
 									jsonValue["displayName"] = UaDataValueToJsonValue(
 										dataVal,

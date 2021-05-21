@@ -227,8 +227,6 @@ namespace Umati {
 				auto response = UA_Client_Service_translateBrowsePathsToNodeIds(client, request);
 				UA_BrowsePathResult_copy(response.results, &browsePathResults);		
 				UA_StatusCode retCode = response.results->statusCode;
-				//FIXME not allocated
-				//UA_TranslateBrowsePathsToNodeIdsRequest_clear(&request);
 				UA_TranslateBrowsePathsToNodeIdsResponse_clear(&response);
 
 				return retCode;				
