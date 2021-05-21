@@ -96,7 +96,6 @@ namespace Umati
 			open62541Cpp::UA_String sURL(m_serverUri.c_str());
 			UA_StatusCode  result;
 
-			UA_ClientConfig *config = UA_Client_getConfig(client);
 			UA_EndpointDescription* endpointDescriptions = NULL;
 			size_t endpointArraySize = 0;
 
@@ -577,15 +576,14 @@ namespace Umati
 			 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult.results->statusCode);
 			 }
 
+			
 			std::list<ModelOpcUa::BrowseResult_t> browseResult;
 			ReferenceDescriptionsToBrowseResults(referenceDescriptions, browseResult, filter);
-			//FIXME DashboardCleint.cpp line 414 need NULL check when this is cleared...
-			for (auto elem : referenceDescriptions){
-				UA_ReferenceDescription_clear(&elem);
-			}
+
 			handleContinuationPoint(continuationPoint);
 
 			UA_BrowseDescription_clear(&browseContext);
+			UA_BrowseResponse_clear(&uaResult);
 			return browseResult;
 		}
 
@@ -708,15 +706,12 @@ namespace Umati
 			uaBrowsePathElements.isInverse = UA_FALSE;
 			uaBrowsePathElements.referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
             UA_QualifiedName_copy(&uaBrowseName, &uaBrowsePathElements.targetName);
-			//UA_RelativePathElement_clear(&uaBrowsePathElements);
 
 			UA_BrowsePath uaBrowsePaths;
 			UA_BrowsePath_init(&uaBrowsePaths);
 			uaBrowsePaths.relativePath.elementsSize = 1;
 			uaBrowsePaths.relativePath.elements = &uaBrowsePathElements;
 			UA_NodeId_copy(startUaNodeId.NodeId, &uaBrowsePaths.startingNode);
-			//FIXME free on adress which was not malloc
-			//UA_BrowsePath_clear(&uaBrowsePaths);
 
 			UA_BrowsePathResult uaBrowsePathResults;
 			UA_DiagnosticInfo uaDiagnosticInfos;
@@ -840,10 +835,6 @@ namespace Umati
 				}
 				
 			}
-			//FIXME  heap-use-after-free on address 
-			//UA_Variant_clear(&tmpVariant);
-			//UA_DataValue_clear(&tmpReadValue);
-
 			
 			return readValues;
 		}

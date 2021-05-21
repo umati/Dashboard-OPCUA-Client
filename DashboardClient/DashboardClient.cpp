@@ -412,13 +412,8 @@ namespace Umati
 
 			auto callback = [pNode, &valueMap](nlohmann::json value) {
 				try
-				{
-					//FIXME head use after free when this check is removed
-					if(value != NULL){
+				{	
 					valueMap[pNode] = value;
-					}else{
-						valueMap[pNode] = nlohmann::json();
-					}
 				}
 				catch (std::exception &ex)
 				{
