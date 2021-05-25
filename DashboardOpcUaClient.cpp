@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
 	{
 		std::lock_guard<std::recursive_mutex> l(pClient.get()->m_clientMutex);
-		auto retval = UA_Client_run_iterate(pClient.get()->client, 1000);
+		auto retval = UA_Client_run_iterate(pClient->m_pClient.get(), 1000);
 	}
 
 	int i = 0;

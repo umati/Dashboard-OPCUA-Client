@@ -113,17 +113,25 @@ namespace Umati {
 		}
 		bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
 			std::ifstream f(paths.ClientPrivCert.c_str());
-				if (!f.good()) {
-					createDirs(paths.ServerRevokedCerts);
-					createDirs(paths.ServerTrustedCerts);
-					createDirs(paths.IssuerRevokedCerts);
-					createDirs(paths.IssuerTrustedCerts);
-				}
-			
-			createNewClientCert(); 
+			if (!f.good()) {
+				createDirs(paths.ServerRevokedCerts);
+				createDirs(paths.ServerTrustedCerts);
+				createDirs(paths.IssuerRevokedCerts);
+				createDirs(paths.IssuerTrustedCerts);
+			}
 
 			UA_ByteString certificate = loadFile(paths.ClientPubCert.c_str());
-    		UA_ByteString privateKey  = loadFile(paths.ClientPrivCert.c_str());
+			UA_ByteString privateKey  = loadFile(paths.ClientPrivCert.c_str());
+			if(certificate.length == 0 || privateKey.length == 0)
+			{
+				createNewClientCert();
+				certificate = loadFile(paths.ClientPubCert.c_str());
+				privateKey  = loadFile(paths.ClientPrivCert.c_str());
+				if(certificate.length == 0 || privateKey.length == 0)
+				{
+					LOG(ERROR) << "Could not load client keyfiles ('" << paths.ClientPubCert << "', '" << paths.ClientPrivCert << "')";
+				}
+			}
 
 			//VERIFY do we need the trustlist?
 			size_t trustListSize = 0;

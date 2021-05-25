@@ -69,13 +69,13 @@ namespace Umati
 								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
 			: m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)),
 			  m_security(static_cast<UA_MessageSecurityMode>(security)),
-			 m_subscr(m_uriToIndexCache, m_indexToUriCache)
+			 m_subscr(m_uriToIndexCache, m_indexToUriCache),
+			 m_pClient(UA_Client_new(), UA_Client_delete)
 			 
         {
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			client = UA_Client_new();
-			UA_ClientConfig *config = UA_Client_getConfig(client);
-			SetupSecurity::setupSecurity(config,client);
+			UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
+			SetupSecurity::setupSecurity(config, m_pClient.get());
 			UA_ApplicationDescription desc;
 			UA_ApplicationDescription_init(&desc);
 			config->clientDescription = prepareSessionConnectInfo(desc);;
@@ -103,14 +103,13 @@ namespace Umati
 			UA_EndpointDescription_init(&applicationDescriptions);
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			result = m_opcUaWrapper->DiscoveryGetEndpoints(client,
+			result = m_opcUaWrapper->DiscoveryGetEndpoints(m_pClient.get(),
 															&sURL, 
 															&endpointArraySize,
 															&endpointDescriptions); 
 			if (result != UA_STATUSCODE_GOOD)	
 			{
 				LOG(ERROR) << UA_StatusCode_name(result);
-				UA_Client_delete(client);
 				return false;
 			}
 
@@ -145,19 +144,16 @@ namespace Umati
 			if (desiredEndpoint.url.String->length == 0)
 			{
 				LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
-				UA_Client_delete(client);
 				return false;
 			}
 
 			m_opcUaWrapper->GetNewSession(m_pSession);
 
-			result = m_opcUaWrapper->SessionConnectUsername(client,sURL, m_username, m_password);
+			result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
 			if (result != UA_STATUSCODE_GOOD)
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
-				/// \FIXME Do not delete or ensure that it's not accessed later
-				UA_Client_delete(client);
 				return false;	
 			} 
 			connectionStatusChanged(0,UA_SERVERSTATE_RUNNING);
@@ -182,7 +178,7 @@ namespace Umati
 		{
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			updateNamespaceCache();
-			m_opcUaWrapper->SubscriptionCreateSubscription(client);
+			m_opcUaWrapper->SubscriptionCreateSubscription(m_pClient.get());
 		}
 
 		std::string OpcUaClient::getTypeName(const ModelOpcUa::NodeId_t &nodeId)
@@ -198,7 +194,7 @@ namespace Umati
 
 			UA_QualifiedName resultname;
 			UA_QualifiedName_init(&resultname);
-			auto uaResult = UA_Client_readBrowseNameAttribute(client, *nodeId.NodeId, &resultname);
+			auto uaResult = UA_Client_readBrowseNameAttribute(m_pClient.get(), *nodeId.NodeId, &resultname);
 
 			if (UA_StatusCode_isBad(uaResult))
 			{
@@ -221,7 +217,7 @@ namespace Umati
 			UA_NodeClass returnClass;
 			UA_NodeClass_init(&returnClass);
 			try{
-			auto uaResult = UA_Client_readNodeClassAttribute(client, *nodeId.NodeId, &returnClass);
+			auto uaResult = UA_Client_readNodeClassAttribute(m_pClient.get(), *nodeId.NodeId, &returnClass);
 			if (UA_StatusCode_isBad(uaResult))
 			{
 				LOG(ERROR) << "readNodeClass failed";
@@ -235,7 +231,7 @@ namespace Umati
 
 		void OpcUaClient::checkConnection()
 		{
-			if (!this->m_isConnected || !m_opcUaWrapper->SessionIsConnected(client))
+			if (!this->m_isConnected || !m_opcUaWrapper->SessionIsConnected(m_pClient.get()))
 			{
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
 				throw Exceptions::ClientNotConnected("Need connected client.");
@@ -277,7 +273,7 @@ namespace Umati
 
 			UA_ByteString continuationPoint;
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
-			auto uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ typeNodeId, browseContext,
+			auto uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ typeNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 			
 			if (uaResult.results->statusCode != UA_STATUSCODE_GOOD)
@@ -336,7 +332,7 @@ namespace Umati
 		void OpcUaClient::initializeNamespaceCache()
 		{
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			m_opcUaWrapper->SessionUpdateNamespaceTable(client);
+			m_opcUaWrapper->SessionUpdateNamespaceTable(m_pClient.get());
 
 			m_uriToIndexCache.clear();
 			m_indexToUriCache.clear();
@@ -380,7 +376,7 @@ namespace Umati
 			ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Optional;
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			auto uaResult2 = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ uaNodeId,
+			auto uaResult2 = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ uaNodeId,
 														   browseContext2,
 														   continuationPoint, referenceDescriptions);
 			if (uaResult2.results->statusCode != UA_STATUSCODE_GOOD)
@@ -469,18 +465,16 @@ namespace Umati
 			}
 
 			m_pSession = nullptr;
-			m_subscr.deleteSubscription(client);
+			m_subscr.deleteSubscription(m_pClient.get());
 			disconnect();
-			UA_Client_delete(client);
-            
 		}
 
 		bool OpcUaClient::disconnect()
 		{
 			if (m_pSession)
 			{
-				m_subscr.deleteSubscription(client);
-				return (m_opcUaWrapper->SessionDisconnect(client, UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
+				m_subscr.deleteSubscription(m_pClient.get());
+				return (m_opcUaWrapper->SessionDisconnect(m_pClient.get(), UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
 			}
 			return true;
 		}
@@ -566,18 +560,17 @@ namespace Umati
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			checkConnection();
-			auto uaResult = m_opcUaWrapper->SessionBrowse(client, /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
+			auto uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 
-		    if (UA_StatusCode_isBad(uaResult.results->statusCode))
-			 {
+			if (uaResult.resultsSize > 0 && UA_StatusCode_isBad(uaResult.results->statusCode))
+			{
 				LOG(ERROR) << "Bad return from browse: " << uaResult.results->references->browseName.name.data << ", with startUaNodeId "
 						   << startUaNodeId.NodeId->identifier.string.data
 						   << " and ref id " << browseContext.referenceTypeId.identifier.string.data;
-			 throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult.results->statusCode);
-			 }
+				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult.results->statusCode);
+			}
 
-			
 			std::list<ModelOpcUa::BrowseResult_t> browseResult;
 			ReferenceDescriptionsToBrowseResults(referenceDescriptions, browseResult, filter);
 
@@ -719,7 +712,7 @@ namespace Umati
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
-				client,
+				m_pClient.get(),
 				uaBrowsePaths,
 				uaBrowsePathResults,
 				uaDiagnosticInfos);
@@ -784,7 +777,7 @@ namespace Umati
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
 		OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
-			return m_opcUaWrapper->SubscriptionSubscribe(client, nodeId, callback);
+			return m_opcUaWrapper->SubscriptionSubscribe(m_pClient.get(), nodeId, callback);
 		}
 	
 		std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
@@ -818,7 +811,7 @@ namespace Umati
 			{
 
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				tmpReadValue.status = UA_Client_readValueAttribute(client, *nodeId.NodeId, &tmpVariant);
+				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpVariant);
 				tmpReadValue.value = tmpVariant;
 				tmpReadValue.hasStatus = UA_TRUE;
 				tmpReadValue.hasValue = UA_TRUE;
