@@ -32,7 +32,6 @@ namespace Umati
             std::shared_ptr<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap = std::make_shared<std::map<std::string, std::shared_ptr<ModelOpcUa::StructureNode>>>();
             std::shared_ptr<std::map<std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map<std::string, ModelOpcUa::NodeId_t>>();
             std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(const std::string &namespaceUri) const;
-            Umati::Dashboard::IDashboardDataClient* getClient();
         protected:
             std::shared_ptr<Umati::Dashboard::IDashboardDataClient> m_pClient;
             const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"", ""};

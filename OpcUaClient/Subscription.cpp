@@ -122,15 +122,16 @@ namespace Umati {
 			if (m_pSubscription == NULL) {
 				auto request = UA_CreateSubscriptionRequest_default();
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(client, request,
-                                                                            this, NULL, NULL);
-    			if(!UA_StatusCode_isBad(result.responseHeader.serviceResult)){
-        			LOG(ERROR) << "Create subscription succeeded, id " << result.subscriptionId;
+																				this, NULL, NULL);
+				if(!UA_StatusCode_isBad(result.responseHeader.serviceResult)){
+					LOG(ERROR) << "Create subscription succeeded, id " << result.subscriptionId;
 					m_pSubscriptionID = result.subscriptionId;
 				} else {
-				LOG(WARNING) << "Subscription is not empty, won't create new subscription.";	
-			} 
-		  }
+					LOG(WARNING) << "Subscription is not empty, won't create new subscription.";	
+				}
+			}
 		}
+
 		void Subscription::deleteSubscription(UA_Client *client) {
 			if (m_pSubscription) {
 				m_pSubscriptionWrapper->SessionDeleteSubscription(client, *m_pDeleteSubscription);

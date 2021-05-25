@@ -156,6 +156,7 @@ namespace Umati
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
+				/// \FIXME Do not delete or ensure that it's not accessed later
 				UA_Client_delete(client);
 				return false;	
 			} 
@@ -781,7 +782,7 @@ namespace Umati
 			}
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
-		OpcUaClient::Subscribe(UA_Client *client ,ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
+		OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
 			return m_opcUaWrapper->SubscriptionSubscribe(client, nodeId, callback);
 		}

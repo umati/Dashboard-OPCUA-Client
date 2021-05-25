@@ -34,7 +34,6 @@ namespace Umati {
 			~DashboardClient();
 
 			void addDataSet(
-					UA_Client *client,
 					const ModelOpcUa::NodeId_t &startNodeId,
 					const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
 					const std::string &channel);
@@ -68,7 +67,6 @@ namespace Umati {
 					std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> pStructurePlaceholder);
 
 			void subscribeValues(
-					UA_Client *client,
 					const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
 					std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
 			);
@@ -83,16 +81,16 @@ namespace Umati {
 
 			bool isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 
-			void handleSubscribeChildNodes(UA_Client *client, const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
+			void handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
 										   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
-			void handleSubscribePlaceholderChildNode(UA_Client *client, const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+			void handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
 													 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
-			void subscribeValue(UA_Client *client, const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
+			void subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
 								std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
-			void handleSubscribeChildNode(UA_Client *client, const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
+			void handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
 										  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
 
 			void preparePlaceholderNodesTypeId(

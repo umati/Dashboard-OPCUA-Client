@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MachineObserver.hpp"
-#include "OpcUaClient.hpp"
 #include <OpcUaTypeReader.hpp>
 #include <DashboardClient.hpp>
 #include <atomic>

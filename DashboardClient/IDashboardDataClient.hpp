@@ -1,7 +1,6 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
-#include <open62541/client_highlevel.h>
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <functional>
 #include "NodeIdsWellKnown.hpp"
@@ -159,7 +158,7 @@ namespace Umati
             virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
             virtual std::shared_ptr<ValueSubscriptionHandle>
-            Subscribe(UA_Client *client, ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
+            Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
 
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 

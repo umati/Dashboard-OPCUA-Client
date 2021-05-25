@@ -58,7 +58,7 @@ namespace Umati
 												 ModelOpcUa::QualifiedName_t browseName) override;
 
 			std::shared_ptr<ValueSubscriptionHandle>
-			Subscribe(UA_Client *client, ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
+			Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
 
 			std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
 
