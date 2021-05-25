@@ -52,6 +52,7 @@ namespace Umati
 				std::string Specification;
 				std::string MachineName;
 				ModelOpcUa::NodeId_t TypeDefinition;
+				ModelOpcUa::NodeId_t Parent;
 			};
 
 			int m_publishMachinesOnline = 0;
@@ -60,13 +61,12 @@ namespace Umati
 			std::thread m_updateMachineThread;
 
 			std::shared_ptr<Umati::Dashboard::IPublisher> m_pPublisher;
-			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> m_pOpcUaTypeReader;
 			std::mutex m_dashboardClients_mutex;
 			std::map<ModelOpcUa::NodeId_t, std::shared_ptr<Umati::Dashboard::DashboardClient>> m_dashboardClients;
 			std::map<ModelOpcUa::NodeId_t, MachineInformation_t> m_onlineMachines;
 			std::map<ModelOpcUa::NodeId_t, std::string> m_machineNames;
 
-			void browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId,
+			void browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId, const ModelOpcUa::NodeId_t &typeDefinition, 
 											ModelOpcUa::BrowseResult_t &identification,
 											nlohmann::json &identificationAsJson) const;
 			///\TODO Refactor: Rename, integrate into browseIdentificationValues!?
@@ -74,12 +74,6 @@ namespace Umati
 				const ModelOpcUa::NodeId_t &identificationInstance,
 				std::list<ModelOpcUa::NodeId_t> &identificationNodes,
 				std::vector<std::string> &identificationValueKeys) const;
-
-			std::shared_ptr<ModelOpcUa::StructureNode> getTypeOfNamespace(const ModelOpcUa::NodeId_t &nodeId) const;
-
-			std::shared_ptr<ModelOpcUa::StructureNode>
-			getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &typeDefinition) const;
-
 			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId);
 		};
 	} // namespace MachineObserver

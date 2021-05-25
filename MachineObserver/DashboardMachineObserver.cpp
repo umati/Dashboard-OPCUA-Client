@@ -5,6 +5,7 @@
 #include <utility>
 #include <Topics.hpp>
 #include <IdEncode.hpp>
+#include "PublishMachinesList.hpp"
 
 namespace Umati
 {
@@ -14,9 +15,8 @@ namespace Umati
 		DashboardMachineObserver::DashboardMachineObserver(
 			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
 			std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
-			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader) : MachineObserver(std::move(pDataClient)),
-																				   m_pPublisher(std::move(pPublisher)),
-																				   m_pOpcUaTypeReader(pOpcUaTypeReader)
+			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader) : MachineObserver(std::move(pDataClient), std::move(pOpcUaTypeReader)),
+																				   m_pPublisher(std::move(pPublisher))
 		{
 			startUpdateMachineThread();
 		}
@@ -79,21 +79,20 @@ namespace Umati
 
 		void DashboardMachineObserver::publishMachinesList()
 		{
-			nlohmann::json publishData = nlohmann::json::array();
+			PublishMachinesList pubList(m_pPublisher, m_pOpcUaTypeReader->m_expectedObjectTypeNames);
 			for (auto &machineOnline : m_onlineMachines)
 			{
-
 				nlohmann::json identificationAsJson;
 				isOnline(machineOnline.first, identificationAsJson, machineOnline.second.TypeDefinition);
 
 				if (!identificationAsJson.empty())
 				{
-					publishData.push_back(identificationAsJson);
+					/// \todo Refactor out of here
+					identificationAsJson["ParentId"] = Umati::Util::IdEncode(static_cast<std::string>(machineOnline.second.Parent));
+					pubList.AddMachine(machineOnline.second.Specification, identificationAsJson);
 				}
 			}
-
-			m_pPublisher->Publish(Topics::List("MachineTools"), publishData.dump(0));
-			publishData.clear();
+			pubList.Publish();
 		}
 
 		std::string DashboardMachineObserver::getTypeName(const ModelOpcUa::NodeId_t &nodeId)
@@ -115,7 +114,14 @@ namespace Umati
 				machineInformation.MachineName = machine.BrowseName.Name;
 				machineInformation.TypeDefinition = machine.TypeDefinition;
 
-				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->getTypeOfNamespace(machine.TypeDefinition.Uri);
+				{
+					auto it = m_parentOfMachine.find(machine.NodeId);
+					if(it != m_parentOfMachine.end())
+					{
+						machineInformation.Parent = it->second;
+					}
+				}
+				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(machine.TypeDefinition);
 				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
                 pDashClient->addDataSet(
@@ -140,32 +146,6 @@ namespace Umati
 
 				throw Exceptions::MachineInvalidException(static_cast<std::string>(machine.NodeId));
 			}
-		}
-
-		std::shared_ptr<ModelOpcUa::StructureNode>
-		DashboardMachineObserver::getIdentificationTypeOfNamespace(const ModelOpcUa::NodeId_t &typeDefinition) const
-		{
-			std::string identificationTypeName;
-			try
-			{
-				auto el = m_pOpcUaTypeReader->m_availableObjectTypeNamespaces.at(typeDefinition.Uri);
-				identificationTypeName = el.NamespaceUri + ";" + el.NamespaceIdentificationType;
-			}
-			catch (std::out_of_range &ex)
-			{
-				LOG(ERROR) << "Could not found type namespace for URI: " << typeDefinition.Uri << std::endl;
-				throw Exceptions::MachineInvalidException("Could not found type namespace for URI");
-			}
-			auto typePair = m_pOpcUaTypeReader->m_typeMap->find(identificationTypeName);
-			if (typePair == m_pOpcUaTypeReader->m_typeMap->end())
-			{
-				LOG(ERROR) << "Unable to find " << identificationTypeName << " for namespace "
-						   << typeDefinition.Uri << " in typeMap";
-				throw Exceptions::MachineInvalidException("IdentificationType not found, probably because namesapce " +
-														  typeDefinition.Uri +
-														  " is not in the config");
-			}
-			return typePair->second;
 		}
 
 		void DashboardMachineObserver::removeMachine(ModelOpcUa::NodeId_t machineNodeId)
@@ -204,9 +184,8 @@ namespace Umati
 			const ModelOpcUa::NodeId_t &typeDefinition)
 		{
 			try
-			{
-				std::shared_ptr<ModelOpcUa::StructureNode> p_type = getIdentificationTypeOfNamespace(typeDefinition);
-
+			{	
+				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->getIdentificationTypeStructureNode(typeDefinition);
 				std::string typeName = p_type->SpecifiedBrowseName.Uri + ";" + p_type->SpecifiedBrowseName.Name;
 				auto typeIt = m_pOpcUaTypeReader->m_nameToId->find(typeName);
 				/// \todo Should be p_Type.specifiedTypeId ?
@@ -221,7 +200,7 @@ namespace Umati
 						LOG(DEBUG) << "Found component of type " << type.Uri << ";" << type.Id << " in "
 								   << machineNodeId.Uri << ";" << machineNodeId.Id;
 
-						browseIdentificationValues(machineNodeId, identification.front(),
+						browseIdentificationValues(machineNodeId, typeDefinition, identification.front(),
 												   identificationAsJson);
 						if (!identificationAsJson.empty())
 						{
@@ -250,16 +229,17 @@ namespace Umati
 			return false;
 		}
 
-		void DashboardMachineObserver::browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId,
+
+		void DashboardMachineObserver::browseIdentificationValues(const ModelOpcUa::NodeId_t &machineNodeId, 
+																  const ModelOpcUa::NodeId_t &typeDefinition,
 																  ModelOpcUa::BrowseResult_t &identification,
 																  nlohmann::json &identificationAsJson) const
 		{
 			std::vector<nlohmann::json> identificationListValues;
-
-			std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->getTypeOfNamespace(identification.TypeDefinition.Uri);
+			std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(typeDefinition);			
 			std::list<ModelOpcUa::NodeId_t> identificationNodes;
 			std::vector<std::string> identificationValueKeys;
-
+			
 			FillIdentificationValuesFromBrowseResult(
 				identification.NodeId,
 				identificationNodes,
@@ -279,13 +259,14 @@ namespace Umati
 			identificationAsJson["Data"] = identificationData;
 
 			auto it = m_machineNames.find(machineNodeId);
-			if (it != m_machineNames.end())
+			if (it != m_machineNames.end() && p_type != nullptr)
 			{
 				identificationAsJson["Topic"] = Topics::Machine(p_type, static_cast<std::string>(machineNodeId));
 				identificationAsJson["MachineId"] = Umati::Util::IdEncode(static_cast<std::string>(machineNodeId));
 				identificationAsJson["TypeDefinition"] = p_type->SpecifiedBrowseName.Name;
 			}
 		}
+
 
 		void DashboardMachineObserver::FillIdentificationValuesFromBrowseResult(
 			const ModelOpcUa::NodeId_t &identificationInstance,
@@ -295,13 +276,13 @@ namespace Umati
 			///\TODO browse by type definition
 			auto browseResults = m_pDataClient->Browse(
 				identificationInstance,
-                Umati::Dashboard::IDashboardDataClient::BrowseContext_t::Variable());
+				Umati::Dashboard::IDashboardDataClient::BrowseContext_t::ObjectAndVariableWithTypes());
 			for (auto &browseResult : browseResults)
 			{
 				identificationValueKeys.push_back(browseResult.BrowseName.Name);
 				identificationNodes.emplace_back(browseResult.NodeId);
 			}
 		}
-
+		
 	} // namespace MachineObserver
 } // namespace Umati

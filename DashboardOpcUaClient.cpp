@@ -60,22 +60,23 @@ int main(int argc, char *argv[])
 	}
  
 	auto pClient = std::make_shared<Umati::OpcUa::OpcUaClient>(
-		config->OpcUa().Endpoint,
-		config->OpcUa().Username,
-		config->OpcUa().Password,
-		config->OpcUa().Security,
-		config->ObjectTypeNamespacesVector(),
+		config->getOpcUa().Endpoint,
+		config->getOpcUa().Username,
+		config->getOpcUa().Password,
+		config->getOpcUa().Security,
+		config->getObjectTypeNamespaces(),
 		opcUaWrapper);
 
 	auto pPublisher = std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
-		config->Mqtt().Hostname,
-		config->Mqtt().Port,
-		config->Mqtt().Username,
-		config->Mqtt().Password); 
-	
+		config->getMqtt().Hostname,
+		config->getMqtt().Port,
+		config->getMqtt().Username,
+		config->getMqtt().Password);
+
 	auto pOpcUaTypeReader = std::make_shared<Umati::Dashboard::OpcUaTypeReader>(
 		pClient,
-		config->ObjectTypeNamespacesVector());
+		config->getObjectTypeNamespaces(),
+		config->getNamespaceInformations());
 
 	{
 		std::size_t i = 0;

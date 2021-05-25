@@ -64,6 +64,34 @@ namespace Umati
                     return ret;
                 }
 
+                inline static BrowseContext_t HasTypeDefinition()
+                {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_HasTypeDefinition;
+                    return ret;
+                }
+
+                inline static BrowseContext_t Hierarchical()
+                {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_HierarchicalReferences;
+                    return ret;
+                }
+
+                inline static BrowseContext_t OrganizedBy() {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_Organizes;
+                    ret.browseDirection = BrowseDirection::BACKWARD;
+                    return ret;
+                }
+
+                inline static BrowseContext_t ComponentOf() {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_HasComponent;
+                    ret.browseDirection = BrowseDirection::BACKWARD;
+                    return ret;
+                }
+
                 inline static BrowseContext_t WithReference(
                     ModelOpcUa::NodeId_t referenceTypeId)
                 {
@@ -72,7 +100,7 @@ namespace Umati
                     return ret;
                 }
 
-                inline static BrowseContext_t ObjectAndVariable()
+                inline static BrowseContext_t ObjectAndVariableWithTypes()
                 {
                     BrowseContext_t ret;
                     ret.nodeClassMask =

@@ -34,10 +34,10 @@ namespace Umati {
 			mqtt::will_options getLastWill() const;
 
 			static mqtt::connect_options getOptions(const std::string &username, const std::string &password);
+			static std::string getUri(std::string host, std::uint16_t port);
 
 			class MqttCallbacks : public mqtt::callback {
 				friend class MqttPublisher_Paho;
-
 			public:
 				MqttCallbacks(MqttPublisher_Paho *mqttPublisher_paho);
 

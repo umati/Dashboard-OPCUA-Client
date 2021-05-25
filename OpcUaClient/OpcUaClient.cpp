@@ -600,7 +600,7 @@ namespace Umati
 
 		void OpcUaClient::handleContinuationPoint(const UA_ByteString & /*continuationPoint*/)
 		{
-			LOG(DEBUG) << "Handling continuation point not yet implemented";
+			// LOG(DEBUG) << "Handling continuation point not yet implemented";
 		}
 
 		ModelOpcUa::BrowseResult_t

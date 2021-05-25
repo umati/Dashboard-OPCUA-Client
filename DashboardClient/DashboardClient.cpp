@@ -292,9 +292,7 @@ namespace Umati
 		{
 			for (auto &browseResult : browseResults)
 			{
-
-				std::string typeName = m_pDashboardDataClient->getTypeName(browseResult.TypeDefinition); // use subtype
-				auto possibleType = m_pTypeReader->m_typeMap->find(typeName);
+				auto possibleType = m_pTypeReader->m_typeMap->find(browseResult.TypeDefinition);  // use subtype
 				if (possibleType != m_pTypeReader->m_typeMap->end())
 				{
 					// LOG(INFO) << "Found type for " << typeName;
@@ -307,7 +305,7 @@ namespace Umati
 				}
 				else
 				{
-					LOG(WARNING) << "Could not find a possible type for " << typeName << ": "
+					LOG(WARNING) << "Could not find a possible type for "
 								 << static_cast<std::string>(browseResult.TypeDefinition)
 								 << ". Continuing without a candidate.";
 					//LOG(WARNING) << "Pointer shows to end()";

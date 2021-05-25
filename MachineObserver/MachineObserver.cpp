@@ -1,10 +1,8 @@
 #include "MachineObserver.hpp"
 #include <easylogging++.h>
-
-#include "Exceptions/MachineInvalidException.hpp"
-#include "Exceptions/MachineOfflineException.hpp"
 #include <Exceptions/OpcUaException.hpp>
 #include <Exceptions/ClientNotConnected.hpp>
+#include <Exceptions/MachineOfflineException.hpp>
 #include <TypeDefinition/UmatiTypeNodeIds.hpp>
 #include <utility>
 
@@ -12,9 +10,10 @@ namespace Umati {
 	namespace MachineObserver {
 
 		MachineObserver::MachineObserver(
-				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient
+				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
+				std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pTypeReader
 		)
-				: m_pDataClient(std::move(pDataClient)) {
+				: m_pDataClient(std::move(pDataClient)), m_pOpcUaTypeReader(std::move(pTypeReader)) {
 		}
 
 		MachineObserver::~MachineObserver() {}
@@ -36,7 +35,7 @@ namespace Umati {
 			std::list<ModelOpcUa::BrowseResult_t> machineList;
 
 			/**
-			* Browses the machineList and fills the list if possible
+			* Browses the machineList and fills the list if possiblenodeClassFromN
 			*/
 			if (!canBrowseMachineList(machineList)) {
 				return;
@@ -113,15 +112,41 @@ namespace Umati {
 			return true;
 		}
 
-		std::list<ModelOpcUa::BrowseResult_t> MachineObserver::browseForMachines()
+		std::list<ModelOpcUa::BrowseResult_t> MachineObserver::findComponentsFolder(ModelOpcUa::NodeId_t nodeid)
 		{
-			Umati::Dashboard::IDashboardDataClient::BrowseContext_t ctx;
-			ctx.referenceTypeId = Umati::Dashboard::NodeId_HierarchicalReferences;
-			ctx.nodeClassMask = (std::uint32_t) Umati::Dashboard::IDashboardDataClient::BrowseContext_t::NodeClassMask::OBJECT;
-			return m_pDataClient->Browse(
-					Umati::Dashboard::NodeId_MachinesFolder,
-					ctx
-				);
+			std::list<ModelOpcUa::BrowseResult_t> newMachines;
+			try {
+			auto componentFolder = m_pDataClient->TranslateBrowsePathToNodeId(nodeid, Umati::Dashboard::QualifiedName_ComponentsFolder);
+				if (!componentFolder.isNull()) {
+					newMachines = browseForMachines(componentFolder, nodeid);
+				}
+			}
+			catch (const Umati::Exceptions::OpcUaException &ex) {}
+			return newMachines;
+		}
+
+		std::list<ModelOpcUa::BrowseResult_t> MachineObserver::browseForMachines(ModelOpcUa::NodeId_t nodeid, ModelOpcUa::NodeId_t parentNodeId)
+		{
+			std::list<ModelOpcUa::BrowseResult_t> newMachines;
+			auto potentialMachines = m_pDataClient->Browse(nodeid, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical());
+			for(auto const &machine: potentialMachines) {
+				try {
+					auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
+					auto ident = m_pDataClient->BrowseWithResultTypeFilter(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical(),
+																		   typeDefinitionNodeId);
+					if (!ident.empty()) {
+						newMachines.push_back(machine);
+						newMachines.splice(newMachines.end(), findComponentsFolder(machine.NodeId));
+						m_parentOfMachine.insert(std::make_pair(machine.NodeId, parentNodeId));
+					}
+				} catch (const Umati::Exceptions::OpcUaException &ex) {
+					LOG(INFO) << "Err " << ex.what();
+				} catch (const Umati::MachineObserver::Exceptions::MachineInvalidException &ex) {
+					// LOG(INFO) << ex.what();
+				}
+			}
+
+			return newMachines;
 		}
 
 		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t> &machineList,
@@ -129,7 +154,7 @@ namespace Umati {
 														std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines) {
 			LOG(INFO) << "Checking which machines are online / offline";
 
-			for (const auto &machineTool : machineList) {
+			for (auto &machineTool : machineList) {
 
 				// Check if Machine is known as online machine
 				auto it = toBeRemovedMachines.find(machineTool.NodeId);
