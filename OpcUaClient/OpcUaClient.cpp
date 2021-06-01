@@ -78,7 +78,8 @@ namespace Umati
 			SetupSecurity::setupSecurity(config, m_pClient.get());
 			UA_ApplicationDescription desc;
 			UA_ApplicationDescription_init(&desc);
-			config->clientDescription = prepareSessionConnectInfo(desc);;
+			config->securityMode = UA_MessageSecurityMode(security);
+			config->clientDescription = prepareSessionConnectInfo(desc);
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
@@ -96,60 +97,14 @@ namespace Umati
 			open62541Cpp::UA_String sURL(m_serverUri.c_str());
 			UA_StatusCode  result;
 
-			UA_EndpointDescription* endpointDescriptions = NULL;
-			size_t endpointArraySize = 0;
-
-			UA_EndpointDescription applicationDescriptions;
-			UA_EndpointDescription_init(&applicationDescriptions);
-
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			result = m_opcUaWrapper->DiscoveryGetEndpoints(m_pClient.get(),
-															&sURL, 
-															&endpointArraySize,
-															&endpointDescriptions); 
-			if (result != UA_STATUSCODE_GOOD)	
-			{
-				LOG(ERROR) << UA_StatusCode_name(result);
-				return false;
-			}
-
-
-			struct
-			{
-				open62541Cpp::UA_String url;
-				UA_ByteString serverCertificate;
-				open62541Cpp::UA_String securityPolicy;
-				UA_Int32 securityMode{};
-			} desiredEndpoint;
-		    auto desiredSecurity = m_security;
-			for (UA_Int32 iEndpoint = 0; iEndpoint < endpointArraySize; iEndpoint++)
-			{
-
-			if (endpointDescriptions[iEndpoint].securityMode != desiredSecurity)
-				{
-					LOG(INFO) << "Wrong Security mode: " << endpointDescriptions[iEndpoint].securityMode;
-					continue;
-				}
-
-				desiredEndpoint.url.String->length = endpointDescriptions[iEndpoint].endpointUrl.length;
-				desiredEndpoint.url.String->data = endpointDescriptions[iEndpoint].endpointUrl.data;
-
-				LOG(INFO) << "desiredEndpoint.url: " << desiredEndpoint.url << std::endl;
-				applicationDescriptions.serverCertificate = endpointDescriptions[iEndpoint].serverCertificate;
-				applicationDescriptions.securityPolicyUri = endpointDescriptions[iEndpoint].securityPolicyUri;
-				applicationDescriptions.securityMode = static_cast<UA_MessageSecurityMode>(endpointDescriptions[iEndpoint].securityMode);
-				break;
-			} 
-		
-			if (desiredEndpoint.url.String->length == 0)
-			{
-				LOG(ERROR) << "Could not find endpoint without encryption." << std::endl;
-				return false;
-			}
-
 			m_opcUaWrapper->GetNewSession(m_pSession);
 
-			result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
+			if(m_username.empty() && m_password.empty()){
+				result = m_opcUaWrapper->SessionConnect(m_pClient.get(), sURL);
+			}else{
+				result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
+			}
+
 			if (result != UA_STATUSCODE_GOOD)
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
@@ -158,9 +113,6 @@ namespace Umati
 			} 
 			connectionStatusChanged(0,UA_SERVERSTATE_RUNNING);
 
-			UA_EndpointDescription_clear(&applicationDescriptions);
-			UA_EndpointDescription_clear(endpointDescriptions);
-			UA_StatusCode_clear(&result);
 			return true;
 		}
 		UA_ApplicationDescription &
@@ -528,21 +480,18 @@ namespace Umati
 			{
 			case UA_NODECLASS_OBJECTTYPE:
 			{	
-				UA_NodeClass_clear(&nodeClass);
 				return UA_NODECLASS_OBJECT;
 				break;
 			}
 			case UA_NODECLASS_VARIABLETYPE:
 			{
-				UA_NodeClass_clear(&nodeClass);
 				return UA_NODECLASS_VARIABLE;
 				break;
 			}
 			default:
-				UA_NodeClass_clear(&nodeClass);
-				LOG(ERROR) << "Invalid NodeClass " //<< nodeClass
-						   << " expect object or variable type for node ";
-						  // << typeDefinitionUaNodeId.NodeId->identifier.string.data;
+				LOG(ERROR) << "Invalid NodeClass " << nodeClass
+						   << " expect object or variable type for node "
+						   << typeDefinitionUaNodeId.NodeId->identifier.string.data;
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
 		}
@@ -576,8 +525,6 @@ namespace Umati
 
 			handleContinuationPoint(continuationPoint);
 
-			UA_BrowseDescription_clear(&browseContext);
-			UA_BrowseResponse_clear(&uaResult);
 			return browseResult;
 		}
 
@@ -694,17 +641,15 @@ namespace Umati
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName,
 																			   m_uriToIndexCache)
 																			   .getQualifiedName();
-			UA_RelativePathElement uaBrowsePathElements;
-			UA_RelativePathElement_init(&uaBrowsePathElements);
-            uaBrowsePathElements.includeSubtypes = UA_TRUE;
-			uaBrowsePathElements.isInverse = UA_FALSE;
-			uaBrowsePathElements.referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
-            UA_QualifiedName_copy(&uaBrowseName, &uaBrowsePathElements.targetName);
 
 			UA_BrowsePath uaBrowsePaths;
 			UA_BrowsePath_init(&uaBrowsePaths);
 			uaBrowsePaths.relativePath.elementsSize = 1;
-			uaBrowsePaths.relativePath.elements = &uaBrowsePathElements;
+			uaBrowsePaths.relativePath.elements = UA_RelativePathElement_new();
+            uaBrowsePaths.relativePath.elements->includeSubtypes = UA_TRUE;
+			uaBrowsePaths.relativePath.elements->isInverse = UA_FALSE;
+			uaBrowsePaths.relativePath.elements->referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
+			uaBrowsePaths.relativePath.elements->targetName = uaBrowseName;
 			UA_NodeId_copy(startUaNodeId.NodeId, &uaBrowsePaths.startingNode);
 
 			UA_BrowsePathResult uaBrowsePathResults;
@@ -800,8 +745,6 @@ namespace Umati
 		{
 
 			std::vector<UA_DataValue> readValues;
-			UA_Variant tmpVariant;
-			UA_Variant_init(&tmpVariant);
 
 			UA_DataValue tmpReadValue;
 			UA_DataValue_init(&tmpReadValue);
@@ -811,8 +754,7 @@ namespace Umati
 			{
 
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpVariant);
-				tmpReadValue.value = tmpVariant;
+				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpReadValue.value);
 				tmpReadValue.hasStatus = UA_TRUE;
 				tmpReadValue.hasValue = UA_TRUE;
 
