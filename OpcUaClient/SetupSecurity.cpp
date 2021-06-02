@@ -140,7 +140,6 @@ namespace Umati {
 			UA_ByteString *revocationList = NULL;
 			size_t revocationListSize = 0;
 
-			config->securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;
 			UA_ClientConfig_setDefaultEncryption(config, certificate, privateKey,
 												 trustList, trustListSize,
 												 revocationList, revocationListSize);

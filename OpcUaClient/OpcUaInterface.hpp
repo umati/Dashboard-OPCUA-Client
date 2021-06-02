@@ -29,8 +29,8 @@ namespace Umati {
 			virtual void GetNewSession(std::shared_ptr<UA_SessionState> &m_pSession) = 0;
 
 			virtual UA_StatusCode SessionConnect(UA_Client *client,
-									const open62541Cpp::UA_String &sURL,
-									UA_CreateSessionRequest &sessionConnectInfo) = 0;
+									const open62541Cpp::UA_String &sURL
+									/*,UA_CreateSessionRequest &sessionConnectInfo*/) = 0;
 
 			virtual UA_StatusCode SessionConnectUsername(UA_Client *client,
 									const open62541Cpp::UA_String &sURL,
@@ -78,10 +78,6 @@ namespace Umati {
 
 		class OpcUaWrapper : public OpcUaInterface {
 		public:
-			~OpcUaWrapper(){
-				p_subscr = NULL;
-				delete p_subscr;
-			}
 
 			UA_StatusCode DiscoveryGetEndpoints(UA_Client *client, const open62541Cpp::UA_String *sDiscoveryURL,
 										   size_t *endpointDescriptionsSize,
@@ -100,11 +96,11 @@ namespace Umati {
 				m_pSession.reset();
 				pSession = m_pSession;
 			}
-
+			//VERIFY remove CreateSessionRequest
 			UA_StatusCode SessionConnect(
 									UA_Client *client,
-									const open62541Cpp::UA_String &sURL,
-									UA_CreateSessionRequest &sessionConnectInfo) override {
+									const open62541Cpp::UA_String &sURL
+									/*,UA_CreateSessionRequest &sessionConnectInfo*/) override {
 				return UA_Client_connect(client, static_cast<std::string>(sURL).c_str());
 			}
 
@@ -164,12 +160,9 @@ namespace Umati {
 				open62541Cpp::UA_NodeId node = open62541Cpp::UA_NodeId(UA_UInt16(0),UA_UInt32(2255));
 				UA_ReadRequest request;
 				UA_ReadRequest_init(&request);
-				UA_ReadValueId id;
-				UA_ReadValueId_init(&id);
-				id.attributeId = UA_ATTRIBUTEID_VALUE;
-				
-				UA_NodeId_copy(node.NodeId,&id.nodeId);
-				request.nodesToRead = &id;
+				request.nodesToRead = UA_ReadValueId_new();
+				request.nodesToRead->attributeId = UA_ATTRIBUTEID_VALUE;
+				UA_NodeId_copy(node.NodeId,&request.nodesToRead->nodeId);
 				request.nodesToReadSize = 1;
 				UA_ReadResponse response = UA_Client_Service_read(client, request);
 
@@ -177,8 +170,8 @@ namespace Umati {
 				for(size_t i = 0; i < response.results[0].value.arrayLength; ++i){
 						namespaceArray.push_back(std::string(ns[i].data, ns[i].data + ns[i].length));
 				}
-				UA_String_delete(ns);
-				UA_ReadValueId_clear(&id);
+				UA_ReadRequest_clear(&request);
+				UA_ReadResponse_clear(&response);
 
 			}
 

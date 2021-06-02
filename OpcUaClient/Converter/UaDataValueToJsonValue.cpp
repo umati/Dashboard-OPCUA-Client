@@ -20,7 +20,10 @@ namespace Umati {
 					jsonValue = m_value["value"];
 				}
 				
-				auto variant = UA_Variant(dataValue.value);
+				UA_Variant variant; 
+				UA_Variant_init(&variant);
+				variant = dataValue.value;
+				
 				if (UA_Variant_isEmpty(&variant)) {
 					return;
 				}
@@ -233,7 +236,7 @@ namespace Umati {
 						break;
 					}
 				}
-			
+
 			}
 		
 			void UaDataValueToJsonValue::setStatusCodeFromDataValue(const UA_DataValue &dataValue) {

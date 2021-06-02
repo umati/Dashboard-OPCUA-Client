@@ -1,5 +1,5 @@
 #include "OpcUaClient.hpp"
-
+#include "ScopeExitGuard.hpp"
 #include "SetupSecurity.hpp"
 
 #include <Exceptions/ClientNotConnected.hpp>
@@ -118,10 +118,10 @@ namespace Umati
 		UA_ApplicationDescription &
 		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
 		{	
-			sessionConnectInfo.applicationName.locale = UA_String_fromChars("en-US");
-			sessionConnectInfo.applicationName.text = UA_String_fromChars("KonI4.0 OPC UA Data Client");
-			sessionConnectInfo.applicationUri = UA_String_fromChars("urn:open62541.server.application");
-		 	sessionConnectInfo.productUri = UA_String_fromChars("KonI40OpcUaClient_Product");
+			sessionConnectInfo.applicationName.locale = UA_STRING_ALLOC("en-US");
+			sessionConnectInfo.applicationName.text = UA_STRING_ALLOC("KonI4.0 OPC UA Data Client");
+			sessionConnectInfo.applicationUri = UA_STRING_ALLOC("urn:open62541.server.application");
+		 	sessionConnectInfo.productUri = UA_STRING_ALLOC("KonI40OpcUaClient_Product");
 			sessionConnectInfo.applicationType = UA_APPLICATIONTYPE_CLIENT;
 			return sessionConnectInfo;
 		}
@@ -152,6 +152,7 @@ namespace Umati
 			{
 				LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data
 						   << "' with " << UA_StatusCode_name(uaResult);
+				UA_QualifiedName_clear(&resultname);
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 			std::string resName = std::string((char *)resultname.name.data,resultname.name.length);
@@ -173,6 +174,7 @@ namespace Umati
 			if (UA_StatusCode_isBad(uaResult))
 			{
 				LOG(ERROR) << "readNodeClass failed";
+				UA_NodeClass_clear(&returnClass);
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 			}catch(...){
@@ -416,7 +418,6 @@ namespace Umati
 				m_connectThread->join();
 			}
 
-			m_pSession = nullptr;
 			m_subscr.deleteSubscription(m_pClient.get());
 			disconnect();
 		}
@@ -492,8 +493,10 @@ namespace Umati
 				LOG(ERROR) << "Invalid NodeClass " << nodeClass
 						   << " expect object or variable type for node "
 						   << typeDefinitionUaNodeId.NodeId->identifier.string.data;
+				UA_NodeClass_clear(&nodeClass);
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
+				UA_NodeClass_clear(&nodeClass);
 		}
 
 		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::BrowseWithContextAndFilter(
@@ -511,6 +514,11 @@ namespace Umati
 			checkConnection();
 			auto uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
+
+			ScopeExitGuard browseGuard([&]() {
+			UA_BrowseDescription_clear(&browseContext);
+			UA_BrowseResponse_clear(&uaResult);
+			});
 
 			if (uaResult.resultsSize > 0 && UA_StatusCode_isBad(uaResult.results->statusCode))
 			{
@@ -655,6 +663,10 @@ namespace Umati
 			UA_BrowsePathResult uaBrowsePathResults;
 			UA_DiagnosticInfo uaDiagnosticInfos;
 
+			ScopeExitGuard browseGuard([&]() {
+				UA_BrowsePathResult_clear(&uaBrowsePathResults);
+				UA_BrowsePath_clear(&uaBrowsePaths);
+			});
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
 				m_pClient.get(),
@@ -730,14 +742,14 @@ namespace Umati
 			std::vector<nlohmann::json> ret;
 			std::vector<UA_DataValue> readValues = readValues2(modelNodeIds);
 
-			for (size_t i = 0; i < readValues.size(); ++i)
-			{
-				auto value = readValues[i];
-				auto valu = Converter::UaDataValueToJsonValue(value, false);
+			for( auto &entry : readValues)
+			{				
+				auto valu = Converter::UaDataValueToJsonValue(entry, false);
 				auto val = valu.getValue();
 				ret.push_back(val);
-				UA_DataValue_clear(&readValues[i]);
+				UA_DataValue_clear(&entry);
 			}
+			readValues.clear();
 			return ret;
 		}
 
@@ -746,32 +758,52 @@ namespace Umati
 
 			std::vector<UA_DataValue> readValues;
 
-			UA_DataValue tmpReadValue;
-			UA_DataValue_init(&tmpReadValue);
-
+			
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
+				UA_DataValue ReadValue;
+				UA_DataValue_init(&ReadValue);
 
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpReadValue.value);
-				tmpReadValue.hasStatus = UA_TRUE;
-				tmpReadValue.hasValue = UA_TRUE;
+				
+				ReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &ReadValue.value);
+				ReadValue.hasStatus = UA_TRUE;
+				ReadValue.hasValue = UA_TRUE;
 
-				if (UA_StatusCode_isBad(tmpReadValue.status))
+				UA_ReadRequest req;
+				UA_ReadRequest_init(&req);
+				UA_ReadValueId readValueId;
+				UA_ReadValueId_init(&readValueId);
+
+				UA_NodeId_copy(nodeId.NodeId,&readValueId.nodeId);
+				readValueId.attributeId = UA_ATTRIBUTEID_VALUE;
+				
+				req.timestampsToReturn = UA_TIMESTAMPSTORETURN_NEITHER;
+				req.nodesToRead = &readValueId;
+				req.nodesToReadSize = 1;
+
+				UA_ReadResponse response;
+				UA_ReadResponse_init(&response);
+				response = UA_Client_Service_read(m_pClient.get(),req);
+				
+				UA_DataValue_copy(response.results,&ReadValue);
+
+
+				//if (UA_StatusCode_isBad(ReadValue.status))
+				if (UA_StatusCode_isBad(ReadValue.status))
 				{
-					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(tmpReadValue.status);
+					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(ReadValue.status);
 					std::stringstream ss;
-					ss << "Received non good status  for read: " << tmpReadValue.status;
+					ss << "Received non good status  for read: " << ReadValue.status;
+					UA_DataValue_clear(&ReadValue);
 					throw Exceptions::OpcUaException(ss.str());
 				}
 				else
 				{
-					readValues.push_back(tmpReadValue);
+					readValues.push_back(ReadValue);
 				}
-				
 			}
-			
 			return readValues;
 		}
 
