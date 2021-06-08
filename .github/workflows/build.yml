@@ -1,0 +1,69 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-latest]
+    runs-on: ${{matrix.os}}
+    env:
+      CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2.3.4
+        with:
+          path: UmatiDashboardOpcUaClient
+          submodules: recursive
+      - name: Set Windows CMAKE_GENERATOR
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "CMAKE_GENERATOR=Visual Studio 16 2019">> $env:GITHUB_ENV
+      - name: Build server with dependencies
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }}
+          cmake --build .
+      - name: Upload Artefacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: UmatiDashboardOpcUaClient
+          path: ${{ env.CMAKE_INSTALL_PREFIX }}/bin
+  docker:
+    runs-on: ubuntu-latest
+    env:
+      # Check if this is not a pull request and GITHUB_TOKEN is set
+      # As all env variables are strings, you need to compaire against "== 'true'" (not "== true")
+      IS_NOT_PR: ${{ !github.head_ref && true }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2.3.4
+        with:
+          path: UmatiDashboardOpcUaClient
+          submodules: recursive
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.3.0
+      - name: PrepareReg Names
+        run: |
+          echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          echo IMAGE_TAG=$(echo ${{ github.ref }} | tr '[:upper:]' '[:lower:]' |  awk '{sub(/([^\/]*\/){2}/,""); gsub(/\/|_/, "-")}1') >> $GITHUB_ENV
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1.9.0
+        if: env.IS_NOT_PR == 'true' && ${{ github.actor }} != 'dependabot'
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Docker Release
+        uses: "docker/build-push-action@v2.5.0"
+        with:
+          file: "./UmatiDashboardOpcUaClient/Dockerfile"
+          context: ./UmatiDashboardOpcUaClient
+          platforms: linux/amd64
+          push: ${{env.IS_NOT_PR == 'true'}}
+          tags: |
+            ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
