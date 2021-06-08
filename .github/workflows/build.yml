@@ -7,6 +7,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-latest]
+        build_type: [Debug, Release]
     runs-on: ${{matrix.os}}
     env:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -20,16 +21,17 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           echo "CMAKE_GENERATOR=Visual Studio 16 2019">> $env:GITHUB_ENV
+          echo "CMAKE_BUILD_ARGS=--config ${{matrix.build_type}}">> $env:GITHUB_ENV
       - name: Build server with dependencies
         run: |
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }}
-          cmake --build .
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+          cmake --build . ${{env.CMAKE_BUILD_ARGS}}
       - name: Upload Artefacts
         uses: actions/upload-artifact@v2
         with:
-          name: UmatiDashboardOpcUaClient
+          name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}
           path: ${{ env.CMAKE_INSTALL_PREFIX }}/bin
   docker:
     runs-on: ubuntu-latest
