@@ -45,6 +45,7 @@ add_definitions(-DELPP_THREAD_SAFE -DELPP_USE_STD_THREADING -DELPP_NO_DEFAULT_LO
 find_package(easyloggingpp REQUIRED)
 find_package(open62541 REQUIRED)
 find_package(Open62541Cpp REQUIRED)
+find_package(Threads REQUIRED)
 include_directories(${CPP_MOSQUITTO_INCLUDE})
 message("### opcua_dashboardclient: Adding subdirectories")
 add_subdirectory(Util)
@@ -82,18 +83,7 @@ if (DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
     add_subdirectory(MqttPublisher_Paho)
     target_compile_definitions(DashboardOpcUaClient PUBLIC PUBLISHER_MQTT_PAHO=1)
     target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher_Paho)
-endif ()
-
-if (WIN32)
-    if (DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
-        message("### opcua_dashboardclient: Adding custom command to add windows paho libs")
-        add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE_DIR:PahoMqttC::PahoMqttC>/../bin/libpaho-mqtt3a.dll
-                $<TARGET_FILE_DIR:DashboardOpcUaClient>
-                COMMENT "Copy PahoMqttC::PahoMqttC shared library to bin"
-                )
-    endif ()
+    target_compile_definitions(DashboardOpcUaClient PUBLIC NOMINMAX)
 endif ()
 
 message("### opcua_dashboardclient: Adding custom command to copy the example config")
@@ -108,6 +98,6 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
 
-target_link_libraries(DashboardOpcUaClient PUBLIC pthread Open62541Cpp::Open62541Cpp)
+target_link_libraries(DashboardOpcUaClient PUBLIC Threads::Threads Open62541Cpp::Open62541Cpp)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")
 install(EXPORT DashboardOpcUaClient DESTINATION lib/DashboardOpcUaClient/cmake NAMESPACE DashboardOpcUaClient:: EXPORT_LINK_INTERFACE_LIBRARIES)

@@ -7,7 +7,11 @@
 #include <fstream>
 #include <iostream>
 #include <easylogging++.h>
+#if defined(_WIN32)
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 
 namespace Umati {
