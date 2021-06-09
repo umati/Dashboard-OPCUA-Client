@@ -32,7 +32,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}
-          path: ${{ env.CMAKE_INSTALL_PREFIX }}
+          path: |
+            ${{ env.CMAKE_INSTALL_PREFIX }}/bin
+            ${{ env.CMAKE_INSTALL_PREFIX }}/lib/*.so*
+            ${{ env.CMAKE_INSTALL_PREFIX }}/lib64/*.so*
   docker:
     runs-on: ubuntu-latest
     env:
