@@ -162,7 +162,8 @@ namespace Umati {
 			#else
 				command << "python3 ";
 			#endif
-			command << "./Tools/create_self-signed.py -u urn:open62541.client.application -k 2048 -c client " << paths.PkiRoot;
+			//command << "./Tools/create_self-signed.py -u urn:open62541.client.application -k 2048 -c client " << paths.PkiRoot;
+			command << "./Tools/certGen/createCertificate.py pki";
 			int retVal = system(command.str().c_str());
 			if (retVal != 0){
 				LOG(INFO) << "Creating for certs failed";

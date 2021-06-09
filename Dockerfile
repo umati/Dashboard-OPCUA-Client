@@ -24,11 +24,14 @@ FROM alpine:3 as runtime
 RUN apk --no-cache add \
       libstdc++=~10.2.1 \
        python3=~3.8.10-r0 \
-       py3-pip=~ 20.3.4-r1 \
+       py3-pip=~20.3.4-r0 \
        openssl=~1.1.1k-r0
-RUN pip install --no-cache-dir netifaces
+RUN pip install --no-cache-dir jinja2
 
 COPY --from=build-env /install/bin /app
+COPY --from=build-env /install/lib /usr/lib
+COPY --from=build-env /install/lib64 /usr/lib
+
 WORKDIR /app
 
 EXPOSE 4840

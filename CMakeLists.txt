@@ -98,12 +98,16 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
 
-set(TOOLS_INSTALL_FILES
-    Tools/create_self-signed.py
-    Tools/localhost.cnf
+set(CERTGEN_INSTALL_FILES
+    Tools/certGen/createCertificate.py
+    Tools/certGen/openssl.cnf.jinja2
+    Tools/certGen/pki.json
+    Tools/certGen/README.md
+    Tools/certGen/requirements.txt
+    Tools/certGen/settings.template.json
 )
 
-install(FILES ${TOOLS_INSTALL_FILES} DESTINATION bin/Tools/)
+install(FILES ${CERTGEN_INSTALL_FILES} DESTINATION bin/Tools/certGen)
 
 target_link_libraries(DashboardOpcUaClient PUBLIC Threads::Threads Open62541Cpp::Open62541Cpp)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")

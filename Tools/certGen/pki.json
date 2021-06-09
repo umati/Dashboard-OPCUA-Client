@@ -1,0 +1,9 @@
+{
+    "Hostnames": [
+        "localhost"
+    ],
+    "IPs": [
+        "127.0.0.1"
+    ],
+    "Subject": "/C=DE/O=SampleOrganization/CN=DashboardClient@localhost"
+}
