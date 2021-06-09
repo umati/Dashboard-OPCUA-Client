@@ -98,6 +98,13 @@ add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
 
+set(TOOLS_INSTALL_FILES
+    Tools/create_self-signed.py
+    Tools/localhost.cnf
+)
+
+install(FILES ${TOOLS_INSTALL_FILES} DESTINATION bin/Tools/)
+
 target_link_libraries(DashboardOpcUaClient PUBLIC Threads::Threads Open62541Cpp::Open62541Cpp)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")
 install(EXPORT DashboardOpcUaClient DESTINATION lib/DashboardOpcUaClient/cmake NAMESPACE DashboardOpcUaClient:: EXPORT_LINK_INTERFACE_LIBRARIES)
