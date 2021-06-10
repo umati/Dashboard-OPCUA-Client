@@ -105,7 +105,7 @@ namespace Umati
 				result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
 			}
 
-			if (result != UA_STATUSCODE_GOOD)
+			if (UA_StatusCode_isBad(result))
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
@@ -230,7 +230,7 @@ namespace Umati
 			auto uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ typeNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 			
-			if (uaResult.results->statusCode != UA_STATUSCODE_GOOD)
+			if (UA_StatusCode_isBad(uaResult.results->statusCode))
 			{
 				LOG(ERROR) << "Bad return from browse: " << uaResult.results->statusCode;
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult.results->statusCode);
@@ -333,7 +333,7 @@ namespace Umati
 			auto uaResult2 = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ uaNodeId,
 														   browseContext2,
 														   continuationPoint, referenceDescriptions);
-			if (uaResult2.results->statusCode != UA_STATUSCODE_GOOD)
+			if (UA_StatusCode_isBad(uaResult2.results->statusCode))
 			{
 				LOG(ERROR) << "Bad return from browse: " << uaResult2.results->statusCode << "for nodeId"
 						   << uaNodeId.NodeId->identifier.string.data;
@@ -694,7 +694,7 @@ namespace Umati
 
 			UA_StatusCode uaResultElement(uaBrowsePathResults.statusCode);
 			
-			if (uaResultElement != UA_STATUSCODE_GOOD)
+			if (UA_StatusCode_isBad(uaResultElement))
 			{
 				std::stringstream ss;
 				ss << "Element returned bad status code: " << uaResultElement
@@ -758,50 +758,27 @@ namespace Umati
 
 			std::vector<UA_DataValue> readValues;
 
+			UA_DataValue tmpReadValue;
+			UA_DataValue_init(&tmpReadValue);
 			
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
-				UA_DataValue ReadValue;
-				UA_DataValue_init(&ReadValue);
-
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				
-				ReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &ReadValue.value);
-				ReadValue.hasStatus = UA_TRUE;
-				ReadValue.hasValue = UA_TRUE;
+				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpReadValue.value);
+				tmpReadValue.hasStatus = UA_TRUE;
+				tmpReadValue.hasValue = UA_TRUE;
 
-				UA_ReadRequest req;
-				UA_ReadRequest_init(&req);
-				UA_ReadValueId readValueId;
-				UA_ReadValueId_init(&readValueId);
-
-				UA_NodeId_copy(nodeId.NodeId,&readValueId.nodeId);
-				readValueId.attributeId = UA_ATTRIBUTEID_VALUE;
-				
-				req.timestampsToReturn = UA_TIMESTAMPSTORETURN_NEITHER;
-				req.nodesToRead = &readValueId;
-				req.nodesToReadSize = 1;
-
-				UA_ReadResponse response;
-				UA_ReadResponse_init(&response);
-				response = UA_Client_Service_read(m_pClient.get(),req);
-				
-				UA_DataValue_copy(response.results,&ReadValue);
-
-
-				//if (UA_StatusCode_isBad(ReadValue.status))
-				if (UA_StatusCode_isBad(ReadValue.status))
+				if (UA_StatusCode_isBad(tmpReadValue.status))
 				{
-					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(ReadValue.status);
+					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(tmpReadValue.status);
 					std::stringstream ss;
-					ss << "Received non good status  for read: " << ReadValue.status;
-					UA_DataValue_clear(&ReadValue);
+					ss << "Received non good status  for read: " << tmpReadValue.status;
 					throw Exceptions::OpcUaException(ss.str());
 				}
 				else
 				{
-					readValues.push_back(ReadValue);
+					readValues.push_back(tmpReadValue);
 				}
 			}
 			return readValues;
