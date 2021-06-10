@@ -8,7 +8,7 @@ namespace Umati {
 	namespace Exceptions {
 		class OpcUaNonGoodStatusCodeException : public OpcUaException {
 		public:
-			using UmatiException::exception;
+			using OpcUaException::OpcUaException;
 
 			OpcUaNonGoodStatusCodeException(const UA_StatusCode &status, const std::string &message);
 
