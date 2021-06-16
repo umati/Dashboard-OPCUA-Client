@@ -6,7 +6,9 @@ This is the OPC UA client for the [Umati Dashboard](http://umati.app). The clien
  - [JSON for Modern C++](https://github.com/nlohmann/json)
  - [Eclipse Paho](https://www.eclipse.org/paho/index.php) in [C](https://github.com/eclipse/paho.mqtt.c) and [C++](https://github.com/eclipse/paho.mqtt.cpp)
  - [Googletest](https://github.com/google/googletest)
- - [Unified Automation C++ SDK](https://www.unified-automation.com/products/server-sdk/c-ua-server-sdk.html)
+ - [Open62541](https://open62541.org/)
+ - [Open62541Cpp](https://github.com/umati/open62541Cpp)
+ - [Python](https://www.python.org/)
 
 ## Build
 This project uses [cmake](cmake.org/) for building.
@@ -19,18 +21,3 @@ This project uses [cmake](cmake.org/) for building.
  - [OpcUaClient](OpcUaClient) Implementation of an OPC UA client for the Dashboard using Unified Automation C++ SDK
  - [Tests](Tests) Some basic test, mainly for debugging past errors.
  - [Util](Util) General purpose code, e.g. Encoding of machine Ids
-
-
-# NOTE
-
-The state of the project is not final. There are some parts that needs to be tweaked, especially the security and subscription parts.
-There are also quite some memory leaks that have not been adressed yet because we thought about some abstraction layer for memory management like `Open62541Cpp`.
-We used the docker image from the [Umati Sampel-Server](https://github.com/umati/Sample-Server). 
-The scripts to install each dependency are in the `Tools` folder along with the config we were using.  
-
-Right now, the subscription is disabled by removing the `subscribeValues` function in `DashboardClient/DashboardClient.cpp` on line 44.
-Nevertheless the project can be built and run but it will crash after a while:
-```
-[2021-04-01 15:12:36.584 (UTC+0200)] warn/channel       Connection 8 | SecureChannel 36 | Receiving the response failed with StatusCode BadConnectionClosed
-[2021-04-01 15:12:36.584 (UTC+0200)] info/client        Client Status: ChannelState: Closed, SessionState: Created, ConnectStatus: Good
-```
