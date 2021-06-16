@@ -18,17 +18,6 @@ namespace Umati
 		{
 		}
 
-		DashboardClient::~DashboardClient()
-		{
-			// Ensure that everything is unsubscribed before deleting m_dataSets
-			m_subscribedValues.clear();
-			m_dataSets.clear();
-			m_latestMessages.clear();
-			m_pTypeReader.reset();
-			m_pDashboardDataClient.reset();
-			m_pPublisher.reset();
-			
-		}
 
 		/**
 		* Receives a nodeId, a typeDefinition and an mqtt topic to hold for a machine. Available types are

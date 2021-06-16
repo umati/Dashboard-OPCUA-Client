@@ -31,8 +31,6 @@ namespace Umati {
 							std::shared_ptr<IPublisher> pPublisher,
 							std::shared_ptr<OpcUaTypeReader> pTypeReader);
 
-			~DashboardClient();
-
 			void addDataSet(
 					const ModelOpcUa::NodeId_t &startNodeId,
 					const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,

@@ -75,17 +75,15 @@ namespace Umati
         {
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
-			SetupSecurity::setupSecurity(config, m_pClient.get());
-			UA_ApplicationDescription desc;
-			UA_ApplicationDescription_init(&desc);
 			config->securityMode = UA_MessageSecurityMode(security);
-			config->clientDescription = prepareSessionConnectInfo(desc);
+			UA_ApplicationDescription_clear(&config->clientDescription);
+			prepareSessionConnectInfo(config->clientDescription);
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
+			SetupSecurity::setupSecurity(config, m_pClient.get());
 			m_opcUaWrapper = std::move(opcUaWrapper);
 			m_opcUaWrapper->setSubscription(&m_subscr);
-
 			m_tryConnecting = true;
 			// Try connecting at least once
 			this->connect();
@@ -118,8 +116,7 @@ namespace Umati
 		UA_ApplicationDescription &
 		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
 		{	
-			sessionConnectInfo.applicationName.locale = UA_STRING_ALLOC("en-US");
-			sessionConnectInfo.applicationName.text = UA_STRING_ALLOC("KonI4.0 OPC UA Data Client");
+			sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT_ALLOC("en-US", "KonI4.0 OPC UA Data Client");
 			sessionConnectInfo.applicationUri = UA_STRING_ALLOC("urn:open62541.server.application");
 		 	sessionConnectInfo.productUri = UA_STRING_ALLOC("KonI40OpcUaClient_Product");
 			sessionConnectInfo.applicationType = UA_APPLICATIONTYPE_CLIENT;
@@ -174,7 +171,6 @@ namespace Umati
 			if (UA_StatusCode_isBad(uaResult))
 			{
 				LOG(ERROR) << "readNodeClass failed";
-				UA_NodeClass_clear(&returnClass);
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 			}catch(...){
@@ -221,7 +217,6 @@ namespace Umati
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
 
-			UA_NodeClass_clear(&nodeClass);
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 
@@ -493,10 +488,8 @@ namespace Umati
 				LOG(ERROR) << "Invalid NodeClass " << nodeClass
 						   << " expect object or variable type for node "
 						   << typeDefinitionUaNodeId.NodeId->identifier.string.data;
-				UA_NodeClass_clear(&nodeClass);
 				throw Exceptions::UmatiException("Invalid NodeClass");
 			}
-				UA_NodeClass_clear(&nodeClass);
 		}
 
 		std::list<ModelOpcUa::BrowseResult_t> OpcUaClient::BrowseWithContextAndFilter(
@@ -508,6 +501,7 @@ namespace Umati
 			open62541Cpp::UA_NodeId startUaNodeId = conv.getNodeId();
 
 			UA_ByteString continuationPoint;
+			UA_ByteString_init(&continuationPoint);
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
@@ -518,6 +512,7 @@ namespace Umati
 			ScopeExitGuard browseGuard([&]() {
 			UA_BrowseDescription_clear(&browseContext);
 			UA_BrowseResponse_clear(&uaResult);
+			UA_ByteString_clear(&continuationPoint);
 			});
 
 			if (uaResult.resultsSize > 0 && UA_StatusCode_isBad(uaResult.results->statusCode))
@@ -749,7 +744,6 @@ namespace Umati
 				ret.push_back(val);
 				UA_DataValue_clear(&entry);
 			}
-			readValues.clear();
 			return ret;
 		}
 
@@ -758,12 +752,14 @@ namespace Umati
 
 			std::vector<UA_DataValue> readValues;
 
-			UA_DataValue tmpReadValue;
-			UA_DataValue_init(&tmpReadValue);
-			
+
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
+
+				UA_DataValue tmpReadValue;
+				UA_DataValue_init(&tmpReadValue);
+			
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
 				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpReadValue.value);
 				tmpReadValue.hasStatus = UA_TRUE;
@@ -774,6 +770,7 @@ namespace Umati
 					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(tmpReadValue.status);
 					std::stringstream ss;
 					ss << "Received non good status  for read: " << tmpReadValue.status;
+					UA_DataValue_clear(&tmpReadValue);
 					throw Exceptions::OpcUaException(ss.str());
 				}
 				else
