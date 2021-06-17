@@ -30,7 +30,6 @@ RUN pip install --no-cache-dir jinja2
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
-COPY --from=build-env /install/lib64 /usr/lib
 
 WORKDIR /app
 
