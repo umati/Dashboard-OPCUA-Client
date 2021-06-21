@@ -59,14 +59,14 @@ namespace Umati
             std::shared_ptr<ModelOpcUa::StructureBiNode> handleBrowseTypeResult(
                 BiDirTypeMap_t &bidirectionalTypeMap,
                 const ModelOpcUa::BrowseResult_t &entry,
-                const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
+                const std::weak_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
                 bool ofBaseDataVariableType);
 
             /// Browse all Nodes (Object, Variables, ObjectTypes, VariablesTypes) and fill the BiDirectionalTypeMap
             void browseTypes(
                 BiDirTypeMap_t bidirectionalTypeMap,
                 const ModelOpcUa::NodeId_t &startNodeId,
-                const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent,
+                const std::weak_ptr<ModelOpcUa::StructureBiNode> &parent,
                 bool ofBaseDataVariableType);
             
             /// \return Companion Specification Name

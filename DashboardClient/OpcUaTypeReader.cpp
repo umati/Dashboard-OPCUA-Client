@@ -146,14 +146,15 @@ namespace Umati
                 ModelOpcUa::NodeClass_t::VariableType, startNodeId, m_emptyId, m_emptyId,
                 ModelOpcUa::QualifiedName_t{startNodeId.Uri, ""} // BrowseName
             };
-            auto startType = handleBrowseTypeResult(bidirectionalTypeMap, startBrowseTypeResult, nullptr,
+            std::weak_ptr<ModelOpcUa::StructureBiNode> emptyParent;
+            std::weak_ptr<ModelOpcUa::StructureBiNode> startType = handleBrowseTypeResult(bidirectionalTypeMap, startBrowseTypeResult, emptyParent,
                                                     ModelOpcUa::ModellingRule_t::Mandatory,
                                                     ofBaseDataVariableType);
 
             browseTypes(
                 bidirectionalTypeMap,
                 startNodeId,
-                startType,
+                startType.lock(),
                 ofBaseDataVariableType);
         }
 
@@ -182,7 +183,7 @@ namespace Umati
                 while (nullptr != currentGeneration)
                 {
                     bloodline->emplace_back(currentGeneration);
-                    currentGeneration = currentGeneration->parent;
+                    currentGeneration = currentGeneration->parent.lock();
                 }
                 std::string typeName = bloodline->front()->structureNode->SpecifiedBrowseName.Uri + ";" +
                                        bloodline->front()->structureNode->SpecifiedBrowseName.Name;
@@ -237,7 +238,7 @@ namespace Umati
         std::shared_ptr<ModelOpcUa::StructureBiNode> OpcUaTypeReader::handleBrowseTypeResult(
             OpcUaTypeReader::BiDirTypeMap_t &bidirectionalTypeMap,
             const ModelOpcUa::BrowseResult_t &entry,
-            const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
+            const std::weak_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
             bool ofBaseDataVariableType)
         {
 
@@ -247,7 +248,7 @@ namespace Umati
                 entry,
                 ofBaseDataVariableType,
                 std::make_shared<std::list<std::shared_ptr<ModelOpcUa::StructureNode>>>(),
-                parent,
+                parent.lock(),
                 entry.NodeId.Uri,
                 modellingRule);
             auto current = std::make_shared<ModelOpcUa::StructureBiNode>(node);
@@ -271,9 +272,9 @@ namespace Umati
                     LOG(INFO) << "Found Type " << typeName << " again";
                 }
             }
-            if (parent != nullptr)
+            if (parent.lock() != nullptr)
             {
-                parent->SpecifiedBiChildNodes->emplace_back(current);
+                parent.lock()->SpecifiedBiChildNodes->emplace_back(current);
             }
             return current;
         }
@@ -281,7 +282,7 @@ namespace Umati
         void OpcUaTypeReader::browseTypes(
             OpcUaTypeReader::BiDirTypeMap_t bidirectionalTypeMap,
             const ModelOpcUa::NodeId_t &startNodeId,
-            const std::shared_ptr<ModelOpcUa::StructureBiNode> &parent,
+            const std::weak_ptr<ModelOpcUa::StructureBiNode> &parent,
             bool ofBaseDataVariableType)
         {
             auto browseTypeContext = IDashboardDataClient::BrowseContext_t::ObjectAndVariableWithTypes();
@@ -291,7 +292,7 @@ namespace Umati
             {
                 ModelOpcUa::ModellingRule_t modellingRule = m_pClient->BrowseModellingRule(browseResult.NodeId);
                 // LOG(INFO) << "currently at " << startNodeId.Uri << startNodeId.Id;
-                auto current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule,
+                std::weak_ptr<ModelOpcUa::StructureBiNode> current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule,
                                                       ofBaseDataVariableType);
                 browseTypes(bidirectionalTypeMap, browseResult.NodeId, current, ofBaseDataVariableType);
             }

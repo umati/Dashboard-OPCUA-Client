@@ -273,7 +273,7 @@ namespace ModelOpcUa
 		std::shared_ptr<StructureNode> toStructureNode();
 
 		std::shared_ptr<StructureNode> structureNode;
-		std::shared_ptr<StructureBiNode> parent;
+		std::weak_ptr<StructureBiNode> parent;
 		std::string namespaceUri;
 		bool isType = false;
 		bool ofBaseDataVariableType = false;
