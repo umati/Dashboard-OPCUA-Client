@@ -30,8 +30,7 @@ namespace Umati
 	{
 		class OpcUaClient : public Dashboard::IDashboardDataClient
 		{
-		//TODO do we need to disable copying of the constructor and assignment operator?
-		//UA_DISABLE_COPY(OpcUaClient);
+
 		public:
 			explicit OpcUaClient(std::string serverURI, std::string Username = std::string(),
 								 std::string Password = std::string(), std::uint8_t security = 1,
@@ -116,7 +115,7 @@ namespace Umati
         public:
 			std::shared_ptr<UA_Client> m_pClient; // Zugriff aus dem ConnectThread, dem PublisherThread
             std::recursive_mutex m_clientMutex;
-private:
+		private:
 			void on_connected();
 
 			std::vector<UA_DataValue> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);

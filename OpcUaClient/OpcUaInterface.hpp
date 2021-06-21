@@ -46,7 +46,7 @@ namespace Umati {
 			virtual UA_StatusCode SessionRead(UA_Client *client,
 								 UA_Double maxAge,
 								 UA_TimestampsToReturn timeStamps,
-								 const UA_ReadValueId &nodesToRead,
+								 UA_ReadValueId &nodesToRead,
 								 UA_DataValue &values,
 								 UA_DiagnosticInfo &diagnosticInfos) = 0;
 
@@ -96,11 +96,9 @@ namespace Umati {
 				m_pSession.reset();
 				pSession = m_pSession;
 			}
-			//VERIFY remove CreateSessionRequest
 			UA_StatusCode SessionConnect(
 									UA_Client *client,
-									const open62541Cpp::UA_String &sURL
-									/*,UA_CreateSessionRequest &sessionConnectInfo*/) override {
+									const open62541Cpp::UA_String &sURL) override {
 				return UA_Client_connect(client, static_cast<std::string>(sURL).c_str());
 			}
 
@@ -119,26 +117,27 @@ namespace Umati {
 			UA_StatusCode SessionRead(UA_Client *client,
 								 UA_Double maxAge,
 								 UA_TimestampsToReturn timeStamps,
-								 const UA_ReadValueId &nodesToRead,
+								 UA_ReadValueId &nodesToRead,
 								 UA_DataValue &values,
 								 UA_DiagnosticInfo &diagnosticInfos) override {
-				//NOTE This function is never used because there are convenience funcions in open62541
-				//return client.read(serviceSettings, maxAge, timeStamps, nodesToRead, values, diagnosticInfos);
+				
 				UA_ReadRequest req;
 				UA_ReadRequest_init(&req);
 				UA_Double_copy(&maxAge,&req.maxAge);
 				UA_TimestampsToReturn_copy(&timeStamps,&req.timestampsToReturn);
 				req.nodesToReadSize = 1;
-				UA_ReadValueId_copy(&nodesToRead,req.nodesToRead);
+				req.nodesToRead = &nodesToRead;
 
 				UA_ReadResponse response;
 				UA_ReadResponse_init(&response);
 				response = UA_Client_Service_read(client,req);
 
 				UA_DataValue_copy(response.results,&values);
-				UA_DiagnosticInfo_copy(response.diagnosticInfos,&diagnosticInfos);
+				
+				if(response.diagnosticInfosSize != 0){
+					UA_DiagnosticInfo_copy(response.diagnosticInfos,&diagnosticInfos);
+				}
 
-				UA_ReadRequest_clear(&req);
 				UA_ReadResponse_clear(&response);
 
 				return values.status;
@@ -244,7 +243,6 @@ namespace Umati {
 				}
 				return p_subscr->Subscribe(client, nodeId, callback);
 			}
-		//TODO UA_Session datatype missing
 			std::shared_ptr<UA_SessionState> pSession;
 		};
 	}

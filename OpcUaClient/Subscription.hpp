@@ -11,18 +11,18 @@
 
 namespace Umati {
 	namespace OpcUa  {
-		class Subscription {//: public UA_SubscriptionAcknowledgement{
+		class Subscription {
 		public:
 
 			Subscription(const std::map<std::string, uint16_t> &m_uriToIndexCache,
 						 const std::map<uint16_t, std::string> &m_indexToUriCache);
 
-			void subscriptionStatusChanged(UA_Client *client,UA_Int32 clientSubscriptionHandle, const UA_StatusCode &status);// override;
+			void subscriptionStatusChanged(UA_Client *client,UA_Int32 clientSubscriptionHandle, const UA_StatusCode &status);
 
 			void dataChange(UA_Int32 clientSubscriptionHandle, const UA_DataChangeNotification &dataNotifications,
-							const UA_DiagnosticInfo &diagnosticInfos);// override;
+							const UA_DiagnosticInfo &diagnosticInfos);
 
-			void newEvents(UA_Int32 clientSubscriptionHandle, UA_EventFieldList &eventFieldList); // override;
+			void newEvents(UA_Int32 clientSubscriptionHandle, UA_EventFieldList &eventFieldList); 
 
 			virtual std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
 			Subscribe(UA_Client *client, ModelOpcUa::NodeId_t, Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback);
@@ -55,8 +55,8 @@ namespace Umati {
 									UA_MonitoredItemCreateRequest &monItemCreateReq) const;
 
 			static void
-            validateMonitorItemResult(const UA_StatusCode &uaResult, UA_MonitoredItemCreateResult monItemCreateResult,
-									  const ModelOpcUa::NodeId_t &nodeId);
+			validateMonitorItemResult(const UA_StatusCode &uaResult, UA_MonitoredItemCreateResult monItemCreateResult,
+									const ModelOpcUa::NodeId_t &nodeId);
 		};
 
 	}

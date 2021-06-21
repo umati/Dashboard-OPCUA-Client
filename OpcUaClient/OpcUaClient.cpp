@@ -386,14 +386,6 @@ namespace Umati
 				m_isConnected = true;
 				on_connected();
 				break;
-			//FIXME find correct type
-		/*	case UaClientSdk::UaClient::ConnectionWarningWatchdogTimeout:
-				LOG(ERROR) << "ConnectionWarningWatchdogTimeout." << std::endl;
-				break;
-			case UaClientSdk::UaClient::ConnectionErrorApiReconnect:
-				LOG(ERROR) << "ConnectionErrorApiReconnect." << std::endl;
-				break;
-		*/	
 			case UA_SERVERSTATE_SHUTDOWN:
 				LOG(ERROR) << "ServerShutdown." << std::endl;
 				break;
@@ -756,20 +748,27 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
+				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
 
 				UA_DataValue tmpReadValue;
 				UA_DataValue_init(&tmpReadValue);
 			
-				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				tmpReadValue.status = UA_Client_readValueAttribute(m_pClient.get(), *nodeId.NodeId, &tmpReadValue.value);
-				tmpReadValue.hasStatus = UA_TRUE;
-				tmpReadValue.hasValue = UA_TRUE;
+				UA_ReadValueId readValueId;
+				UA_ReadValueId_init(&readValueId);
 
-				if (UA_StatusCode_isBad(tmpReadValue.status))
+				readValueId.attributeId = UA_ATTRIBUTEID_VALUE;
+				readValueId.nodeId = *nodeId.NodeId;
+
+				UA_DiagnosticInfo info;
+				UA_DiagnosticInfo_init(&info);
+
+				auto ret = m_opcUaWrapper->SessionRead(m_pClient.get(),0.0,UA_TIMESTAMPSTORETURN_BOTH,readValueId, tmpReadValue, info);
+
+				if (UA_StatusCode_isBad(ret))
 				{
-					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(tmpReadValue.status);
+					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(ret);
 					std::stringstream ss;
-					ss << "Received non good status  for read: " << tmpReadValue.status;
+					ss << "Received non good status  for read: " << ret;
 					UA_DataValue_clear(&tmpReadValue);
 					throw Exceptions::OpcUaException(ss.str());
 				}
