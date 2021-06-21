@@ -726,24 +726,13 @@ namespace Umati
 	
 		std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
 		{
-			std::vector<nlohmann::json> ret;
-			std::vector<UA_DataValue> readValues = readValues2(modelNodeIds);
-
-			for( auto &entry : readValues)
-			{				
-				auto valu = Converter::UaDataValueToJsonValue(entry, false);
-				auto val = valu.getValue();
-				ret.push_back(val);
-				UA_DataValue_clear(&entry);
-			}
-			return ret;
+			return readValues2(modelNodeIds);
 		}
 
-		std::vector<UA_DataValue> OpcUaClient::readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds)
+		std::vector<nlohmann::json> OpcUaClient::readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds)
 		{
 
-			std::vector<UA_DataValue> readValues;
-
+			std::vector<nlohmann::json> readValues;
 
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
@@ -774,7 +763,10 @@ namespace Umati
 				}
 				else
 				{
-					readValues.push_back(tmpReadValue);
+					auto valu = Converter::UaDataValueToJsonValue(tmpReadValue, false);
+					auto val = valu.getValue();
+					readValues.push_back(val);
+					UA_DataValue_clear(&tmpReadValue);
 				}
 			}
 			return readValues;

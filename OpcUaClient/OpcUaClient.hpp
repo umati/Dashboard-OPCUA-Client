@@ -118,7 +118,7 @@ namespace Umati
 		private:
 			void on_connected();
 
-			std::vector<UA_DataValue> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);
+			std::vector<nlohmann::json> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);
 
 			UA_ApplicationDescription &
 			prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo);
