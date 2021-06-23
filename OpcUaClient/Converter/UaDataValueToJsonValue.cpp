@@ -32,11 +32,7 @@ namespace Umati {
 				}
 
 				switch (variant.type->typeKind) {
-					/*
-					//This has been checked before
-					case OpcUaType_Null: {
-						break;
-					}*/
+
 					case UA_DATATYPEKIND_BOOLEAN: {
 						UA_Boolean v(variant.data);
 						jsonValue = static_cast<bool>(v);
@@ -155,9 +151,9 @@ namespace Umati {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
 						if (localText.locale.length == 0 ){
 
-						localText.locale.length = strlen("");
-						localText.locale.data = (UA_Byte*)"";
-						
+						localText.locale.length = strlen("en-US");
+						localText.locale.data = (UA_Byte*)"en-US";
+				
 						}
 						jsonValue = {};
 						jsonValue["locale"] = std::string((char*)localText.locale.data,localText.locale.length);

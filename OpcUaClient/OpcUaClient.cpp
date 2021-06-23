@@ -75,13 +75,13 @@ namespace Umati
         {
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
+			SetupSecurity::setupSecurity(config, m_pClient.get());
 			config->securityMode = UA_MessageSecurityMode(security);
 			UA_ApplicationDescription_clear(&config->clientDescription);
 			prepareSessionConnectInfo(config->clientDescription);
 			config->timeout = 2000;
 			config->inactivityCallback = inactivityCallback;
 			config->stateCallback = stateCallback;
-			SetupSecurity::setupSecurity(config, m_pClient.get());
 			m_opcUaWrapper = std::move(opcUaWrapper);
 			m_opcUaWrapper->setSubscription(&m_subscr);
 			m_tryConnecting = true;
@@ -635,7 +635,7 @@ namespace Umati
 
 			auto uaBrowseName = Converter::ModelQualifiedNameToUaQualifiedName(browseName,
 																			   m_uriToIndexCache)
-																			   .getQualifiedName();
+																			   .detach();
 
 			UA_BrowsePath uaBrowsePaths;
 			UA_BrowsePath_init(&uaBrowsePaths);

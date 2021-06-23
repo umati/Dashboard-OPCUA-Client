@@ -181,7 +181,7 @@ namespace Umati {
 			
 			try {
                 monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client, m_pSubscriptionID, UA_TIMESTAMPSTORETURN_SOURCE, monItemCreateReq,
-                                                                                (void*)(monItemCreateReq.requestedParameters.clientHandle), createDataChangeCallback, NULL);
+                                                                                (void*)((UA_Int64)(monItemCreateReq.requestedParameters.clientHandle)), createDataChangeCallback, NULL);
 				validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateResult, nodeId);
 
                 //LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq.requestedParameters.clientHandle << " for the callback method.";
