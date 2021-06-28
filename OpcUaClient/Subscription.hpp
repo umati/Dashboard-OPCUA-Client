@@ -14,6 +14,8 @@ namespace Umati {
 		class Subscription {
 		public:
 
+			~Subscription();
+
 			Subscription(const std::map<std::string, uint16_t> &m_uriToIndexCache,
 						 const std::map<uint16_t, std::string> &m_indexToUriCache);
 

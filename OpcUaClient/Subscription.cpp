@@ -69,6 +69,11 @@ namespace Umati {
 
 		std::atomic_uint Subscription::nextId = {100};
 
+		Subscription::~Subscription(){
+			delete m_pSubscriptionWrapper;
+			m_pSubscriptionWrapper = NULL;
+		}
+
 		Subscription::Subscription(
 				const std::map<std::string, uint16_t> &uriToIndexCache,
 				const std::map<uint16_t, std::string> &indexToUriCache
