@@ -104,7 +104,7 @@ namespace Umati {
 #if defined(_WIN32)
 				if (_mkdir(ss.str().c_str()) != 0)
 #else
-				if (mkdir(ss.str().c_str(), mode_t(0x777)) != 0)
+				if (mkdir(ss.str().c_str(), mode_t(0775)) != 0)
 #endif
 				{
 					if (errno != EEXIST) {
