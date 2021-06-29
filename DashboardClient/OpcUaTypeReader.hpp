@@ -20,6 +20,9 @@ namespace Umati
             OpcUaTypeReader(
                 std::shared_ptr<IDashboardDataClient> pIClient,
                 std::vector<std::string> expectedObjectTypeNamespaces, std::vector<Umati::Util::NamespaceInformation> namespaceInformations);
+
+            ~OpcUaTypeReader();
+            
             void readTypes();
             using NamespaceInformation_t = Util::NamespaceInformation;
 

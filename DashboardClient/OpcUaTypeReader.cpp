@@ -22,6 +22,12 @@ namespace Umati
             }
         }
 
+        OpcUaTypeReader::~OpcUaTypeReader(){
+            for (auto &entry : *m_typeMap.get()){
+                entry.second.get()->SpecifiedChildNodes.get()->clear();
+            }
+        }
+
         void OpcUaTypeReader::readTypes()
         {
             std::vector<std::string> notFoundObjectTypeNamespaces;

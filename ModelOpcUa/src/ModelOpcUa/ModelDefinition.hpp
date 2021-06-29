@@ -204,11 +204,6 @@ namespace ModelOpcUa
 	class StructureNode : public NodeDefinition
 	{
 	public:
-		//Will remove last leak but results in empty MachineToolList
-		// ~StructureNode(){
-		// 	SpecifiedChildNodes.get()->clear();
-		// };
-
 		StructureNode(NodeClass_t nodeClass,
 					  ModellingRule_t modellingRule,
 					  NodeId_t referenceType,
