@@ -239,7 +239,7 @@ namespace Umati
 			std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(typeDefinition);			
 			std::list<ModelOpcUa::NodeId_t> identificationNodes;
 			std::vector<std::string> identificationValueKeys;
-			
+
 			FillIdentificationValuesFromBrowseResult(
 				identification.NodeId,
 				identificationNodes,
@@ -276,7 +276,7 @@ namespace Umati
 			///\TODO browse by type definition
 			auto browseResults = m_pDataClient->Browse(
 				identificationInstance,
-				Umati::Dashboard::IDashboardDataClient::BrowseContext_t::ObjectAndVariableWithTypes());
+				Umati::Dashboard::IDashboardDataClient::BrowseContext_t::Variable());
 			for (auto &browseResult : browseResults)
 			{
 				identificationValueKeys.push_back(browseResult.BrowseName.Name);

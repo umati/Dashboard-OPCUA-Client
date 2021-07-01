@@ -425,7 +425,7 @@ namespace Umati
 			{
 				if (!m_isConnected)
 				{
-					this->connect();					
+					this->connect();
 				}
 				else
 				{
@@ -737,6 +737,7 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
+				/// \todo use single read request for all values
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
 
 				UA_DataValue tmpReadValue;
@@ -755,7 +756,7 @@ namespace Umati
 
 				if (UA_StatusCode_isBad(ret))
 				{
-					LOG(ERROR) << "Received non good status for read: " << UA_StatusCode_name(ret);
+					LOG(ERROR) << "Received non good status for reading node(" << static_cast<std::string>(modelNodeId) << "): " << UA_StatusCode_name(ret);
 					std::stringstream ss;
 					ss << "Received non good status  for read: " << ret;
 					UA_DataValue_clear(&tmpReadValue);

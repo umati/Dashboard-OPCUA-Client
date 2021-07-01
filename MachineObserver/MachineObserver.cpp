@@ -41,20 +41,20 @@ namespace Umati {
 				return;
 			}
 
-			if (machineListsNotEqual(machineList)) {
+			machineListsNotEqual(machineList);
 
-				findNewAndOfflineMachines(machineList, toBeRemovedMachines, newMachines);
+			findNewAndOfflineMachines(machineList, toBeRemovedMachines, newMachines);
 
-				removeOfflineMachines(toBeRemovedMachines);
+			removeOfflineMachines(toBeRemovedMachines);
 
-				for (auto &newMachine : newMachines) {
-					// Ignore known invalid machines for a specific time
-					if (ignoreInvalidMachinesTemporarily(newMachine)) {
-						continue;
-					};
-					addNewMachine(newMachine);
-				}
+			for (auto &newMachine : newMachines) {
+				// Ignore known invalid machines for a specific time
+				if (ignoreInvalidMachinesTemporarily(newMachine)) {
+					continue;
+				};
+				addNewMachine(newMachine);
 			}
+
 		}
 
 		bool MachineObserver::machineListsNotEqual(std::list<ModelOpcUa::BrowseResult_t> &machineList) {
