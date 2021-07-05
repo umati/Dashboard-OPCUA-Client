@@ -102,7 +102,6 @@ namespace Umati
 			}else{
 				result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
 			}
-
 			if (UA_StatusCode_isBad(result))
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
@@ -117,7 +116,7 @@ namespace Umati
 		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
 		{	
 			sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT_ALLOC("en-US", "KonI4.0 OPC UA Data Client");
-			sessionConnectInfo.applicationUri = UA_STRING_ALLOC("urn:open62541.server.application");
+			sessionConnectInfo.applicationUri = UA_STRING_ALLOC("http://dashboard.umati.app/OPCUA_DataClient");
 		 	sessionConnectInfo.productUri = UA_STRING_ALLOC("KonI40OpcUaClient_Product");
 			sessionConnectInfo.applicationType = UA_APPLICATIONTYPE_CLIENT;
 			return sessionConnectInfo;
@@ -411,6 +410,7 @@ namespace Umati
 
 		bool OpcUaClient::disconnect()
 		{
+						//VERIFY do we need this session?
 			if (m_pSession)
 			{
 				m_subscr.deleteSubscription(m_pClient.get());

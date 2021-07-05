@@ -13,7 +13,7 @@ class Settings:
         self._defaults = {
             "Hostnames": ["localhost"],
             "IPs": [],
-            "URI": "urn:UmatiDashboardClient",
+            "URI": "http://dashboard.umati.app/OPCUA_DataClient",
             "Keysize": 2048,
             "Days": 365,
             "Subject": "/C=DE/O=SampleOrganization/CN=UmatiDashboardClient@localhost",

@@ -92,6 +92,7 @@ namespace Umati {
 				return UA_Client_findServers(client,(char *)sDiscoveryURL.String->data,sDiscoveryURL.String->length, nullptr, 0, nullptr, registerdServerSize,
 											 applicationDescriptions);
 			};
+			//VERIFY do we need this? Check UA Sdk code
 			void GetNewSession(std::shared_ptr<UA_SessionState> &m_pSession) override {
 				m_pSession.reset();
 				pSession = m_pSession;

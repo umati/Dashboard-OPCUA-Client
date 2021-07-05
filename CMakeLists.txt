@@ -5,13 +5,6 @@ message("### opcua_dashboardclient: loading project")
 project(Dashboard_OpcUaClient)
 enable_testing()
 set(CMAKE_CXX_STANDARD 14)
-#Adress sanitizer
-#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
-#set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
-#valgrind
-#set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -static-libasan")
-
-
 
 message("########################### CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message("########################### CREATE_COVERAGE=${CREATE_COVERAGE}")

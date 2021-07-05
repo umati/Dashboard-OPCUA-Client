@@ -9,7 +9,6 @@ namespace Umati {
 					const std::map<std::string, uint16_t> &uriToID
 			) : ModelToUaConverter(uriToID) {
 				m_qualifiedName = UA_QUALIFIEDNAME_ALLOC(getNsIndexFromUri(modelQualifiedName.Uri), modelQualifiedName.Name.c_str());
-				detached = false;
 			}
 		}
 	}
