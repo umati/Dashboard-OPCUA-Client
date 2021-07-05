@@ -149,12 +149,6 @@ namespace Umati {
 					}
 					case UA_DATATYPEKIND_LOCALIZEDTEXT: {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
-						if (localText.locale.length == 0 ){
-
-						localText.locale.length = strlen("en-US");
-						localText.locale.data = (UA_Byte*)"en-US";
-				
-						}
 						jsonValue = {};
 						jsonValue["locale"] = std::string((char*)localText.locale.data,localText.locale.length);
 						jsonValue["text"] =  std::string((char*)localText.text.data,localText.text.length);
