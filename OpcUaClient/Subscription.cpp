@@ -56,8 +56,6 @@ namespace Umati {
 					this->setUnsubscribed();
 					return;
 				}
-				//TODO get client object. Do we need to unsubscripe here? is deleteSubscription sufficient?
-				//m_pClientSubscription->Unsubscribe(client, m_monitoredItemId, m_clientHandle);
 				this->setUnsubscribed();
 			}
 
@@ -183,7 +181,6 @@ namespace Umati {
 			UA_MonitoredItemCreateResult monItemCreateResult;
 
 			monItemCreateReq = prepareMonItemCreateReq(nodeId, monItemCreateReq);
-			
 			try {
                 monItemCreateResult = UA_Client_MonitoredItems_createDataChange(client, m_pSubscriptionID, UA_TIMESTAMPSTORETURN_SOURCE, monItemCreateReq,
                                                                                 (void*)((UA_Int64)(monItemCreateReq.requestedParameters.clientHandle)), createDataChangeCallback, NULL);

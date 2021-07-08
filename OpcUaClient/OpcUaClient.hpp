@@ -87,7 +87,6 @@ namespace Umati
 
 			void threadConnectExecution();
 
-			std::shared_ptr<UA_SessionState> m_pSession;
 			std::map<uint16_t, std::string> m_indexToUriCache;
 			std::string m_serverUri;
 			std::string m_username;

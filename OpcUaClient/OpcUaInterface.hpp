@@ -26,7 +26,6 @@ namespace Umati {
 											size_t *registerdServerSize,
 											UA_ApplicationDescription **applicationDescriptions) = 0;
 
-			virtual void GetNewSession(std::shared_ptr<UA_SessionState> &m_pSession) = 0;
 
 			virtual UA_StatusCode SessionConnect(UA_Client *client,
 									const open62541Cpp::UA_String &sURL
@@ -92,11 +91,7 @@ namespace Umati {
 				return UA_Client_findServers(client,(char *)sDiscoveryURL.String->data,sDiscoveryURL.String->length, nullptr, 0, nullptr, registerdServerSize,
 											 applicationDescriptions);
 			};
-			//VERIFY do we need this? Check UA Sdk code
-			void GetNewSession(std::shared_ptr<UA_SessionState> &m_pSession) override {
-				m_pSession.reset();
-				pSession = m_pSession;
-			}
+
 			UA_StatusCode SessionConnect(
 									UA_Client *client,
 									const open62541Cpp::UA_String &sURL) override {
@@ -150,9 +145,19 @@ namespace Umati {
 				UA_StatusCode statusCode;
 
 				UA_Client_getState(client, &secureChannelState, &sessionState, &statusCode);
+				setChannelState(secureChannelState);
+				setSessionState(sessionState);
 				if (!UA_StatusCode_isBad(statusCode) && sessionState == UA_SESSIONSTATE_ACTIVATED && secureChannelState == UA_SECURECHANNELSTATE_OPEN)
 						return true;
 				return false; 
+			}
+
+			void setChannelState(UA_SecureChannelState channelState){
+				m_pChannelState = channelState;
+			}
+
+			void setSessionState(UA_SessionState sessionState){
+				m_pSessionState = sessionState;
 			}
 
 			void SessionUpdateNamespaceTable(UA_Client *client) override {
@@ -244,7 +249,9 @@ namespace Umati {
 				}
 				return p_subscr->Subscribe(client, nodeId, callback);
 			}
-			std::shared_ptr<UA_SessionState> pSession;
+
+			UA_SessionState m_pSessionState;
+			UA_SecureChannelState m_pChannelState;
 		};
 	}
 }

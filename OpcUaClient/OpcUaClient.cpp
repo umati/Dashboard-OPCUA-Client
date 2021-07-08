@@ -22,9 +22,8 @@ namespace Umati
 		static void stateCallback(UA_Client *client,
                           UA_SecureChannelState channelState,
                           UA_SessionState sessionState,
-                          UA_StatusCode connectStatus)
+                          UA_StatusCode connectState)
 		{
-
 			switch(channelState) {
 				case UA_SECURECHANNELSTATE_FRESH:
 				case UA_SECURECHANNELSTATE_CLOSED:
@@ -54,7 +53,7 @@ namespace Umati
 					break;
 				}
 
-			switch(connectStatus){
+			switch(connectState){
 				case UA_STATUSCODE_BADDISCONNECT:
 				LOG(INFO) << "Bad Disconnect";
 			}
@@ -95,8 +94,7 @@ namespace Umati
 			open62541Cpp::UA_String sURL(m_serverUri.c_str());
 			UA_StatusCode  result;
 
-			m_opcUaWrapper->GetNewSession(m_pSession);
-
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			if(m_username.empty() && m_password.empty()){
 				result = m_opcUaWrapper->SessionConnect(m_pClient.get(), sURL);
 			}else{
@@ -180,6 +178,7 @@ namespace Umati
 
 		void OpcUaClient::checkConnection()
 		{
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			if (!this->m_isConnected || !m_opcUaWrapper->SessionIsConnected(m_pClient.get()))
 			{
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
@@ -403,20 +402,17 @@ namespace Umati
 			{
 				m_connectThread->join();
 			}
-
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			m_subscr.deleteSubscription(m_pClient.get());
 			disconnect();
 		}
 
 		bool OpcUaClient::disconnect()
 		{
-						//VERIFY do we need this session?
-			if (m_pSession)
-			{
-				m_subscr.deleteSubscription(m_pClient.get());
-				return (m_opcUaWrapper->SessionDisconnect(m_pClient.get(), UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
-			}
-			return true;
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			m_subscr.deleteSubscription(m_pClient.get());
+			return (m_opcUaWrapper->SessionDisconnect(m_pClient.get(), UA_TRUE) != UA_STATUSCODE_GOOD) ? false : true;
+
 		}
 
 		void OpcUaClient::threadConnectExecution()
@@ -721,6 +717,7 @@ namespace Umati
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
 		OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			return m_opcUaWrapper->SubscriptionSubscribe(m_pClient.get(), nodeId, callback);
 		}
 	
@@ -751,7 +748,7 @@ namespace Umati
 
 				UA_DiagnosticInfo info;
 				UA_DiagnosticInfo_init(&info);
-
+				std::lock_guard<std::recursive_mutex> l(m_clientMutex);			
 				auto ret = m_opcUaWrapper->SessionRead(m_pClient.get(),0.0,UA_TIMESTAMPSTORETURN_BOTH,readValueId, tmpReadValue, info);
 
 				if (UA_StatusCode_isBad(ret))
