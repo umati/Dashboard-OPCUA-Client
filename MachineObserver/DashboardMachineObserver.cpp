@@ -106,7 +106,11 @@ namespace Umati
 			{
 				LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
 						  << static_cast<std::string>(machine.NodeId);
-
+				if (static_cast<std::string>(machine.NodeId).find("SurfaceTechnology") != std::string::npos) {
+					//FIXME Skipping surface because it will freeze...
+   					LOG(ERROR) << "Skipping surfaceTechnology";
+					return;
+				}
 				auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher, m_pOpcUaTypeReader);
 				MachineInformation_t machineInformation;
 				machineInformation.NamespaceURI = machine.NodeId.Uri;
