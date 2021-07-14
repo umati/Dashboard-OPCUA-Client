@@ -748,9 +748,10 @@ namespace Umati
 
 			std::vector<nlohmann::json> readValues;
 
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
+				/// \todo use single read request for all values
+				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
 
 				UA_DataValue tmpReadValue;
 				UA_DataValue_init(&tmpReadValue);
