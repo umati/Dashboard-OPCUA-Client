@@ -106,6 +106,7 @@ namespace Umati
 			ModelOpcUa::NodeId_t startNode,
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition)
 		{
+			//FIXME nodes will be checked many times.
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
 			for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes)
 			{
@@ -396,14 +397,7 @@ namespace Umati
 			// LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
 			auto callback = [pNode, &valueMap](nlohmann::json value) {
-				try
-				{	
 					valueMap[pNode] = value;
-				}
-				catch (std::exception &ex)
-				{
-					LOG(ERROR) << ex.what();
-				}
 			};
 			try
 			{

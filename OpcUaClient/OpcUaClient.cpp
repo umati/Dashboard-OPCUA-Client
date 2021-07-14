@@ -72,15 +72,18 @@ namespace Umati
 			 m_pClient(UA_Client_new(), UA_Client_delete)
 			 
         {
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
-			SetupSecurity::setupSecurity(config, m_pClient.get());
-			config->securityMode = UA_MessageSecurityMode(security);
-			UA_ApplicationDescription_clear(&config->clientDescription);
-			prepareSessionConnectInfo(config->clientDescription);
-			config->timeout = 2000;
-			config->inactivityCallback = inactivityCallback;
-			config->stateCallback = stateCallback;
+			{
+				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+				UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
+				SetupSecurity::setupSecurity(config, m_pClient.get());
+				config->securityMode = UA_MessageSecurityMode(security);
+				UA_ApplicationDescription_clear(&config->clientDescription);
+				prepareSessionConnectInfo(config->clientDescription);
+				config->timeout = 2000;
+				config->inactivityCallback = inactivityCallback;
+				config->stateCallback = stateCallback;
+			}
+
 			m_opcUaWrapper = std::move(opcUaWrapper);
 			m_opcUaWrapper->setSubscription(&m_subscr);
 			m_tryConnecting = true;
@@ -94,11 +97,13 @@ namespace Umati
 			open62541Cpp::UA_String sURL(m_serverUri.c_str());
 			UA_StatusCode  result;
 
-			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			if(m_username.empty() && m_password.empty()){
-				result = m_opcUaWrapper->SessionConnect(m_pClient.get(), sURL);
-			}else{
-				result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
+			{
+				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+				if(m_username.empty() && m_password.empty()){
+					result = m_opcUaWrapper->SessionConnect(m_pClient.get(), sURL);
+				}else{
+					result = m_opcUaWrapper->SessionConnectUsername(m_pClient.get(), sURL, m_username, m_password);
+				}
 			}
 			if (UA_StatusCode_isBad(result))
 			{
@@ -122,8 +127,8 @@ namespace Umati
 
 		void OpcUaClient::on_connected()
 		{
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			updateNamespaceCache();
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			m_opcUaWrapper->SubscriptionCreateSubscription(m_pClient.get());
 		}
 
@@ -134,20 +139,23 @@ namespace Umati
 
 		std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
 		{
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+            
 			auto nodeId = Converter::ModelNodeIdToUaNodeId(_nodeId, m_uriToIndexCache).getNodeId();
 			checkConnection();
 
 			UA_QualifiedName resultname;
 			UA_QualifiedName_init(&resultname);
-			auto uaResult = UA_Client_readBrowseNameAttribute(m_pClient.get(), *nodeId.NodeId, &resultname);
-
-			if (UA_StatusCode_isBad(uaResult))
 			{
-				LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data
-						   << "' with " << UA_StatusCode_name(uaResult);
-				UA_QualifiedName_clear(&resultname);
-				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+				auto uaResult = UA_Client_readBrowseNameAttribute(m_pClient.get(), *nodeId.NodeId, &resultname);
+
+				if (UA_StatusCode_isBad(uaResult))
+				{
+					LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data
+							<< "' with " << UA_StatusCode_name(uaResult);
+					UA_QualifiedName_clear(&resultname);
+					throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
+				}
 			}
 			std::string resName = std::string((char *)resultname.name.data,resultname.name.length);
 
@@ -158,12 +166,12 @@ namespace Umati
 
 		UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId)
 		{
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			checkConnection();
 
 			UA_NodeClass returnClass;
 			UA_NodeClass_init(&returnClass);
 			try{
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto uaResult = UA_Client_readNodeClassAttribute(m_pClient.get(), *nodeId.NodeId, &returnClass);
 			if (UA_StatusCode_isBad(uaResult))
 			{
@@ -216,13 +224,15 @@ namespace Umati
 			}
 
 
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-
 			UA_ByteString continuationPoint;
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
-			auto uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ typeNodeId, browseContext,
+			UA_BrowseResponse uaResult;
+			{
+				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+
+				uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ typeNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
-			
+			}
 			if (UA_StatusCode_isBad(uaResult.results->statusCode))
 			{
 				LOG(ERROR) << "Bad return from browse: " << uaResult.results->statusCode;
@@ -321,11 +331,13 @@ namespace Umati
 			UA_BrowseDescription browseContext2 = getUaBrowseContext(prepareObjectAndVariableTypeBrowseContext());
 			browseContext2.referenceTypeId.identifier.numeric= UA_NS0ID_HASMODELLINGRULE;
 			ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::Optional;
-
+			UA_BrowseResponse uaResult2;
+			{
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			auto uaResult2 = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ uaNodeId,
+			uaResult2 = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ uaNodeId,
 														   browseContext2,
 														   continuationPoint, referenceDescriptions);
+			}
 			if (UA_StatusCode_isBad(uaResult2.results->statusCode))
 			{
 				LOG(ERROR) << "Bad return from browse: " << uaResult2.results->statusCode << "for nodeId"
@@ -491,11 +503,14 @@ namespace Umati
 			UA_ByteString continuationPoint;
 			UA_ByteString_init(&continuationPoint);
 			std::vector<UA_ReferenceDescription> referenceDescriptions;
+			UA_BrowseResponse uaResult;
 
-            std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			checkConnection();
-			auto uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
+			{
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
+			}
 
 			ScopeExitGuard browseGuard([&]() {
 			UA_BrowseDescription_clear(&browseContext);
@@ -645,18 +660,20 @@ namespace Umati
 
 			UA_BrowsePathResult uaBrowsePathResults;
 			UA_DiagnosticInfo uaDiagnosticInfos;
+			UA_StatusCode uaResult;
 
 			ScopeExitGuard browseGuard([&]() {
 				UA_BrowsePathResult_clear(&uaBrowsePathResults);
 				UA_BrowsePath_clear(&uaBrowsePaths);
 			});
+			{
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			auto uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
+			uaResult = m_opcUaWrapper->SessionTranslateBrowsePathsToNodeIds(
 				m_pClient.get(),
 				uaBrowsePaths,
 				uaBrowsePathResults,
 				uaDiagnosticInfos);
-
+			}
             if (UA_StatusCode_isBad(uaResult))
 			{
                 if (uaResult != UA_STATUSCODE_BADNOMATCH) {
@@ -734,8 +751,6 @@ namespace Umati
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			for (const auto &modelNodeId : modelNodeIds)
 			{
-				/// \todo use single read request for all values
-				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
 
 				UA_DataValue tmpReadValue;
 				UA_DataValue_init(&tmpReadValue);
