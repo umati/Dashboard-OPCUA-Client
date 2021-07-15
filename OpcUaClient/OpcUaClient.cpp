@@ -769,9 +769,9 @@ namespace Umati
 
 				if (UA_StatusCode_isBad(ret))
 				{
-					LOG(ERROR) << "Received non good status for reading node(" << static_cast<std::string>(modelNodeId) << "): " << UA_StatusCode_name(ret);
 					std::stringstream ss;
-					ss << "Received non good status  for read: " << ret;
+					ss << "Received non good status for reading node(" << static_cast<std::string>(modelNodeId) << "): " << UA_StatusCode_name(ret) << "(" << ret << ")";
+					LOG(ERROR) << ss.str();
 					UA_DataValue_clear(&tmpReadValue);
 					throw Exceptions::OpcUaException(ss.str());
 				}
