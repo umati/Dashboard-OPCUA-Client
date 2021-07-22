@@ -737,6 +737,12 @@ namespace Umati
 			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			return m_opcUaWrapper->SubscriptionSubscribe(m_pClient.get(), nodeId, callback);
 		}
+
+		void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){
+
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			m_opcUaWrapper->SubscriptionUnsubscribe(m_pClient.get(), monItemIds, clientHandles);
+		}
 	
 		std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
 		{

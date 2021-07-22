@@ -86,6 +86,31 @@ namespace Umati
 			}
 		}
 
+		void DashboardClient::Unsubscribe(ModelOpcUa::NodeId_t nodeId){
+
+			std::vector<int32_t> monItemIds;
+			std::vector<int32_t> clientHandles;
+			for (auto values : m_subscribedValues){
+
+				monItemIds.push_back(values.get()->getMonitoredItemId());
+				clientHandles.push_back(values.get()->getClientHandle());
+				auto it = std::find(m_subscribedValues.begin(), m_subscribedValues.end(), values);
+				if(it != m_subscribedValues.end()){
+					m_subscribedValues.erase(it);
+				}
+			}
+
+			m_pDashboardDataClient->Unsubscribe(monItemIds, clientHandles);
+
+			//VERIFY do we need the NodeId check? 
+			for(auto dataset : m_dataSets){
+				if (dataset.get()->startNodeId == nodeId){
+					m_dataSets.remove(dataset);
+					break;
+				}
+			}
+		}
+
 		std::string DashboardClient::getJson(const std::shared_ptr<DataSetStorage_t> &pDataSetStorage)
 		{
 			auto getValueCallback = [pDataSetStorage](

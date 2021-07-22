@@ -164,11 +164,20 @@ namespace Umati
             class ValueSubscriptionHandle
             {
             public:
-                virtual ~ValueSubscriptionHandle() = 0;
 
-                virtual void unsubscribe() = 0;
+                ValueSubscriptionHandle(int32_t clientHandle, int32_t monItemId, ModelOpcUa::NodeId_t nodeId) : m_clientHandle(clientHandle), m_monitoredItemId(monItemId), m_nodeId(nodeId){}
+
+                ~ValueSubscriptionHandle();
+
+                void unsubscribe() {m_unsubscribed = true;}
 
                 bool isUnsubscribed() const { return m_unsubscribed; }
+
+                int32_t getClientHandle() const { return m_clientHandle; }
+
+                int32_t getMonitoredItemId() const { return m_monitoredItemId; }
+
+                ModelOpcUa::NodeId_t getNodeId() const { return m_nodeId; }
 
             protected:
                 void setUnsubscribed()
@@ -178,6 +187,9 @@ namespace Umati
 
             private:
                 bool m_unsubscribed = false;
+                int32_t m_clientHandle;
+                int32_t m_monitoredItemId;
+                ModelOpcUa::NodeId_t m_nodeId;
             };
 
             virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
@@ -187,6 +199,8 @@ namespace Umati
 
             virtual std::shared_ptr<ValueSubscriptionHandle>
             Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
+
+            virtual void Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) = 0;
 
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 

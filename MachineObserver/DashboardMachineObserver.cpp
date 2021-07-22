@@ -162,6 +162,7 @@ namespace Umati
 			auto it = m_dashboardClients.find(machineNodeId);
 			if (it != m_dashboardClients.end())
 			{
+				it->second.get()->Unsubscribe(machineNodeId);
 				m_dashboardClients.erase(it);
 			}
 			else

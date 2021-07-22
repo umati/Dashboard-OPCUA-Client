@@ -29,41 +29,42 @@ namespace Umati {
 		/***
 		 * Used to handle unsubscribe of subscribedValues of each of the DashboardClients
 		 */
-		class ValueSubscriptionHandle : public Dashboard::IDashboardDataClient::ValueSubscriptionHandle {
-		public:
+		//VERIFY Do we need this class when the base class has everything?
+		// class ValueSubscriptionHandle : public Dashboard::IDashboardDataClient::ValueSubscriptionHandle {
+		// public:
 
-			ValueSubscriptionHandle(Subscription *pSubscription, UA_Int32 monItemId, UA_Int32 clientHandle)
-					: m_monitoredItemId(monItemId), m_clientHandle(clientHandle), m_pClientSubscription(pSubscription) {
+		// 	ValueSubscriptionHandle(Subscription *pSubscription, UA_Int32 monItemId, UA_Int32 clientHandle)
+		// 			: m_monitoredItemId(monItemId), m_clientHandle(clientHandle), m_pClientSubscription(pSubscription) {
 
-			}
-				~ValueSubscriptionHandle() override {
-				unsubscribeInternal();
-			}
+		// 	}
+		// 		~ValueSubscriptionHandle() override {
+		// 		unsubscribeInternal();
+		// 	}
 
-			// Inherit from ValueSubscriptionHandle
-			void unsubscribe() override {
-				this->unsubscribeInternal();
-			}
+		// 	// Inherit from ValueSubscriptionHandle
+		// 	void unsubscribe() override {
+		// 		this->unsubscribeInternal();
+		// 	}
 
-		protected:
-			/// Unsubscribe the value, non virtual function, so it's safe to call it in the destructor.
-			void unsubscribeInternal() {
-				if (isUnsubscribed()) {
-					return;
-				}
-				if (m_pClientSubscription == NULL) {
-					LOG(ERROR) << "clientSubscription is null, cant unsubscribe";
-					this->setUnsubscribed();
-					return;
-				}
-				this->setUnsubscribed();
-			}
+		// protected:
+		// 	/// Unsubscribe the value, non virtual function, so it's safe to call it in the destructor.
+		// 	void unsubscribeInternal() {
+		// 		if (isUnsubscribed()) {
+		// 			return;
+		// 		}
+		// 		if (m_pClientSubscription == NULL) {
+		// 			LOG(ERROR) << "clientSubscription is null, cant unsubscribe";
+		// 			this->setUnsubscribed();
+		// 			return;
+		// 		}
+		// 		this->setUnsubscribed();
+		// 	}
 
-			const UA_Int32 m_monitoredItemId;
-			const UA_Int32 m_clientHandle;
+		// 	const UA_Int32 m_monitoredItemId;
+		// 	const UA_Int32 m_clientHandle;
 
-			Subscription *m_pClientSubscription;
-		};
+		// 	Subscription *m_pClientSubscription;
+		// };
 
 		std::atomic_uint Subscription::nextId = {100};
 
@@ -142,33 +143,45 @@ namespace Umati {
 			}
 		}
 
-		void Subscription::Unsubscribe(UA_Client *client, UA_Int32 monItemId, UA_Int32 clientHandle) {
-			auto it = m_callbacks.find(clientHandle);
-			if (it != m_callbacks.end()) {
-				m_callbacks.erase(clientHandle);
-			} else {
-				LOG(WARNING) << "No callback found for client handle " << clientHandle;
+		void Subscription::Unsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) {
+			for(UA_Int32 handle : clientHandles){
+				auto it = m_callbacks.find(handle);
+				if (it != m_callbacks.end()) {
+					m_callbacks.erase(handle);
+				} else {
+					LOG(WARNING) << "No callback found for client handle " << handle;
+				}
 			}
-
-			UA_StatusCode results;
 
 			if (m_pSubscription == NULL) {
 				createSubscription(client);
 			}
-			UA_DeleteSubscriptionsResponse response;
-			response = UA_Client_Subscriptions_delete(client, *m_pDeleteSubscription);
-			results = *response.results;
-				if (UA_StatusCode_isBad(results)) {
-					LOG(WARNING) << "Removal of subscribed item failed: " << results;
+
+			UA_UInt32 newMonitoredItemIds[monItemIds.size()];
+			
+			for (int i = 0; i < monItemIds.size(); i++){
+				newMonitoredItemIds[i] = (UA_Int32)clientHandles.at(i);
+			}
+
+			UA_DeleteMonitoredItemsRequest deleteRequest;
+    		UA_DeleteMonitoredItemsRequest_init(&deleteRequest);
+			deleteRequest.monitoredItemIdsSize = monItemIds.size();
+			deleteRequest.monitoredItemIds = newMonitoredItemIds;
+			deleteRequest.subscriptionId = m_pSubscriptionID;
+
+			auto response = UA_Client_MonitoredItems_delete(client, deleteRequest);
+
+			//VERIFY throw exception if something went wrong?
+			if (UA_StatusCode_isBad(response.responseHeader.serviceResult) || response.resultsSize != deleteRequest.monitoredItemIdsSize) {
+				LOG(WARNING) << "Removal of subscribed item failed: " << UA_StatusCode_name(response.responseHeader.serviceResult);
+			}
+
+			for (int i = 0; i < deleteRequest.monitoredItemIdsSize; i++){
+				if (UA_StatusCode_isBad(response.results[i])){
+					LOG(WARNING) << "Removal of subscribed item failed: " << UA_StatusCode_name(response.results[i]);
 				}
-				if (response.resultsSize == 1) {
-					UA_StatusCode resultCode(results);
-					if (UA_StatusCode_isBad(resultCode)) {
-						LOG(WARNING) << "Removal of subscribed item failed : " << resultCode;
-					}
-				} else {
-					LOG(ERROR) << "Length mismatch, unsubscribe might have failed.";
-				}
+			}
+			UA_DeleteMonitoredItemsResponse_delete(&response);
         }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
@@ -188,8 +201,8 @@ namespace Umati {
 
                 //LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq.requestedParameters.clientHandle << " for the callback method.";
                 m_callbacks.insert(std::make_pair(monItemCreateReq.requestedParameters.clientHandle, callback));
-                auto returnPointer = std::make_shared<ValueSubscriptionHandle>(this, monItemCreateResult.monitoredItemId,
-																 monItemCreateReq.requestedParameters.clientHandle);
+                auto returnPointer = std::make_shared<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>(monItemCreateResult.monitoredItemId,
+																 monItemCreateReq.requestedParameters.clientHandle, nodeId);
 				UA_MonitoredItemCreateResult_clear(&monItemCreateResult);
 				UA_MonitoredItemCreateRequest_clear(&monItemCreateReq);
 

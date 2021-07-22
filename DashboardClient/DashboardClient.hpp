@@ -38,6 +38,8 @@ namespace Umati {
 
 			void Publish();
 
+			void Unsubscribe(ModelOpcUa::NodeId_t nodeId);
+
 
 		protected:
 

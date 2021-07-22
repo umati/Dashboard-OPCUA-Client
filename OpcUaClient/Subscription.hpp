@@ -29,6 +29,8 @@ namespace Umati {
 			virtual std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>
 			Subscribe(UA_Client *client, ModelOpcUa::NodeId_t, Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback);
 
+			void Unsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles);
+
 			void createSubscription(UA_Client *client);
 
 			void deleteSubscription(UA_Client *client);
@@ -39,8 +41,6 @@ namespace Umati {
 			std::shared_ptr<UA_SessionState> _pSession;
 
 			friend class ValueSubscriptionHandle;
-
-			void Unsubscribe(UA_Client *client, UA_Int32 monItemId, UA_Int32 clientHandle);
 
 			const std::map<std::string, uint16_t> &m_uriToIndexCache;
 			const std::map<uint16_t, std::string> &m_indexToUriCache;

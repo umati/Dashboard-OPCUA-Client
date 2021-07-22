@@ -70,6 +70,8 @@ namespace Umati {
 			SubscriptionSubscribe(UA_Client *client, ModelOpcUa::NodeId_t nodeId,
 								  Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback) = 0;
 
+			virtual void SubscriptionUnsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) = 0;
+
 		protected:
 			std::vector<std::string> namespaceArray;
 			Subscription *p_subscr;
@@ -248,6 +250,10 @@ namespace Umati {
 					exit(SIGTERM);
 				}
 				return p_subscr->Subscribe(client, nodeId, callback);
+			}
+
+			void SubscriptionUnsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){
+				p_subscr->Unsubscribe(client, monItemIds, clientHandles);
 			}
 
 			UA_SessionState m_pSessionState;
