@@ -92,23 +92,23 @@ namespace Umati
 			std::vector<int32_t> clientHandles;
 			for (auto values : m_subscribedValues){
 
-				monItemIds.push_back(values.get()->getMonitoredItemId());
-				clientHandles.push_back(values.get()->getClientHandle());
-				auto it = std::find(m_subscribedValues.begin(), m_subscribedValues.end(), values);
-				if(it != m_subscribedValues.end()){
-					m_subscribedValues.erase(it);
+				auto value = values.get();
+
+				if(value){
+					monItemIds.push_back(value->getMonitoredItemId());
+					clientHandles.push_back(value->getClientHandle());
+				}else{
+					LOG(ERROR) << "Monitored Item is NULL for NodeId: " << nodeId.Id;
 				}
+				
 			}
+			m_subscribedValues.clear();
 
 			m_pDashboardDataClient->Unsubscribe(monItemIds, clientHandles);
 
-			//VERIFY do we need the NodeId check? 
-			for(auto dataset : m_dataSets){
-				if (dataset.get()->startNodeId == nodeId){
-					m_dataSets.remove(dataset);
-					break;
-				}
-			}
+			//VERIFY do we need to clear this completely?
+			m_dataSets.clear();
+			
 		}
 
 		std::string DashboardClient::getJson(const std::shared_ptr<DataSetStorage_t> &pDataSetStorage)

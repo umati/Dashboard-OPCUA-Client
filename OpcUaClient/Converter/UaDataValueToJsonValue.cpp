@@ -216,9 +216,19 @@ namespace Umati {
 					}
 
 					case UA_DATATYPEKIND_STRUCTURE: {
-						UA_String s(*(UA_String*)variant.data);
-						jsonValue = std::string((char*)s.data,s.length);
-						break;
+						//VERIFY correct datatype?
+						try
+						{
+							UA_StructureType s(*(UA_StructureType*)variant.data);
+							jsonValue = s;
+							break;
+						}
+						catch(const std::exception& e)
+						{
+							std::cerr << e.what() << '\n';
+							break;
+						}
+						
 					}
 
 					default: {

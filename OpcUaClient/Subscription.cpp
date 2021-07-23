@@ -154,7 +154,10 @@ namespace Umati {
 			}
 
 			if (m_pSubscription == NULL) {
-				createSubscription(client);
+				//VERIFY do we need a new subsciption here?
+				//createSubscription(client);
+				LOG(ERROR) << "Subsciption is NULL";
+				return;
 			}
 
 			UA_UInt32 newMonitoredItemIds[monItemIds.size()];
@@ -181,7 +184,7 @@ namespace Umati {
 					LOG(WARNING) << "Removal of subscribed item failed: " << UA_StatusCode_name(response.results[i]);
 				}
 			}
-			UA_DeleteMonitoredItemsResponse_delete(&response);
+			UA_DeleteMonitoredItemsResponse_deleteMembers(&response);
         }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
