@@ -35,6 +35,7 @@ namespace Umati
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
 				subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
 				LOG(INFO) << "Values subscribed for  " << channel;
+				std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 				m_dataSets.push_back(pDataSetStorage);
 			}
 			catch (const Umati::Exceptions::OpcUaException &ex)
@@ -61,6 +62,7 @@ namespace Umati
 
 		void DashboardClient::Publish()
 		{
+			std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 			for (auto &pDataSetStorage : m_dataSets)
 			{
 				std::string jsonPayload = getJson(pDataSetStorage);
@@ -106,7 +108,7 @@ namespace Umati
 
 			m_pDashboardDataClient->Unsubscribe(monItemIds, clientHandles);
 
-			//VERIFY do we need to clear this completely?
+			std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 			m_dataSets.clear();
 			
 		}

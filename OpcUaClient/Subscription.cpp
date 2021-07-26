@@ -66,7 +66,7 @@ namespace Umati {
 		// 	Subscription *m_pClientSubscription;
 		// };
 
-		std::atomic_uint Subscription::nextId = {100};
+		std::atomic_uint Subscription::nextId = {1};
 
 		Subscription::~Subscription(){
 			delete m_pSubscriptionWrapper;
@@ -151,13 +151,6 @@ namespace Umati {
 				} else {
 					LOG(WARNING) << "No callback found for client handle " << handle;
 				}
-			}
-
-			if (m_pSubscription == NULL) {
-				//VERIFY do we need a new subsciption here?
-				//createSubscription(client);
-				LOG(ERROR) << "Subsciption is NULL";
-				return;
 			}
 
 			UA_UInt32 newMonitoredItemIds[monItemIds.size()];

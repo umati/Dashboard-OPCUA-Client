@@ -4,7 +4,7 @@
 #include "IPublisher.hpp"
 #include <ModelOpcUa/ModelInstance.hpp>
 #include <map>
-
+#include <mutex>
 namespace Umati {
 
 	namespace Dashboard {
@@ -76,6 +76,7 @@ namespace Umati {
 			std::shared_ptr<IPublisher> m_pPublisher;
 			std::shared_ptr<OpcUaTypeReader> m_pTypeReader;
 
+			std::recursive_mutex m_dataSetMutex;
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
 			std::map<std::string, LastMessage_t> m_latestMessages;
 
