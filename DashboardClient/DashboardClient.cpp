@@ -134,49 +134,53 @@ namespace Umati
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition)
 		{
 			//FIXME nodes will be checked many times.
+
+			auto ret = browsedNodes.insert(startNode);
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
-			for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes)
-			{
-				switch (pChild->ModellingRule)
+			//VERIFY Skipping nodes that have already been browsed
+			if(ret.second==true) {
+				for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes)
 				{
-				case ModelOpcUa::ModellingRule_t::Optional:
-				case ModelOpcUa::ModellingRule_t::Mandatory:
-				{
-					bool should_continue = OptionalAndMandatoryTransformToNodeId(
-						startNode,
-						foundChildNodes,
-						pChild);
-					if (should_continue)
+					switch (pChild->ModellingRule)
 					{
-						continue;
-					}
-					break;
-				}
-				case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
-				case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
-				{
-					bool should_continue = OptionalAndMandatoryPlaceholderTransformToNodeId(
-						startNode,
-						foundChildNodes,
-						pChild);
-					if (should_continue)
+					case ModelOpcUa::ModellingRule_t::Optional:
+					case ModelOpcUa::ModellingRule_t::Mandatory:
 					{
-						continue;
+						bool should_continue = OptionalAndMandatoryTransformToNodeId(
+							startNode,
+							foundChildNodes,
+							pChild);
+						if (should_continue)
+						{
+							continue;
+						}
+						break;
 					}
-					break;
-				}
-				case ModelOpcUa::ModellingRule_t::None:
-				{
-					LOG(INFO) << "modelling rule is none";
-					LOG(ERROR) << "Unknown Modelling Rule None." << std::endl;
-					break;
-				}
-				default:
-					LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
-					break;
+					case ModelOpcUa::ModellingRule_t::OptionalPlaceholder:
+					case ModelOpcUa::ModellingRule_t::MandatoryPlaceholder:
+					{
+						bool should_continue = OptionalAndMandatoryPlaceholderTransformToNodeId(
+							startNode,
+							foundChildNodes,
+							pChild);
+						if (should_continue)
+						{
+							continue;
+						}
+						break;
+					}
+					case ModelOpcUa::ModellingRule_t::None:
+					{
+						LOG(INFO) << "modelling rule is none";
+						LOG(ERROR) << "Unknown Modelling Rule None." << std::endl;
+						break;
+					}
+					default:
+						LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
+						break;
+					}
 				}
 			}
-
 			auto pNode = std::make_shared<ModelOpcUa::SimpleNode>(
 				startNode,
 				pTypeDefinition->SpecifiedTypeNodeId,
@@ -427,7 +431,12 @@ namespace Umati
 					valueMap[pNode] = value;
 			};
 			try
-			{
+			{				
+				//VERIFY skipping nodes that are already in sumbscribedValues
+				for(auto value : m_subscribedValues){
+					if(value.get()->getNodeId() == pNode.get()->NodeId)
+					return;
+				}
 				auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
 				m_subscribedValues.push_back(subscribedValue);
 			}
