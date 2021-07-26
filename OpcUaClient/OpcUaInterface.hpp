@@ -130,7 +130,9 @@ namespace Umati {
 				UA_ReadResponse_init(&response);
 				response = UA_Client_Service_read(client,req);
 
-				UA_DataValue_copy(response.results,&values);
+				if(response.resultsSize != 0 && response.results != nullptr){
+					UA_DataValue_copy(response.results,&values);
+				}
 				
 				if(response.diagnosticInfosSize != 0){
 					UA_DiagnosticInfo_copy(response.diagnosticInfos,&diagnosticInfos);

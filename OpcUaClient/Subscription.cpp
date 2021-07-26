@@ -148,10 +148,10 @@ namespace Umati {
 				}
 			}
 
-			UA_UInt32 newMonitoredItemIds[monItemIds.size()];
+			UA_UInt32 *newMonitoredItemIds = UA_UInt32_new();
 			
 			for (int i = 0; i < monItemIds.size(); i++){
-				newMonitoredItemIds[i] = (UA_Int32)clientHandles.at(i);
+				newMonitoredItemIds[i] = (UA_UInt32)clientHandles.at(i);
 			}
 
 			UA_DeleteMonitoredItemsRequest deleteRequest;
@@ -173,6 +173,7 @@ namespace Umati {
 				}
 			}
 			UA_DeleteMonitoredItemsResponse_clear(&response);
+			UA_UInt32_clear(newMonitoredItemIds);
         }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
