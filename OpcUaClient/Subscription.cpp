@@ -123,7 +123,6 @@ namespace Umati {
 		}
 
 		void Subscription::createSubscription(UA_Client *client) {
-			if (m_pSubscription == NULL) {
 				auto request = UA_CreateSubscriptionRequest_default();
 				auto result = m_pSubscriptionWrapper->SessionCreateSubscription(client, request,
 																				this, NULL, NULL);
@@ -133,14 +132,10 @@ namespace Umati {
 				} else {
 					LOG(WARNING) << "Subscription is not empty, won't create new subscription.";	
 				}
-			}
 		}
 
 		void Subscription::deleteSubscription(UA_Client *client) {
-			if (m_pSubscription) {
-				m_pSubscriptionWrapper->SessionDeleteSubscription(client, *m_pDeleteSubscription);
-				m_pSubscription = nullptr;
-			}
+				m_pSubscriptionWrapper->SessionDeleteSubscription(client, m_pSubscriptionID);
 		}
 
 		void Subscription::Unsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) {
@@ -177,7 +172,7 @@ namespace Umati {
 					LOG(WARNING) << "Removal of subscribed item failed: " << UA_StatusCode_name(response.results[i]);
 				}
 			}
-			UA_DeleteMonitoredItemsResponse_deleteMembers(&response);
+			UA_DeleteMonitoredItemsResponse_clear(&response);
         }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(

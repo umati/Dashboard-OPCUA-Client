@@ -31,9 +31,9 @@ namespace Umati {
     				UA_Client_DeleteSubscriptionCallback deleteCallback
 			) = 0;
 
-			virtual UA_DeleteSubscriptionsResponse SessionDeleteSubscription(	
+			virtual UA_StatusCode SessionDeleteSubscription(	
 					UA_Client *client,
-    				const UA_DeleteSubscriptionsRequest request) = 0;
+    				const UA_Int32 subscriptionId) = 0;
 		};
 
 		class OpcUaSubscriptionWrapper : public OpcUaSubscriptionInterface {
@@ -48,10 +48,11 @@ namespace Umati {
 				return UA_Client_Subscriptions_create(client,request,subscriptionContext, statusChangeCallback, deleteCallback);
 			}
 
-			UA_DeleteSubscriptionsResponse SessionDeleteSubscription(	
+			UA_StatusCode SessionDeleteSubscription(	
 						UA_Client *client,
-    				const UA_DeleteSubscriptionsRequest request) override {
-						return UA_Client_Subscriptions_delete(client,request);
+    				const UA_Int32 subscriptionId) override {
+						return UA_Client_Subscriptions_deleteSingle(client, subscriptionId);
+						
 				}
 		};
 	}
