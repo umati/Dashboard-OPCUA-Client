@@ -753,42 +753,53 @@ namespace Umati
 		{
 
 			std::vector<nlohmann::json> readValues;
+		
+			UA_DiagnosticInfo info;
+			UA_DiagnosticInfo_init(&info);
 
+			const size_t readValueSize = modelNodeIds.size();
+			UA_ReadValueId *readValueId = (UA_ReadValueId *) UA_Array_new(readValueSize, &UA_TYPES[UA_TYPES_READVALUEID]);
+
+
+			auto index = 0;
 			for (const auto &modelNodeId : modelNodeIds)
 			{
-				/// \todo use single read request for all values
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
+				
+				readValueId[index].attributeId = UA_ATTRIBUTEID_VALUE;
+				UA_NodeId_copy(nodeId.NodeId, &readValueId[index].nodeId);
+				index++;
+			}
 
-				UA_DataValue tmpReadValue;
-				UA_DataValue_init(&tmpReadValue);
-			
-				UA_ReadValueId readValueId;
-				UA_ReadValueId_init(&readValueId);
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);			
+			auto ret = m_opcUaWrapper->SessionRead(m_pClient.get(),0.0,UA_TIMESTAMPSTORETURN_BOTH, readValueId,  readValueSize, info);
 
-				readValueId.attributeId = UA_ATTRIBUTEID_VALUE;
-				readValueId.nodeId = *nodeId.NodeId;
+			if (UA_StatusCode_isBad(ret.results->status))
+			{
+				std::stringstream ss;
+				ss << "Received non good status for reading: " << UA_StatusCode_name(ret.results->status);
+				LOG(ERROR) << ss.str();
+				UA_Array_delete(readValueId, readValueSize, &UA_TYPES[UA_TYPES_READVALUEID]);
+				UA_ReadResponse_clear(&ret);
 
-				UA_DiagnosticInfo info;
-				UA_DiagnosticInfo_init(&info);
-				std::lock_guard<std::recursive_mutex> l(m_clientMutex);			
-				auto ret = m_opcUaWrapper->SessionRead(m_pClient.get(),0.0,UA_TIMESTAMPSTORETURN_BOTH,readValueId, tmpReadValue, info);
+				throw Exceptions::OpcUaException(ss.str());
+			}
+			else
+			{
+				for(int i = 0; i < ret.resultsSize; i++){
 
-				if (UA_StatusCode_isBad(ret))
-				{
-					std::stringstream ss;
-					ss << "Received non good status for reading node(" << static_cast<std::string>(modelNodeId) << "): " << UA_StatusCode_name(ret) << "(" << ret << ")";
-					LOG(ERROR) << ss.str();
-					UA_DataValue_clear(&tmpReadValue);
-					throw Exceptions::OpcUaException(ss.str());
-				}
-				else
-				{
-					auto valu = Converter::UaDataValueToJsonValue(tmpReadValue, false);
+					auto valu = Converter::UaDataValueToJsonValue(ret.results[i], false);
 					auto val = valu.getValue();
 					readValues.push_back(val);
-					UA_DataValue_clear(&tmpReadValue);
 				}
 			}
+			
+			for(int i = 0; i < readValueSize; i++){
+				UA_NodeId_clear(&readValueId[i].nodeId);
+			}
+			UA_Array_delete(readValueId, readValueSize, &UA_TYPES[UA_TYPES_READVALUEID]);
+			UA_ReadResponse_clear(&ret);
+
 			return readValues;
 		}
 

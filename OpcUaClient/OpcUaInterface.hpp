@@ -42,11 +42,11 @@ namespace Umati {
 
 			virtual std::vector<std::string> SessionGetNamespaceTable() = 0;
 
-			virtual UA_StatusCode SessionRead(UA_Client *client,
+			virtual UA_ReadResponse SessionRead(UA_Client *client,
 								 UA_Double maxAge,
 								 UA_TimestampsToReturn timeStamps,
-								 UA_ReadValueId &nodesToRead,
-								 UA_DataValue &values,
+								 UA_ReadValueId *nodesToRead,
+								 size_t nodesToReadSize,
 								 UA_DiagnosticInfo &diagnosticInfos) = 0;
 
 			virtual bool SessionIsConnected(UA_Client *client) = 0;
@@ -112,35 +112,22 @@ namespace Umati {
 				return UA_Client_disconnect(client);
 			}
 
-			UA_StatusCode SessionRead(UA_Client *client,
+			UA_ReadResponse SessionRead(UA_Client *client,
 								 UA_Double maxAge,
 								 UA_TimestampsToReturn timeStamps,
-								 UA_ReadValueId &nodesToRead,
-								 UA_DataValue &values,
+								 UA_ReadValueId *nodesToRead,
+								 size_t nodesToReadSize,
 								 UA_DiagnosticInfo &diagnosticInfos) override {
 				
 				UA_ReadRequest req;
 				UA_ReadRequest_init(&req);
 				UA_Double_copy(&maxAge,&req.maxAge);
 				UA_TimestampsToReturn_copy(&timeStamps,&req.timestampsToReturn);
-				req.nodesToReadSize = 1;
-				req.nodesToRead = &nodesToRead;
+				req.nodesToReadSize = nodesToReadSize;
+				req.nodesToRead = nodesToRead;
 
-				UA_ReadResponse response;
-				UA_ReadResponse_init(&response);
-				response = UA_Client_Service_read(client,req);
+				return UA_Client_Service_read(client,req);
 
-				if(response.resultsSize != 0 && response.results != nullptr){
-					UA_DataValue_copy(response.results,&values);
-				}
-				
-				if(response.diagnosticInfosSize != 0){
-					UA_DiagnosticInfo_copy(response.diagnosticInfos,&diagnosticInfos);
-				}
-
-				UA_ReadResponse_clear(&response);
-
-				return values.status;
 			}
 
 			bool SessionIsConnected(UA_Client *client) override {
