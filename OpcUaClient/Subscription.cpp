@@ -147,10 +147,11 @@ namespace Umati {
 					LOG(WARNING) << "No callback found for client handle " << handle;
 				}
 			}
-
-			UA_UInt32 *newMonitoredItemIds = UA_UInt32_new();
+			size_t monItemsSize = monItemIds.size();
+			UA_UInt32 newMonitoredItemIds[monItemsSize];
 			
 			for (int i = 0; i < monItemIds.size(); i++){
+				UA_UInt32_init(&newMonitoredItemIds[i]);
 				newMonitoredItemIds[i] = (UA_UInt32)clientHandles.at(i);
 			}
 
