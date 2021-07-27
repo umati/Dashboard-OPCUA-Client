@@ -26,46 +26,6 @@ static void createDataChangeCallback(UA_Client *client, UA_UInt32 subId, void *s
 namespace Umati {
 	namespace OpcUa {
 
-		/***
-		 * Used to handle unsubscribe of subscribedValues of each of the DashboardClients
-		 */
-		//VERIFY Do we need this class when the base class has everything?
-		// class ValueSubscriptionHandle : public Dashboard::IDashboardDataClient::ValueSubscriptionHandle {
-		// public:
-
-		// 	ValueSubscriptionHandle(Subscription *pSubscription, UA_Int32 monItemId, UA_Int32 clientHandle)
-		// 			: m_monitoredItemId(monItemId), m_clientHandle(clientHandle), m_pClientSubscription(pSubscription) {
-
-		// 	}
-		// 		~ValueSubscriptionHandle() override {
-		// 		unsubscribeInternal();
-		// 	}
-
-		// 	// Inherit from ValueSubscriptionHandle
-		// 	void unsubscribe() override {
-		// 		this->unsubscribeInternal();
-		// 	}
-
-		// protected:
-		// 	/// Unsubscribe the value, non virtual function, so it's safe to call it in the destructor.
-		// 	void unsubscribeInternal() {
-		// 		if (isUnsubscribed()) {
-		// 			return;
-		// 		}
-		// 		if (m_pClientSubscription == NULL) {
-		// 			LOG(ERROR) << "clientSubscription is null, cant unsubscribe";
-		// 			this->setUnsubscribed();
-		// 			return;
-		// 		}
-		// 		this->setUnsubscribed();
-		// 	}
-
-		// 	const UA_Int32 m_monitoredItemId;
-		// 	const UA_Int32 m_clientHandle;
-
-		// 	Subscription *m_pClientSubscription;
-		// };
-
 		std::atomic_uint Subscription::nextId = {1};
 
 		Subscription::~Subscription(){
@@ -86,8 +46,6 @@ namespace Umati {
 		}
 
 		void Subscription::subscriptionStatusChanged(UA_Client *client,UA_Int32 clientSubscriptionHandle, const UA_StatusCode &status) {
-			//VERIFY do we need clientSubscription handle?
-			//UA_ReferenceTypeAttributes(clientSubscriptionHandle);// We use the callback only for this subscription
 			std::stringstream str;
 			str << "SubscriptionStatus changed to " << status;
 			LOG(WARNING) << str.str().c_str();
@@ -164,7 +122,6 @@ namespace Umati {
 
 			auto response = UA_Client_MonitoredItems_delete(client, deleteRequest);
 
-			//VERIFY throw exception if something went wrong?
 			if (UA_StatusCode_isBad(response.responseHeader.serviceResult) || response.resultsSize != deleteRequest.monitoredItemIdsSize) {
 				LOG(WARNING) << "Removal of subscribed item failed: " << UA_StatusCode_name(response.responseHeader.serviceResult);
 			}

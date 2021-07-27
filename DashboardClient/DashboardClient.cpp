@@ -133,11 +133,8 @@ namespace Umati
 			ModelOpcUa::NodeId_t startNode,
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition)
 		{
-			//FIXME nodes will be checked many times.
-
 			auto ret = browsedNodes.insert(startNode);
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
-			//VERIFY Skipping nodes that have already been browsed
 			if(ret.second==true) {
 				for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes)
 				{
@@ -432,7 +429,6 @@ namespace Umati
 			};
 			try
 			{				
-				//VERIFY skipping nodes that are already in sumbscribedValues
 				for(auto value : m_subscribedValues){
 					if(value.get()->getNodeId() == pNode.get()->NodeId)
 					return;
