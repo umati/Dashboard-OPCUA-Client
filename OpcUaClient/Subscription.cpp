@@ -147,17 +147,18 @@ namespace Umati {
 					LOG(WARNING) << "No callback found for client handle " << handle;
 				}
 			}
-			size_t monItemsSize = monItemIds.size();
-			UA_UInt32 newMonitoredItemIds[monItemsSize];
+
+
+			const size_t monItemIdsSize = monItemIds.size();
+			UA_UInt32 *newMonitoredItemIds = (UA_UInt32 *) UA_Array_new(monItemIdsSize, &UA_TYPES[UA_TYPES_UINT32]);
 			
-			for (int i = 0; i < monItemIds.size(); i++){
-				UA_UInt32_init(&newMonitoredItemIds[i]);
+			for (int i = 0; i < monItemIdsSize; i++){
 				newMonitoredItemIds[i] = (UA_UInt32)clientHandles.at(i);
 			}
 
 			UA_DeleteMonitoredItemsRequest deleteRequest;
     		UA_DeleteMonitoredItemsRequest_init(&deleteRequest);
-			deleteRequest.monitoredItemIdsSize = monItemIds.size();
+			deleteRequest.monitoredItemIdsSize = monItemIdsSize;
 			deleteRequest.monitoredItemIds = newMonitoredItemIds;
 			deleteRequest.subscriptionId = m_pSubscriptionID;
 
@@ -174,7 +175,8 @@ namespace Umati {
 				}
 			}
 			UA_DeleteMonitoredItemsResponse_clear(&response);
-			UA_UInt32_clear(newMonitoredItemIds);
+			UA_Array_delete(newMonitoredItemIds, monItemIdsSize, &UA_TYPES[UA_TYPES_UINT32]);
+
         }
 
 		std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> Subscription::Subscribe(
