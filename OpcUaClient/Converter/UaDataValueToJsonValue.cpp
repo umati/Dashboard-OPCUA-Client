@@ -217,18 +217,24 @@ namespace Umati {
 
 					case UA_DATATYPEKIND_STRUCTURE: {
 						//VERIFY correct datatype?
-						try
-						{
-							UA_StructureType s(*(UA_StructureType*)variant.data);
-							jsonValue = s;
-							break;
-						}
-						catch(const std::exception& e)
-						{
-							std::cerr << e.what() << '\n';
-							break;
-						}
-						
+						 if(strcmp(variant.type->typeName, "EUInformation")== 0){
+								UA_EUInformation euInfo(*(UA_EUInformation*)variant.data);
+								jsonValue["description"]["locale"] =  std::string((char*)euInfo.description.locale.data,euInfo.description.locale.length);
+								jsonValue["description"]["text"] =  std::string((char*)euInfo.description.text.data,euInfo.description.text.length);
+								jsonValue["displayName"]["locale"] =  std::string((char*)euInfo.displayName.locale.data,euInfo.displayName.locale.length);
+								jsonValue["displayName"]["text"] = std::string((char*)euInfo.displayName.text.data,euInfo.displayName.text.length);
+								jsonValue["namespaceUri"] = std::string((char*)euInfo.namespaceUri.data,euInfo.namespaceUri.length);
+								jsonValue["unitId"] = euInfo.unitId;
+								break;
+						 	}else if (strcmp(variant.type->typeName, "Range")== 0){
+								UA_Range range(*(UA_Range*)variant.data);
+								jsonValue["low"] = range.low;
+								jsonValue["high"] = range.high;
+								break;
+						 }else{
+							 LOG(ERROR) << "Unknown data type. ";
+							 break;
+						 }
 					}
 
 					default: {
