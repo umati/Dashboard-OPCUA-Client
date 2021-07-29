@@ -107,7 +107,13 @@ namespace Umati {
 				
 					case UA_DATATYPEKIND_DATETIME: {
 						UA_DateTime dateTime = ((UA_DateTime)variant.data);
-						jsonValue = dateTime;
+						auto dtStruct = UA_DateTime_toStruct(dateTime);
+						//No to String() function. Using stringstream to build the string in the right format.
+						std::stringstream dateTimeString;
+						dateTimeString << dtStruct.year << "-" << dtStruct.month << "-" << dtStruct.day << "T"
+						<< dtStruct.hour << ":" << dtStruct.min << ":" << dtStruct.sec << ":" << dtStruct.milliSec << "Z";
+
+						jsonValue = dateTimeString.str();
 						break;
 					}
 
