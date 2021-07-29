@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
 	{
 		std::size_t i = 0;
-		while (running && !pClient->isConnected() && i < 100)
+		while (running && !pClient->isConnected() && i < 60)
 		{
 			LOG(INFO) << "Waiting for OPC UA connection.";
 			std::this_thread::sleep_for(std::chrono::seconds(1));
