@@ -178,19 +178,20 @@ namespace Umati {
 								break;
 							}
 							case UA_TYPES_EUINFORMATION: {
-								UA_EUInformation euInfo(*(UA_EUInformation*)exObj.content.decoded.data);
+								UA_EUInformation euInfo(*(UA_EUInformation*)variant.data);
 								jsonValue["namespaceUri"] = std::string((char*)euInfo.namespaceUri.data,euInfo.namespaceUri.length);
 								jsonValue["unitId"] = euInfo.unitId;
-								
+								UA_DataValue dataVal;
+								UA_DataValue_init(&dataVal);
 								{
-									UA_DataValue dataVal(*(UA_DataValue*)euInfo.displayName.text.data);
+									UA_Variant_setScalar(&dataVal.value, &euInfo.displayName, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 									jsonValue["displayName"] = UaDataValueToJsonValue(
 										dataVal,
 										serializeStatusInformation)
 										.getValue();
 								}
 								{
-									UA_DataValue dataVal(*(UA_DataValue*)euInfo.displayName.locale.data);
+									UA_Variant_setScalar(&dataVal.value, &euInfo.description, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 									jsonValue["description"] = UaDataValueToJsonValue(
 										dataVal,
 										serializeStatusInformation)
@@ -222,15 +223,27 @@ namespace Umati {
 					}
 
 					case UA_DATATYPEKIND_STRUCTURE: {
-						//VERIFY correct datatype?
+
 						 if(strcmp(variant.type->typeName, "EUInformation")== 0){
 								UA_EUInformation euInfo(*(UA_EUInformation*)variant.data);
-								jsonValue["description"]["locale"] =  std::string((char*)euInfo.description.locale.data,euInfo.description.locale.length);
-								jsonValue["description"]["text"] =  std::string((char*)euInfo.description.text.data,euInfo.description.text.length);
-								jsonValue["displayName"]["locale"] =  std::string((char*)euInfo.displayName.locale.data,euInfo.displayName.locale.length);
-								jsonValue["displayName"]["text"] = std::string((char*)euInfo.displayName.text.data,euInfo.displayName.text.length);
 								jsonValue["namespaceUri"] = std::string((char*)euInfo.namespaceUri.data,euInfo.namespaceUri.length);
 								jsonValue["unitId"] = euInfo.unitId;
+								UA_DataValue dataVal;
+								UA_DataValue_init(&dataVal);
+								{
+									UA_Variant_setScalar(&dataVal.value, &euInfo.displayName, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+									jsonValue["displayName"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
+								{
+									UA_Variant_setScalar(&dataVal.value, &euInfo.description, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+									jsonValue["description"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
 								break;
 						 	}else if (strcmp(variant.type->typeName, "Range")== 0){
 								UA_Range range(*(UA_Range*)variant.data);

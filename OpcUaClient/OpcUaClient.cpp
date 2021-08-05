@@ -109,7 +109,8 @@ namespace Umati
 			{
 				LOG(ERROR) << "Connecting failed in OPC UA Data Client: " << UA_StatusCode_name(result) << std::endl;
 				connectionStatusChanged(0,UA_SERVERSTATE_FAILED);
-				if(result == UA_STATUSCODE_BADDISCONNECT || result == UA_STATUSCODE_BADUSERACCESSDENIED || result == UA_STATUSCODE_BADCONNECTIONCLOSED){
+				//VERIFY move this to the connectionStatsuChanged callback?
+				if(result == UA_STATUSCODE_BADDISCONNECT || result == UA_STATUSCODE_BADUSERACCESSDENIED || result == UA_STATUSCODE_BADCONNECTIONCLOSED || result == UA_STATUSCODE_BADAPPLICATIONSIGNATUREINVALID){
 					m_tryConnecting = false;
 				}
 				return false;	
