@@ -34,7 +34,7 @@ namespace Umati {
 				switch (variant.type->typeKind) {
 
 					case UA_DATATYPEKIND_BOOLEAN: {
-						UA_Boolean v(variant.data);
+						UA_Boolean v(*(UA_Boolean*)variant.data);
 						jsonValue = static_cast<bool>(v);
 						break;
 					}
@@ -76,13 +76,13 @@ namespace Umati {
 					}
 
 					case UA_DATATYPEKIND_INT64: {
-						UA_Int64 v((UA_Int64)variant.data);
+						UA_Int64 v(*(UA_Int64*)variant.data);
 						jsonValue = v;
 						break;
 					}
 
 					case UA_DATATYPEKIND_UINT64: {
-						UA_UInt64 v((UA_UInt64)variant.data);
+						UA_UInt64 v(*(UA_UInt64*)variant.data);
 						jsonValue = v;
 						break;
 					}
