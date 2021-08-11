@@ -11,6 +11,7 @@
 #include <ConfigurationJsonFile.hpp>
 #include <Exceptions/ConfigurationException.hpp>
 #include <DashboardMachineObserver.hpp>
+#include <chrono>
 
 std::atomic_bool running = {true};
 
@@ -101,20 +102,21 @@ int main(int argc, char *argv[])
 		pOpcUaTypeReader);
 
 
-	int i = 0;
+	auto last_publish = std::chrono::steady_clock::now();
 	while (running)
 	{
-		
 		{
-		std::lock_guard<std::recursive_mutex> l(pClient.get()->m_clientMutex);
-		auto retval = UA_Client_run_iterate(pClient->m_pClient.get(), 1000);
+		std::lock_guard<std::recursive_mutex> l(pClient->m_clientMutex);
+		auto retval = UA_Client_run_iterate(pClient->m_pClient.get(), 100);
 		}
 
-		++i;
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-		if ((i % 10) == 0)
+		auto currentTime = std::chrono::steady_clock::now();
+		auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - last_publish).count();
+		if (duration_ms > 900)
 		{
+			last_publish = currentTime;
 			dashboardMachineObserver.PublishAll();
 		}
 	}
