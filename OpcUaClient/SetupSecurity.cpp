@@ -2,6 +2,9 @@
 #include "SetupSecurity.hpp"
 
 // #include <python3.8/Python.h>
+#include <open62541/architecture_definitions.h>
+#include <open62541/plugin/create_certificate.h>
+#include <open62541/plugin/log_stdout.h>
 #include <stdlib.h>
 #include <string>
 #include <fstream>
@@ -27,9 +30,25 @@ namespace Umati {
 				"./pki/issuer/revoked/"
 		};
 
+		/* saveFile is used to save the certificate file.
+		*
+		* @param  path specifies the file name given
+		* @return Returns 0 if fpfrintf succeeded and -1 if it failed*/
+		static UA_INLINE int
+		saveFile(const char* data, const char* path)
+		{
+			FILE *fp = fopen(path, "w");
+			int retVal = fprintf(fp, "%s", data);
+			fclose(fp);
+			if(retVal > 0 ){
+				return 0;
+			}
+			return -1;
+		}
+
 		/* loadFile parses the certificate file.
 		*
-		* @param  path specifies the file name given in argv[]
+		* @param  path specifies the file name given
 		* @return Returns the file content after parsing */
 		static UA_INLINE UA_ByteString
 		loadFile(const char *const path)
@@ -126,12 +145,12 @@ namespace Umati {
 			}
 
 			UA_ByteString certificate = loadFile(paths.ClientPubCert.c_str());
-			UA_ByteString privateKey  = loadFile(paths.ClientPrivCert.c_str());
+			UA_ByteString privateKey = loadFile(paths.ClientPrivCert.c_str());
 			if(certificate.length == 0 || privateKey.length == 0)
 			{
 				createNewClientCert();
 				certificate = loadFile(paths.ClientPubCert.c_str());
-				privateKey  = loadFile(paths.ClientPrivCert.c_str());
+				privateKey = loadFile(paths.ClientPrivCert.c_str());
 				if(certificate.length == 0 || privateKey.length == 0)
 				{
 					LOG(ERROR) << "Could not load client keyfiles ('" << paths.ClientPubCert << "', '" << paths.ClientPrivCert << "')";
@@ -154,21 +173,41 @@ namespace Umati {
 
 			return true;
 		}
-		//TODO use python-dev C lib to execute the script instaed of system(), dont use Hardcoded path
+
 		void SetupSecurity::createNewClientCert() {
-			std::stringstream command;
-			#if defined(_WIN32)
-				command << "python ";
-			#else
-				command << "python3 ";
-			#endif
-			//command << "./Tools/create_self-signed.py -u urn:open62541.client.application -k 2048 -c client " << paths.PkiRoot;
-			command << "./Tools/certGen/createCertificate.py pki";
-			int retVal = system(command.str().c_str());
-			if (retVal != 0){
-				LOG(INFO) << "Creating for certs failed";
+			LOG(INFO) << "Creating new client certificate";
+			UA_String subject[3] = {UA_STRING_STATIC("C=DE"),
+							UA_STRING_STATIC("O=SampleOrganization"),
+							UA_STRING_STATIC("CN=UmatiDashboardClient@localhost")};
+
+			UA_UInt32 lenSubject = 3;
+			UA_String subjectAltName[2]= {
+				UA_STRING_STATIC("DNS:localhost"),
+				UA_STRING_STATIC("URI:urn:open62541.client.application")
+			};
+			UA_UInt32 lenSubjectAltName = 2;
+			UA_ByteString certificate = UA_BYTESTRING_NULL;
+			UA_ByteString privateKey = UA_BYTESTRING_NULL;
+
+			UA_StatusCode statusCertGen =
+				UA_CreateCertificate(UA_Log_Stdout,
+									subject, lenSubject,
+									subjectAltName, lenSubjectAltName,
+									2048, UA_CERTIFICATEFORMAT_PEM,
+									&privateKey, &certificate);
+
+			if(statusCertGen != UA_STATUSCODE_GOOD) {
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+					"Generating Certificate failed: %s",
+					UA_StatusCode_name(statusCertGen));
+				return;
 			}
+
+			saveFile((char*)certificate.data, paths.ClientPubCert.c_str());
+			saveFile((char*)privateKey.data, paths.ClientPrivCert.c_str());
+
 			return;
+
 		}
 
 	}
