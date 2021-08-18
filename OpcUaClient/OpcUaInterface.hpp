@@ -153,6 +153,7 @@ namespace Umati {
 
 			void SessionUpdateNamespaceTable(UA_Client *client) override {
 
+				namespaceArray.clear();
 				open62541Cpp::UA_NodeId node = open62541Cpp::UA_NodeId(UA_UInt16(0),UA_UInt32(2255));
 				UA_ReadRequest request;
 				UA_ReadRequest_init(&request);
@@ -238,7 +239,11 @@ namespace Umati {
 					LOG(ERROR) << "Unable to subscribe, pointer is NULL ";
 					exit(SIGTERM);
 				}
-				return p_subscr->Subscribe(client, nodeId, callback);
+				try{
+					return p_subscr->Subscribe(client, nodeId, callback);
+				}catch(std::exception &ex){
+					throw ex;
+				}
 			}
 
 			void SubscriptionUnsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){

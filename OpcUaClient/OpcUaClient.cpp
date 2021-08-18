@@ -680,7 +680,11 @@ namespace Umati
                     LOG(ERROR) << "TranslateBrowsePathToNodeId failed for node: '" << static_cast<std::string>(startNode)
 						   << "' with " << UA_StatusCode_name(uaResult) << "(BrowsePath: "
 						   << static_cast<std::string>(browseName) << ")";
-                }
+				}
+				 if(uaResult == UA_STATUSCODE_BADNODEIDUNKNOWN){
+					LOG(INFO) << "Updating NamespaceCache because of " << UA_StatusCode_name(uaResult);
+					updateNamespaceCache();
+				}
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
 			}
 			if (uaBrowsePathResults.targetsSize != 1)
@@ -735,7 +739,13 @@ namespace Umati
 		OpcUaClient::Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback)
 		{
 			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			return m_opcUaWrapper->SubscriptionSubscribe(m_pClient.get(), nodeId, callback);
+
+			try{
+				return m_opcUaWrapper->SubscriptionSubscribe(m_pClient.get(), nodeId, callback);
+			}catch(std::exception &ex){
+				LOG(ERROR) << "Updating Namespace cache after exception: "<< ex.what();
+				updateNamespaceCache();
+			}
 		}
 
 		void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){
