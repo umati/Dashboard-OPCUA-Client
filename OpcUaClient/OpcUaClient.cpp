@@ -520,9 +520,11 @@ namespace Umati
 
 			if (uaResult.resultsSize > 0 && UA_StatusCode_isBad(uaResult.results->statusCode))
 			{
-				LOG(ERROR) << "Bad return from browse: " << uaResult.results->references->browseName.name.data << ", with startUaNodeId "
+				LOG(ERROR) << "Bad return from browse with startUaNodeId: "
 						   << startUaNodeId.NodeId->identifier.string.data
-						   << " and ref id " << browseContext.referenceTypeId.identifier.string.data;
+						   << " and ref id " << browseContext.referenceTypeId.identifier.string.data
+						   << "Updating NamespaceCache...";
+				updateNamespaceCache();
 				throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult.results->statusCode);
 			}
 
