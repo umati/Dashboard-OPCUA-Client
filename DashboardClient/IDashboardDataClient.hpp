@@ -205,6 +205,9 @@ namespace Umati
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
             virtual std::vector<std::string> Namespaces() = 0;
+
+            /// Verify that the connection and session are ok
+            virtual bool VerifyConnection() = 0;
         };
     } // namespace Dashboard
 } // namespace Umati

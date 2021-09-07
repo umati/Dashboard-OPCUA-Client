@@ -32,7 +32,7 @@ namespace Umati
 		{
 
 		public:
-			explicit OpcUaClient(std::string serverURI, std::string Username = std::string(),
+			explicit OpcUaClient(std::string serverURI, std::function<void()> issueReset, std::string Username = std::string(),
 								 std::string Password = std::string(), std::uint8_t security = 1,
 								 std::vector<std::string> expectedObjectTypeNamespaces = std::vector<std::string>(),
 								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
@@ -69,7 +69,8 @@ namespace Umati
 
 			std::vector<std::string> Namespaces() override;
 
-        protected:
+			bool VerifyConnection() override;
+		protected:
 			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus); 
 
 			bool connect();
@@ -86,9 +87,13 @@ namespace Umati
 			double m_maxAgeRead_ms = 100.0;
 
 			void updateNamespaceCache();
+			/// Ensure that the new namespace chache is compatible to the current class state.
+			/// Verifies, that no namespace has been removed, or reordered.
+			bool verifyCompatibleNamespaceCache(std::map<uint16_t, std::string> oldIndexToUriCache);
 
 			void threadConnectExecution();
 
+			std::function<void()> m_issueReset;
 			std::map<uint16_t, std::string> m_indexToUriCache;
 			std::string m_serverUri;
 			std::string m_username;

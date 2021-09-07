@@ -63,13 +63,15 @@ namespace Umati
 		    LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n";
 		}
 
-		OpcUaClient::OpcUaClient(std::string serverURI, std::string Username, std::string Password,
+		OpcUaClient::OpcUaClient(std::string serverURI, std::function<void()> issueReset, 
+								 std::string Username, std::string Password,
 								 std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces,
 								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
-			: m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)),
-			  m_security(static_cast<UA_MessageSecurityMode>(security)),
-			 m_subscr(m_uriToIndexCache, m_indexToUriCache),
-			 m_pClient(UA_Client_new(), UA_Client_delete)
+			: m_issueReset(issueReset),
+			m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)),
+			m_security(static_cast<UA_MessageSecurityMode>(security)),
+			m_subscr(m_uriToIndexCache, m_indexToUriCache),
+			m_pClient(UA_Client_new(), UA_Client_delete)
 			 
         {
 			{
@@ -301,11 +303,32 @@ namespace Umati
 
 		void OpcUaClient::updateNamespaceCache()
 		{
+			auto existingIndexToUri = m_indexToUriCache;
 			initializeNamespaceCache();
 
-	    	auto uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
+			auto uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
 		
 			fillNamespaceCache(uaNamespaces);
+			if(!verifyCompatibleNamespaceCache(existingIndexToUri)) {
+				m_issueReset();
+			}
+		}
+
+		bool OpcUaClient::verifyCompatibleNamespaceCache(std::map<uint16_t, std::string> oldIndexToUriCache) {
+			for(const auto &pair : oldIndexToUriCache){
+				auto newEntry = m_indexToUriCache.find(pair.first);
+				if(newEntry == m_indexToUriCache.end()) {
+					LOG(INFO) << "Incompatible Namespace change detected. "
+								<<"Namespaces index no longer available: " << pair.first;
+					return false;
+				}
+				if(newEntry->second != pair.second) {
+					LOG(INFO) << "Incompatible Namespace change detected. "
+								<<"Namespaces uri chaned: " << pair.second << "!= " << newEntry->second;
+					return false;
+				}
+			}
+			return true;
 		}
 
 		void OpcUaClient::fillNamespaceCache(const std::vector<std::string> &uaNamespaces)
@@ -748,6 +771,7 @@ namespace Umati
 				LOG(ERROR) << "Updating Namespace cache after exception: "<< ex.what();
 				updateNamespaceCache();
 			}
+			return nullptr;
 		}
 
 		void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){
@@ -823,6 +847,22 @@ namespace Umati
 				ret.push_back(ns.second);
 			}
 			return ret;
+		}
+
+		bool OpcUaClient::VerifyConnection() {
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			UA_NodeClass nodeClass = UA_NodeClass::UA_NODECLASS_OBJECT;
+			auto status = UA_Client_readNodeClassAttribute(m_pClient.get(), UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER_NAMESPACEARRAY), &nodeClass);
+			if(status != UA_STATUSCODE_GOOD) {
+				LOG(WARNING) << "Verify connection failed. Got status code: " << UA_StatusCode_name(status);
+				return false;
+			}
+			if(nodeClass != UA_NodeClass::UA_NODECLASS_VARIABLE) {
+				LOG(WARNING) << "Getting NodeClass failed. Got NodeClass: " << (status);
+				return false;
+			}
+
+			return true;
 		}
 
 	} // namespace OpcUa

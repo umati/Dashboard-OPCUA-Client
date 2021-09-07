@@ -52,7 +52,7 @@ message("### opcua_dashboardclient: Adding test directory")
 
 message("### opcua_dashboardclient: Adding the executable c++ file")
 find_package(Threads)
-add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp)
+add_executable(DashboardOpcUaClient Main.cpp DashboardOpcUaClient.cpp)
 
 message("### opcua_dashboardclient: Setting Dashboard Publisher")
 target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)

@@ -430,7 +430,7 @@ namespace Umati
 			try
 			{				
 				for(auto value : m_subscribedValues){
-					if(value.get()->getNodeId() == pNode.get()->NodeId)
+					if(value && value.get()->getNodeId() == pNode.get()->NodeId)
 					return;
 				}
 				auto subscribedValue = m_pDashboardDataClient->Subscribe(pNode->NodeId, callback);
