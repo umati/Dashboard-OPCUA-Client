@@ -23,11 +23,7 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
 
 FROM alpine:3 as runtime
 RUN apk --no-cache add \
-      libstdc++=~10.3.1_git20210424-r2 \
-       python3=~3.9.5-r1 \
-       py3-pip=~20.3.4-r1 \
-       openssl=~1.1.1k-r0
-RUN pip install --no-cache-dir jinja2
+      libstdc++=~10.3.1_git20210424-r2
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
