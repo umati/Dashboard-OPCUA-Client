@@ -28,10 +28,12 @@ namespace Umati
 
 		void DashboardMachineObserver::PublishAll()
 		{
-			std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
-			for (const auto &pDashClient : m_dashboardClients)
 			{
-				pDashClient.second->Publish();
+				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
+				for (const auto &pDashClient : m_dashboardClients)
+				{
+					pDashClient.second->Publish();
+				}
 			}
 
 			// Publish online machines every 30th publish
@@ -79,18 +81,19 @@ namespace Umati
 
 		void DashboardMachineObserver::publishMachinesList()
 		{
+			std::unique_lock<decltype(m_dashboardClients_mutex)> ul_machines(m_dashboardClients_mutex);
+			std::unique_lock<decltype(m_machineIdentificationsCache_mutex)> ul(m_machineIdentificationsCache_mutex);
 			PublishMachinesList pubList(m_pPublisher, m_pOpcUaTypeReader->m_expectedObjectTypeNames);
 			for (auto &machineOnline : m_onlineMachines)
 			{
-				nlohmann::json identificationAsJson;
-				isOnline(machineOnline.first, identificationAsJson, machineOnline.second.TypeDefinition);
-
-				if (!identificationAsJson.empty())
-				{
-					/// \todo Refactor out of here
-					identificationAsJson["ParentId"] = Umati::Util::IdEncode(static_cast<std::string>(machineOnline.second.Parent));
-					pubList.AddMachine(machineOnline.second.Specification, identificationAsJson);
+				auto it = m_machineIdentificationsCache.find(machineOnline.first);
+				if(it == m_machineIdentificationsCache.end() || it->second.empty()) {
+					continue;
 				}
+				auto identificationAsJson = it->second;
+				/// \todo Refactor out of here
+				identificationAsJson["ParentId"] = Umati::Util::IdEncode(static_cast<std::string>(machineOnline.second.Parent));
+				pubList.AddMachine(machineOnline.second.Specification, identificationAsJson);
 			}
 			pubList.Publish();
 		}

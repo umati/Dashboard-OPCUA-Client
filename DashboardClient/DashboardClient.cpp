@@ -428,7 +428,7 @@ namespace Umati
 					valueMap[pNode] = value;
 			};
 			try
-			{				
+			{
 				for(auto value : m_subscribedValues){
 					if(value && value.get()->getNodeId() == pNode.get()->NodeId)
 					return;

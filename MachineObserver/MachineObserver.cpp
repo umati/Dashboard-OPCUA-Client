@@ -31,33 +31,44 @@ namespace Umati {
 			{
 				toBeRemovedMachines.insert(knownMachine.first);
 			}
-			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> newMachines;
 			std::list<ModelOpcUa::BrowseResult_t> machineList;
-
 			/**
 			* Browses the machineList and fills the list if possiblenodeClassFromN
 			*/
 			if (!canBrowseMachineList(machineList)) {
 				return;
 			}
+			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> machineList_map;
+			std::transform(machineList.begin(), machineList.end(),
+				std::inserter(machineList_map, machineList_map.end()),
+					[](const ModelOpcUa::BrowseResult_t &m) { return std::make_pair(m.NodeId, m); }
+			);
 
 			machineListsNotEqual(machineList);
-
-			findNewAndOfflineMachines(machineList, toBeRemovedMachines, newMachines);
+			std::set<ModelOpcUa::NodeId_t> newMachines;
+			std::map<ModelOpcUa::NodeId_t, nlohmann::json> machinesIdentification;
+			findNewAndOfflineMachines(machineList, toBeRemovedMachines, newMachines, machinesIdentification);
 
 			removeOfflineMachines(toBeRemovedMachines);
 
-			for (auto &newMachine : newMachines) {
+			for (auto &newMachineNodeId : newMachines) {
 				// Ignore known invalid machines for a specific time
-				if (ignoreInvalidMachinesTemporarily(newMachine)) {
+				if (ignoreInvalidMachinesTemporarily(newMachineNodeId)) {
 					continue;
 				};
-				addNewMachine(newMachine);
+				addNewMachine(machineList_map[newMachineNodeId]);
+			}
+
+			{
+				std::unique_lock<decltype(m_machineIdentificationsCache_mutex)> ul(m_machineIdentificationsCache_mutex);
+				m_machineIdentificationsCache = machinesIdentification;
 			}
 
 		}
 
 		bool MachineObserver::machineListsNotEqual(std::list<ModelOpcUa::BrowseResult_t> &machineList) {
+			/// \TODO Is this function still required? Is this handled by the reset logic?
+
 			std::set<ModelOpcUa::NodeId_t> newMachines;
 			// Use a set for a quick compare, as there might be duplicates in machineList!
 			for (const auto &machineTool : machineList) {
@@ -81,9 +92,8 @@ namespace Umati {
 			}
 		}
 
-		bool MachineObserver::ignoreInvalidMachinesTemporarily(
-				std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachine) {
-			auto it = m_invalidMachines.find(newMachine.second.NodeId);
+		bool MachineObserver::ignoreInvalidMachinesTemporarily(const ModelOpcUa::NodeId_t &newMachineId) {
+			auto it = m_invalidMachines.find(newMachineId);
 			if (it != m_invalidMachines.end()) {
 				--(it->second);
 				if (it->second <= 0) {
@@ -116,7 +126,7 @@ namespace Umati {
 		{
 			std::list<ModelOpcUa::BrowseResult_t> newMachines;
 			try {
-			auto componentFolder = m_pDataClient->TranslateBrowsePathToNodeId(nodeid, Umati::Dashboard::QualifiedName_ComponentsFolder);
+				auto componentFolder = m_pDataClient->TranslateBrowsePathToNodeId(nodeid, Umati::Dashboard::QualifiedName_ComponentsFolder);
 				if (!componentFolder.isNull()) {
 					newMachines = browseForMachines(componentFolder, nodeid);
 				}
@@ -151,7 +161,8 @@ namespace Umati {
 
 		void MachineObserver::findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t> &machineList,
 														std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines,
-														std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines) {
+														std::set<ModelOpcUa::NodeId_t> &newMachines,
+														std::map<ModelOpcUa::NodeId_t, nlohmann::json> &machinesIdentifications) {
 			LOG(INFO) << "Checking which machines are online / offline";
 
 			for (auto &machineTool : machineList) {
@@ -167,13 +178,14 @@ namespace Umati {
 						if (it != toBeRemovedMachines.end()) {
 							toBeRemovedMachines.erase(it);// todo or does it need to be it++?
 						} else {
-							newMachines.insert(std::make_pair(machineTool.NodeId, machineTool));
+							newMachines.insert(machineTool.NodeId);
 						}
+						machinesIdentifications.insert(std::make_pair(machineTool.NodeId, identificationAsJson));
 					} else {
 						LOG(INFO) << "Machine " << machineTool.BrowseName.Name << " not identified as online";
 					}
 				}
-					// Catch exceptions during CheckOnline, this will cause that the machine stay in the toBeRemovedMachines list
+				// Catch exceptions during CheckOnline, this will cause that the machine stay in the toBeRemovedMachines list
 				catch (const Umati::Exceptions::OpcUaException &) {
 					LOG(INFO) << "Machine disconnected: '" << machineTool.BrowseName.Name << "' ("
 							  << machineTool.NodeId.Uri << ")";
@@ -213,18 +225,18 @@ namespace Umati {
 		}
 
 		void
-		MachineObserver::addNewMachine(std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachine) {
+		MachineObserver::addNewMachine(const ModelOpcUa::BrowseResult_t &newMachine) {
 			try {
-				addMachine(newMachine.second);
-				m_knownMachines.insert(newMachine);
+				addMachine(newMachine);
+				m_knownMachines.insert(std::make_pair(newMachine.NodeId, newMachine));
 			}
 			catch (const Exceptions::MachineInvalidException &) {
-				LOG(INFO) << "Machine invalid: " << static_cast<std::string>(newMachine.second.NodeId);
-				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterInvalid));
+				LOG(INFO) << "Machine invalid: " << static_cast<std::string>(newMachine.NodeId);
+				m_invalidMachines.insert(std::make_pair(newMachine.NodeId, NumSkipAfterInvalid));
 			}
 			catch (const Exceptions::MachineOfflineException &) {
-				LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.second.NodeId);
-				m_invalidMachines.insert(std::make_pair(newMachine.second.NodeId, NumSkipAfterOffline));
+				LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.NodeId);
+				m_invalidMachines.insert(std::make_pair(newMachine.NodeId, NumSkipAfterOffline));
 			}
 		}
 	}

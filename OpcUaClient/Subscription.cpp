@@ -61,6 +61,7 @@ namespace Umati {
 		void Subscription::dataChange(UA_Int32 /*clientSubscriptionHandle*/,
 									  const UA_DataChangeNotification &dataNotifications,
 									  const UA_DiagnosticInfo & /*diagnosticInfos*/) {
+			std::unique_lock<decltype(m_callbacks_mutex)> ul(m_callbacks_mutex);
 			for (UA_Int32 i = 0; i < dataNotifications.monitoredItemsSize; ++i) {
 				auto clientHandle = dataNotifications.monitoredItems->clientHandle;
 				auto it = m_callbacks.find(clientHandle);
@@ -97,15 +98,17 @@ namespace Umati {
 		}
 
 		void Subscription::Unsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) {
-			for(UA_Int32 handle : clientHandles){
-				auto it = m_callbacks.find(handle);
-				if (it != m_callbacks.end()) {
-					m_callbacks.erase(handle);
-				} else {
-					LOG(WARNING) << "No callback found for client handle " << handle;
+			{
+				std::unique_lock<decltype(m_callbacks_mutex)> ul(m_callbacks_mutex);
+				for(UA_Int32 handle : clientHandles){
+					auto it = m_callbacks.find(handle);
+					if (it != m_callbacks.end()) {
+						m_callbacks.erase(handle);
+					} else {
+						LOG(WARNING) << "No callback found for client handle " << handle;
+					}
 				}
 			}
-
 
 			const size_t monItemIdsSize = monItemIds.size();
 			UA_UInt32 *newMonitoredItemIds = (UA_UInt32 *) UA_Array_new(monItemIdsSize, &UA_TYPES[UA_TYPES_UINT32]);
@@ -141,7 +144,7 @@ namespace Umati {
 				ModelOpcUa::NodeId_t nodeId,
 				Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback
 		) {
-			 LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
+			// LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
 			UA_MonitoredItemCreateRequest monItemCreateReq;
 			UA_MonitoredItemCreateResult monItemCreateResult;
 
@@ -152,7 +155,10 @@ namespace Umati {
 				validateMonitorItemResult(monItemCreateResult.statusCode, monItemCreateResult, nodeId);
 
                 //LOG(INFO) << "Created monItemCreateReq for with clientHandle "<< monItemCreateReq.requestedParameters.clientHandle << " for the callback method.";
-                m_callbacks.insert(std::make_pair(monItemCreateReq.requestedParameters.clientHandle, callback));
+				{
+					std::unique_lock<decltype(m_callbacks_mutex)> ul(m_callbacks_mutex);
+					m_callbacks.insert(std::make_pair(monItemCreateReq.requestedParameters.clientHandle, callback));
+				}
                 auto returnPointer = std::make_shared<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>(monItemCreateResult.monitoredItemId,
 																 monItemCreateReq.requestedParameters.clientHandle, nodeId);
 				UA_MonitoredItemCreateResult_clear(&monItemCreateResult);
@@ -161,6 +167,7 @@ namespace Umati {
 				return returnPointer;
 			}
 			catch (std::exception &ex) {
+				LOG(INFO) << "Excepttion in subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id << ex.what();
 				UA_MonitoredItemCreateResult_clear(&monItemCreateResult);
 				UA_MonitoredItemCreateRequest_clear(&monItemCreateReq);
 				throw ex;

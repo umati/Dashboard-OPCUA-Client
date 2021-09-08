@@ -8,6 +8,7 @@
 #include <atomic>
 #include <IDashboardDataClient.hpp>
 #include "OpcUaSubscriptionInterface.hpp"
+#include <mutex>
 
 namespace Umati {
 	namespace OpcUa  {
@@ -48,6 +49,7 @@ namespace Umati {
 			UA_Int32 m_pSubscriptionID;
 			Umati::OpcUa::OpcUaSubscriptionInterface *m_pSubscriptionWrapper = new OpcUaSubscriptionWrapper();
 
+			std::mutex m_callbacks_mutex;
 			std::map<UA_Int32, Dashboard::IDashboardDataClient::newValueCallbackFunction_t> m_callbacks;
 
 			UA_MonitoredItemCreateRequest &

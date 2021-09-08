@@ -37,6 +37,7 @@ namespace Umati
                         ModelOpcUa::NodeId_t,
                         std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
             initialize(notFoundObjectTypeNamespaces);
+            LOG(INFO) << "Browsing variable types.";
             browseObjectOrVariableTypeAndFillBidirectionalTypeMap(NodeId_BaseVariableType, bidirectionalTypeMap, true);
             LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
 
