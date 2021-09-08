@@ -27,18 +27,18 @@ namespace Umati {
 
 			void recreateKnownMachineToolsMap(std::list<ModelOpcUa::BrowseResult_t> &machineList);
 
-			bool ignoreInvalidMachinesTemporarily(
-					std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachine);
+			bool ignoreInvalidMachinesTemporarily(const ModelOpcUa::NodeId_t &newMachineId);
 
-			void addNewMachine(std::pair<const ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachine);
+			void addNewMachine(const ModelOpcUa::BrowseResult_t &newMachine);
 
 			void removeOfflineMachines(std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines);
 
 			bool canBrowseMachineList(std::list<ModelOpcUa::BrowseResult_t> &machineList);
 
 			void findNewAndOfflineMachines(std::list<ModelOpcUa::BrowseResult_t> &machineList,
-										   std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines,
-										   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines);
+											std::set<ModelOpcUa::NodeId_t> &toBeRemovedMachines,
+											std::set<ModelOpcUa::NodeId_t> &newMachines,
+											std::map<ModelOpcUa::NodeId_t, nlohmann::json> &machinesIdentifications);
 
 			virtual void addMachine(ModelOpcUa::BrowseResult_t machine) = 0;
 
@@ -55,6 +55,8 @@ namespace Umati {
 			std::set<ModelOpcUa::NodeId_t> m_knownMachineToolsSet;
 			std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_parentOfMachine;
 			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> m_pOpcUaTypeReader;
+			std::mutex m_machineIdentificationsCache_mutex;
+			std::map<ModelOpcUa::NodeId_t, nlohmann::json> m_machineIdentificationsCache;
 
 			/// Blacklist of invalid machines, that will not be checked periodically
 			/// The value is decremented each time the machine would be checked and will only be added, when it reaches 0 again.
