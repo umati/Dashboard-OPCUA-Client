@@ -127,6 +127,19 @@ namespace Umati
 				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(machine.TypeDefinition);
 				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
 
+                /// @HACK, TODO: Find out, why "UGG MÄGERLE AG 200019452 6861-0013" is found as new machine, even thought it already is subscribed.
+                LOG(INFO) << "Remove Machine with NodeId:"
+                          << static_cast<std::string>(machine.NodeId);
+                auto it = m_dashboardClients.find(machine.NodeId);
+
+                if (it != m_dashboardClients.end())
+                {
+                    it->second->Unsubscribe(machine.NodeId);
+                    m_dashboardClients.erase(it);
+                    LOG(INFO) << "Removed Machine with NodeId:"
+                              << static_cast<std::string>(machine.NodeId);
+                }
+
                 pDashClient->addDataSet(
 					{machineInformation.NamespaceURI, machine.NodeId.Id},
 					p_type,
