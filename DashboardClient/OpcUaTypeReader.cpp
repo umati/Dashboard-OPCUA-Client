@@ -203,6 +203,13 @@ namespace Umati
                 {
                     auto ancestor = *bloodlineIterator;
                     bloodlineStringStream << "->" << static_cast<std::string>(ancestor->structureNode->SpecifiedBrowseName);
+
+                    // Ancestor is a SuperType of the analysed node (var node)
+                    // Iterate over the children of the ancestor (var ancestor)
+                    // (var currentChild) is a child of the ancestor
+                    // Example: (var node) = ProductionProgramStateMachineType (ns=MachineTool;i=15)
+                    //          (var ancestor.1) = ProductionStateMachineType (ns=MachineTool;i=24)
+                    //          (var ancestor.2) = FiniteStateMachineType (ns=0;i=2771)
                     for (auto &currentChild : *ancestor->SpecifiedBiChildNodes)
                     {
                         if (currentChild->isType)
@@ -211,26 +218,45 @@ namespace Umati
                         }
                         auto structureNode = currentChild->toStructureNode();
 
-                        // Search same child, or child with same name
+                        // Lookup if ancestor's child currentChild is child of the node.
                         auto findIterator = std::find_if(node.SpecifiedChildNodes->begin(), node.SpecifiedChildNodes->end(), [&](const auto &el) {
                             return el == structureNode || el->SpecifiedBrowseName == structureNode->SpecifiedBrowseName;
                         });
 
                         /// \todo Check if a merge is required here!
-
+                        // Ancestor's child currentChild is child of the node.
+                        // (var findIterator) contains the child of the node.
                         if (findIterator != node.SpecifiedChildNodes->end())
                         {
+                            // (var structureNodeChildren) contains children of the child of the ancestor, which is also contained in the node.
+                            auto structureNodeChildren = structureNode->SpecifiedChildNodes;
+
+                            // Iterate over children of the child of the ancestor.
+                            // If there are children which are contained in ancestor->child and not in node->child, add them to node->child
+                            // Example: Ancestor FiniteStateMachineType is an ancestor of ProductionStateMachineType, both contain a node CurrentState
+                            // ProductionStateMachineType->CurrentState does not contain the node "Number", but FiniteStateMachineType->CurrentState->Number does exist
+                            // Thus, we add node "Number" to SpecifiedChildNodes of ProductionStateMachineType->CurrentState.
+                            for (auto &childOfChild : *structureNodeChildren) {
+                                auto findIt = std::find_if(findIterator->get()->SpecifiedChildNodes->begin(), findIterator->get()->SpecifiedChildNodes->end(), [&](const auto &el) {
+                                    return el == childOfChild || childOfChild->SpecifiedBrowseName == el->SpecifiedBrowseName;
+                                });
+
+                                if (findIt == findIterator->get()->SpecifiedChildNodes->end()) {
+                                    findIterator->get()->SpecifiedChildNodes->emplace_back(childOfChild);
+                                }
+                            }
                             // Check if original child is optional, if so, override
                             if ((*findIterator)->ModellingRule == ModelOpcUa::ModellingRule_t::Optional ||
                                 (*findIterator)->ModellingRule == ModelOpcUa::ModellingRule_t::OptionalPlaceholder)
                             {
-                                // LOG(INFO) << "Changed modellingRule from " << findIterator.operator*()->ModellingRule << " to " << structureNode->ModellingRule;
                                 node.SpecifiedChildNodes->erase(findIterator++);
                                 node.SpecifiedChildNodes->emplace_back(structureNode);
                             }
                         }
+                        // Node's ancestor's child currentChild is not child of the node.
                         else
                         {
+                            // Thus, we add it.
                             node.SpecifiedChildNodes->emplace_back(structureNode);
                         }
                     }
