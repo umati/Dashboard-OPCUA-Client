@@ -53,6 +53,7 @@ namespace Umati {
 				ModelOpcUa::NodeId_t startNodeId;
 				std::string channel;
 				std::shared_ptr<const ModelOpcUa::SimpleNode> node;
+				std::mutex values_mutex;
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> values;
 			};
 
@@ -69,7 +70,8 @@ namespace Umati {
 
 			void subscribeValues(
 					const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
-					std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap
+					std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+					std::mutex &valueMap_mutex
 			);
 
 			std::vector<std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>> m_subscribedValues;
@@ -85,16 +87,20 @@ namespace Umati {
 			bool isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 
 			void handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
-										   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+										   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+										   std::mutex &valueMap_mutex);
 
 			void handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
-													 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+													 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+													 std::mutex &valueMap_mutex);
 
 			void subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
-								std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+								std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+								std::mutex &valueMap_mutex);
 
 			void handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
-										  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap);
+										  std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+										  std::mutex &valueMap_mutex);
 
 			void preparePlaceholderNodesTypeId(
 					const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> &pStructurePlaceholder,

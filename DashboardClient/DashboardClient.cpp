@@ -33,7 +33,7 @@ namespace Umati
 				std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition,
 																						  channel);
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
-				subscribeValues(pDataSetStorage->node, pDataSetStorage->values);
+				subscribeValues(pDataSetStorage->node, pDataSetStorage->values, pDataSetStorage->values_mutex);
 				LOG(INFO) << "Values subscribed for  " << channel;
 				std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 				m_dataSets.push_back(pDataSetStorage);
@@ -123,6 +123,7 @@ namespace Umati
 		{
 			auto getValueCallback = [pDataSetStorage](
 										const std::shared_ptr<const ModelOpcUa::Node> &pNode) -> nlohmann::json {
+				std::unique_lock<decltype(pDataSetStorage->values_mutex)> ul(pDataSetStorage->values_mutex);
 				auto it = pDataSetStorage->values.find(pNode);
 				if (it == pDataSetStorage->values.end())
 				{
@@ -353,21 +354,23 @@ namespace Umati
 
 		void DashboardClient::subscribeValues(
 			const std::shared_ptr<const ModelOpcUa::SimpleNode> pNode,
-			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
+			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+			std::mutex &valueMap_mutex)
 		{
 			// LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
 			{
-				subscribeValue(pNode, valueMap);
+				subscribeValue(pNode, valueMap, valueMap_mutex);
 			}
 
-			handleSubscribeChildNodes(pNode, valueMap);
+			handleSubscribeChildNodes(pNode, valueMap, valueMap_mutex);
 		}
 
 		void DashboardClient::handleSubscribeChildNodes(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
-														std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
+														std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+														std::mutex &valueMap_mutex)
 		{
 			// LOG(INFO) << "handleSubscribeChildNodes "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 			if (pNode->ChildNodes.size() == 0)
@@ -381,13 +384,13 @@ namespace Umati
 				case ModelOpcUa::Mandatory:
 				case ModelOpcUa::Optional:
 				{
-					handleSubscribeChildNode(pChildNode, valueMap);
+					handleSubscribeChildNode(pChildNode, valueMap, valueMap_mutex);
 					break;
 				}
 				case ModelOpcUa::MandatoryPlaceholder:
 				case ModelOpcUa::OptionalPlaceholder:
 				{
-					handleSubscribePlaceholderChildNode(pChildNode, valueMap);
+					handleSubscribePlaceholderChildNode(pChildNode, valueMap, valueMap_mutex);
 					break;
 				}
 				default:
@@ -400,7 +403,8 @@ namespace Umati
 		}
 
 		void DashboardClient::handleSubscribeChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
-													   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
+													   std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+													   std::mutex &valueMap_mutex)
 		{
 			// LOG(INFO) << "handleSubscribeChildNode " <<  pChildNode->SpecifiedBrowseName.Uri << ";" <<  pChildNode->SpecifiedBrowseName.Name;
 
@@ -411,12 +415,13 @@ namespace Umati
 				return;
 			}
 			// recursive call
-			subscribeValues(pSimpleChild, valueMap);
+			subscribeValues(pSimpleChild, valueMap, valueMap_mutex);
 		}
 
 		void
 		DashboardClient::handleSubscribePlaceholderChildNode(const std::shared_ptr<const ModelOpcUa::Node> &pChildNode,
-															 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
+															 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+															 std::mutex &valueMap_mutex)
 		{
 			// LOG(INFO) << "handleSubscribePlaceholderChildNode " << pChildNode->SpecifiedBrowseName.Uri << ";" << pChildNode->SpecifiedBrowseName.Name;
 			auto pPlaceholderChild = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(pChildNode);
@@ -431,12 +436,14 @@ namespace Umati
 			for (const auto &pPlaceholderElement : placeholderElements)
 			{
 				// recursive call
-				subscribeValues(pPlaceholderElement.pNode, valueMap);
+				subscribeValues(pPlaceholderElement.pNode, valueMap, valueMap_mutex);
 			}
 		}
 
 		void DashboardClient::subscribeValue(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode,
-											 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap)
+											 std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
+											 std::mutex &valueMap_mutex
+											 )
 		{ /**
                                              * Creates a lambda function which gets pNode as a copy and valueMap as a reference from this function,
                                              * the input parameters of the lambda function is the nlohmann::json value and the body updates the value
@@ -444,7 +451,8 @@ namespace Umati
                                              */
 			// LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
-			auto callback = [pNode, &valueMap](nlohmann::json value) {
+			auto callback = [pNode, &valueMap, &valueMap_mutex](nlohmann::json value) {
+					std::unique_lock<std::remove_reference<decltype(valueMap_mutex)>::type>(valueMap_mutex);
 					valueMap[pNode] = value;
 			};
 			try
