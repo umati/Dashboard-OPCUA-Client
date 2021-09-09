@@ -55,6 +55,12 @@ namespace ModelOpcUa
 
 			return this->Id < other.Id;
 		}
+
+        friend std::ostream& operator<<(std::ostream& os, const NodeId_t& dt)
+        {
+            os << std::string(dt);
+            return os;
+        }
 	};
 
 	struct QualifiedName_t

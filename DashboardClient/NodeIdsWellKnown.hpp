@@ -13,6 +13,7 @@ namespace Umati
         const ModelOpcUa::NodeId_t NodeId_BaseObjectType = {ns0Uri, "i=58"};
         const ModelOpcUa::NodeId_t NodeId_Folder = {ns0Uri, "i=61"};
         const ModelOpcUa::NodeId_t NodeId_UndefinedType = {ns0Uri, "i=0"};
+        const ModelOpcUa::NodeId_t NodeId_MissingType = {"", "i=0"};
         const std::string nsUriMachinery = "http://opcfoundation.org/UA/Machinery/";
         const ModelOpcUa::NodeId_t NodeId_MachinesFolder = {nsUriMachinery, "i=1001"};
         const ModelOpcUa::NodeId_t NodeId_Machinery_MachineIdentificationType = {nsUriMachinery, "i=1012"};

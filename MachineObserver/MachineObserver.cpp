@@ -148,7 +148,12 @@ namespace Umati {
 		{
 			std::list<ModelOpcUa::BrowseResult_t> newMachines;
 			auto potentialMachines = m_pDataClient->Browse(nodeid, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical());
-			for(auto const &machine: potentialMachines) {
+			for(auto &machine: potentialMachines) {
+                if (machine.TypeDefinition == Dashboard::NodeId_MissingType) {
+                    auto defs = m_pDataClient->Browse(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::HasTypeDefinition());
+                    machine.TypeDefinition = defs.front().NodeId;
+                    LOG(INFO) << "Fixing missing type definition in opc asyncio. Parent: " << machine.NodeId << " TypeDefinition: " << machine.TypeDefinition;
+                }
 				try {
 					auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
 					auto ident = m_pDataClient->BrowseWithResultTypeFilter(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical(),
@@ -157,11 +162,13 @@ namespace Umati {
 						newMachines.push_back(machine);
 						newMachines.splice(newMachines.end(), findComponentsFolder(machine.NodeId));
 						m_parentOfMachine.insert(std::make_pair(machine.NodeId, parentNodeId));
-					}
+					} else {
+                        LOG(INFO) << "Identification is empty for " << machine.NodeId.Uri << machine.NodeId.Id;
+                    }
 				} catch (const Umati::Exceptions::OpcUaException &ex) {
 					LOG(INFO) << "Err " << ex.what();
 				} catch (const Umati::MachineObserver::Exceptions::MachineInvalidException &ex) {
-					// LOG(INFO) << ex.what();
+					LOG(INFO) << ex.what();
 				}
 			}
 
