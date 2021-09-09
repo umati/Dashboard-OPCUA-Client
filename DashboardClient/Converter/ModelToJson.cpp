@@ -94,7 +94,8 @@ namespace Umati {
 			bool ModelToJson::isBaseDataVariableType(
 					const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) {
 				return (pSimpleNode->SpecifiedTypeNodeId.Uri == "" 
-						&& (pSimpleNode->SpecifiedTypeNodeId.Id == "i=63"|| pSimpleNode->SpecifiedTypeNodeId.Id == "i=17570" || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2755"))
+						&& (pSimpleNode->SpecifiedTypeNodeId.Id == "i=63"|| pSimpleNode->SpecifiedTypeNodeId.Id == "i=17570" || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2755"
+                                                                         || pSimpleNode->SpecifiedTypeNodeId.Id == "i=17497"))
 					   	|| pSimpleNode->ofBaseDataVariableType;
 			}
 
