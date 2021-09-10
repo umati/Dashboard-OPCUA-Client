@@ -45,6 +45,7 @@ namespace Umati
 			catch (std::exception &ex)
 			{
 				LOG(ERROR) << ex.what();
+                throw Exceptions::OpcUaException(ex.what());
 			}
 		}
 
