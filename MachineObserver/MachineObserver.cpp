@@ -150,9 +150,16 @@ namespace Umati {
 			auto potentialMachines = m_pDataClient->Browse(nodeid, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical());
 			for(auto &machine: potentialMachines) {
                 if (machine.TypeDefinition == Dashboard::NodeId_MissingType) {
-                    auto defs = m_pDataClient->Browse(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::HasTypeDefinition());
-                    machine.TypeDefinition = defs.front().NodeId;
-                    LOG(INFO) << "Fixing missing type definition in opc asyncio. Parent: " << machine.NodeId << " TypeDefinition: " << machine.TypeDefinition;
+                    try {
+                        auto defs = m_pDataClient->Browse(machine.NodeId,
+                                                          Dashboard::IDashboardDataClient::BrowseContext_t::HasTypeDefinition());
+                        machine.TypeDefinition = defs.front().NodeId;
+                        LOG(INFO) << "Fixing missing type definition in opc asyncio. Parent: " << machine.NodeId
+                                  << " TypeDefinition: " << machine.TypeDefinition;
+                    }
+                    catch (const Umati::Exceptions::UmatiException &ex) {
+                        LOG(INFO) << "Could not fix missing type definition in browse result for machine " << machine.NodeId << ' ' << ex.what();
+                    }
                 }
 				try {
 					auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
