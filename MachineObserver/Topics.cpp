@@ -22,5 +22,12 @@ namespace Umati
             topic << Topics::Prefix << "/list/" << specType;
             return topic.str();
         }
+
+        std::string Topics::ErrorList(const std::string &specType)
+        {
+            std::stringstream topic;
+            topic << Topics::Prefix << "/bad_list/" << specType;
+            return  topic.str();
+        }
     } // namespace MachineObserver
 } // namespace Umati

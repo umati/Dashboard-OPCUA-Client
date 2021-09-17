@@ -60,7 +60,7 @@ namespace Umati {
 
 			/// Blacklist of invalid machines, that will not be checked periodically
 			/// The value is decremented each time the machine would be checked and will only be added, when it reaches 0 again.
-			std::map<ModelOpcUa::NodeId_t, int> m_invalidMachines;
+			std::map<ModelOpcUa::NodeId_t, std::pair<int, std::string>> m_invalidMachines;
 
 			static void logMachinesChanging(const std::string &text,
 											const std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> &newMachines);

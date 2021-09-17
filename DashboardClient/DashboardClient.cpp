@@ -210,16 +210,12 @@ namespace Umati
 			}
 			catch (std::exception &ex)
 			{
-				/*
-				LOG(WARNING) << "Could not find '"
-							 << static_cast<std::string>(startNode)
-							 << "'->'"
-							 << static_cast<std::string>(pChild->SpecifiedBrowseName)
-							 << "'"
-							 << "Unknown ID caused exception: " << ex.what();
-							 */
 				if (pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional)
 				{
+                    std::string err = "In '" + static_cast<std::string>(startNode)
+                               + "'->'"
+                               + static_cast<std::string>(pChild->SpecifiedBrowseName)
+                               + "':\n" + ex.what();
 					LOG(ERROR) << "Forwarding exception, cause:"
 							   << "Could not find '"
 							   << static_cast<std::string>(startNode)
@@ -227,7 +223,7 @@ namespace Umati
 							   << static_cast<std::string>(pChild->SpecifiedBrowseName)
 							   << "'"
 							   << "Unknown ID caused exception: " << ex.what();
-					throw ex;
+                    throw std::runtime_error(err);
 				}
 				return false;
 			}

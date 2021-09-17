@@ -13,7 +13,7 @@ namespace Umati
 		/// Sorting and preparing machines for publish machines list.
 		class PublishMachinesList {
 			public:
-			PublishMachinesList(std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher, std::vector<std::string> &specifications);
+			PublishMachinesList(std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher, std::vector<std::string> &specifications, std::function<std::string(const std::string&)> getTopic);
 
 			void AddMachine(std::string specification, nlohmann::json data);
 			void Publish();
@@ -21,6 +21,7 @@ namespace Umati
 			const std::vector<std::string> &m_Specifications;
 			std::map<std::string, std::list<nlohmann::json>> m_Machines;
 			std::shared_ptr<Umati::Dashboard::IPublisher> m_pPublisher;
+            std::function<std::string(const std::string&)> m_getTopic;
 		};
 	}
 }

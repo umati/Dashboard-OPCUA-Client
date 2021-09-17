@@ -104,8 +104,8 @@ namespace Umati {
 		bool MachineObserver::ignoreInvalidMachinesTemporarily(const ModelOpcUa::NodeId_t &newMachineId) {
 			auto it = m_invalidMachines.find(newMachineId);
 			if (it != m_invalidMachines.end()) {
-				--(it->second);
-				if (it->second <= 0) {
+				--(it->second.first);
+				if (it->second.first <= 0) {
 					m_invalidMachines.erase(it); // todo or does it need to be it++?
 				} else {
 					return true;
@@ -253,13 +253,13 @@ namespace Umati {
 				addMachine(newMachine);
 				m_knownMachines.insert(std::make_pair(newMachine.NodeId, newMachine));
 			}
-			catch (const Exceptions::MachineInvalidException &) {
+			catch (const Exceptions::MachineInvalidException &machineInvalidException) {
 				LOG(INFO) << "Machine invalid: " << static_cast<std::string>(newMachine.NodeId);
-				m_invalidMachines.insert(std::make_pair(newMachine.NodeId, NumSkipAfterInvalid));
+				m_invalidMachines.insert(std::make_pair(newMachine.NodeId, std::make_pair(NumSkipAfterInvalid, machineInvalidException.what())));
 			}
-			catch (const Exceptions::MachineOfflineException &) {
+			catch (const Exceptions::MachineOfflineException &machineOfflineException) {
 				LOG(INFO) << "Machine offline: " << static_cast<std::string>(newMachine.NodeId);
-				m_invalidMachines.insert(std::make_pair(newMachine.NodeId, NumSkipAfterOffline));
+				m_invalidMachines.insert(std::make_pair(newMachine.NodeId, std::make_pair(NumSkipAfterInvalid, machineOfflineException.what())));
 			}
 		}
 	}
