@@ -83,7 +83,7 @@ namespace Umati
 		{
 			std::unique_lock<decltype(m_dashboardClients_mutex)> ul_machines(m_dashboardClients_mutex);
 			std::unique_lock<decltype(m_machineIdentificationsCache_mutex)> ul(m_machineIdentificationsCache_mutex);
-			PublishMachinesList pubList(m_pPublisher, m_pOpcUaTypeReader->m_expectedObjectTypeNames);
+			PublishMachinesList pubList(m_pPublisher, m_pOpcUaTypeReader->m_expectedObjectTypeNames, Topics::List);
 			for (auto &machineOnline : m_onlineMachines)
 			{
 				auto it = m_machineIdentificationsCache.find(machineOnline.first);
@@ -95,7 +95,20 @@ namespace Umati
 				identificationAsJson["ParentId"] = Umati::Util::IdEncode(static_cast<std::string>(machineOnline.second.Parent));
 				pubList.AddMachine(machineOnline.second.Specification, identificationAsJson);
 			}
-			pubList.Publish();
+            pubList.Publish();
+            auto errors = std::vector<std::string>{"errors"};
+            PublishMachinesList pubInvalidList(m_pPublisher, errors, Topics::ErrorList);
+            for (auto &machineInvalid: m_invalidMachines)
+            {
+                auto it = m_machineIdentificationsCache.find(machineInvalid.first);
+                if(it == m_machineIdentificationsCache.end() || it->second.empty()) {
+                    continue;
+                }
+                auto identificationAsJson = it->second;
+                identificationAsJson["Error"] = machineInvalid.second.second;
+                pubInvalidList.AddMachine("errors", identificationAsJson);
+            }
+            pubInvalidList.Publish();
 		}
 
 		std::string DashboardMachineObserver::getTypeName(const ModelOpcUa::NodeId_t &nodeId)
@@ -124,19 +137,15 @@ namespace Umati
 						machineInformation.Parent = it->second;
 					}
 				}
+
 				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(machine.TypeDefinition);
 				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
-
-                /// @HACK, TODO: Find out, why "UGG MÄGERLE AG 200019452 6861-0013" is found as new machine, even thought it already is subscribed.
-                LOG(INFO) << "Remove Machine with NodeId:"
-                          << static_cast<std::string>(machine.NodeId);
                 auto it = m_dashboardClients.find(machine.NodeId);
-
                 if (it != m_dashboardClients.end())
                 {
                     it->second->Unsubscribe(machine.NodeId);
                     m_dashboardClients.erase(it);
-                    LOG(INFO) << "Removed Machine with NodeId:"
+                    LOG(INFO) << "Removed Machine with duplicated reference to parent with NodeId:"
                               << static_cast<std::string>(machine.NodeId);
                 }
 
@@ -160,7 +169,7 @@ namespace Umati
 				LOG(ERROR) << "Could not add Machine " << machine.BrowseName.Name
 						   << " NodeId:" << static_cast<std::string>(machine.NodeId) << "OpcUa Error: " << ex.what();
 
-				throw Exceptions::MachineInvalidException(static_cast<std::string>(machine.NodeId));
+				throw Exceptions::MachineInvalidException(ex.what());
 			}
 		}
 
