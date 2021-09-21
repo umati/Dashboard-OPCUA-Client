@@ -10,6 +10,13 @@ namespace Umati {
 			public:
 				using UmatiException::UmatiException;
 			};
+
+            class MachineInvalidChildException : public Umati::Exceptions::UmatiException {
+            public:
+                using UmatiException::UmatiException;
+                bool hasInvalidMandatoryChild;
+                MachineInvalidChildException(const std::string& err, bool hasInvalidMandatoryChild): hasInvalidMandatoryChild(hasInvalidMandatoryChild), Umati::Exceptions::UmatiException(err) {};
+            };
 		}
 	}
 }

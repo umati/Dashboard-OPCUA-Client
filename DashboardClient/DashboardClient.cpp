@@ -42,6 +42,11 @@ namespace Umati
 			{
 				LOG(WARNING) << ex.what();
 			}
+            catch (MachineObserver::Exceptions::MachineInvalidChildException &ex)
+            {
+                LOG(ERROR) << ex.what();
+                throw Exceptions::OpcUaException(ex.what());
+            }
 			catch (std::exception &ex)
 			{
 				LOG(ERROR) << ex.what();
@@ -189,6 +194,23 @@ namespace Umati
 			return pNode;
 		}
 
+        void LogOptionalAndMandatoryTransformToNodeIdError(const ModelOpcUa::NodeId_t &nodeId, const ModelOpcUa::QualifiedName_t &childBrowsName, const char *err) {
+            LOG(ERROR) << "Forwarding exception, cause:"
+                       << "Could not find '"
+                       << static_cast<std::string>(nodeId)
+                       << "'->'"
+                       << static_cast<std::string>(childBrowsName)
+                       << "'"
+                       << "Unknown ID caused exception: " << err;
+        }
+
+        std::string GetOptionalAndMandatoryTransformToNodeIdError(const ModelOpcUa::NodeId_t &nodeId, const ModelOpcUa::QualifiedName_t &childBrowseName, const char *err) {
+            return "In '" + static_cast<std::string>(nodeId)
+                   + "'->'"
+                   + static_cast<std::string>(childBrowseName)
+                   + "':\n" + err;
+        }
+
 		/**
 		 * @return if the switch case should break
 		 */
@@ -208,22 +230,23 @@ namespace Umati
 				auto nodeIds = TransformToNodeIds(childNodeId, pChild);
 				foundChildNodes.push_back(nodeIds);
 			}
+            catch (MachineObserver::Exceptions::MachineInvalidChildException &ex)
+            {
+                if (ex.hasInvalidMandatoryChild)
+                {
+                    std::string err = GetOptionalAndMandatoryTransformToNodeIdError(startNode, pChild->SpecifiedBrowseName, ex.what());
+                    LogOptionalAndMandatoryTransformToNodeIdError(startNode, pChild->SpecifiedBrowseName, ex.what());
+                    throw MachineObserver::Exceptions::MachineInvalidChildException(err, ex.hasInvalidMandatoryChild);
+                }
+                return false;
+            }
 			catch (std::exception &ex)
 			{
 				if (pChild->ModellingRule != ModelOpcUa::ModellingRule_t::Optional)
 				{
-                    std::string err = "In '" + static_cast<std::string>(startNode)
-                               + "'->'"
-                               + static_cast<std::string>(pChild->SpecifiedBrowseName)
-                               + "':\n" + ex.what();
-					LOG(ERROR) << "Forwarding exception, cause:"
-							   << "Could not find '"
-							   << static_cast<std::string>(startNode)
-							   << "'->'"
-							   << static_cast<std::string>(pChild->SpecifiedBrowseName)
-							   << "'"
-							   << "Unknown ID caused exception: " << ex.what();
-                    throw std::runtime_error(err);
+                    std::string err = GetOptionalAndMandatoryTransformToNodeIdError(startNode, pChild->SpecifiedBrowseName, ex.what());
+                    LogOptionalAndMandatoryTransformToNodeIdError(startNode, pChild->SpecifiedBrowseName, ex.what());
+                    throw MachineObserver::Exceptions::MachineInvalidChildException(err, true);
 				}
 				return false;
 			}
