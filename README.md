@@ -32,3 +32,9 @@ This project uses [cmake](https://cmake.org/) for building.
 - WoodWorking :heavy_check_mark:
 - Robotics  :first_quarter_moon:
 - Surface Technology :waning_gibbous_moon:
+
+## License
+
+![GitHub](https://img.shields.io/github/license/umati/Dashboard-OPCUA-Client)
+
+Unless otherwise specified, source code in this repository is licensed under the [Mozilla Public License v2.0 (MPLv2)](LICENSE).
