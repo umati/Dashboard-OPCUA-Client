@@ -27,6 +27,7 @@ namespace Umati
                 m_availableObjectTypeNamespaces[el.Namespace] = el;
                 for (auto const &e: el.Types) {
                     m_identificationTypeOfTypeDefinition.insert(std::make_pair(e, el.IdentificationType));
+                    m_baseTypeLevelOfTypeDefinition.insert(std::make_pair(e, e.BaseTypeLevel));
                 }
             }
         }
@@ -384,6 +385,14 @@ namespace Umati
             }   
             return pair->second;
 		}
+
+        int OpcUaTypeReader::getBaseTypeLevel(const ModelOpcUa::NodeId_t &typeDefinition) const {
+            auto pair = m_baseTypeLevelOfTypeDefinition.find(typeDefinition);
+            if (pair == m_baseTypeLevelOfTypeDefinition.end()) {
+                return 0;
+            }
+            return pair->second;
+        }
 
     } // namespace Dashboard
 } // namespace Umati

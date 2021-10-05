@@ -170,6 +170,10 @@ namespace Umati {
                         LOG(INFO) << "Could not fix missing type definition in browse result for machine " << machine.NodeId << ' ' << ex.what();
                     }
                 }
+                if (m_pOpcUaTypeReader->getBaseTypeLevel(machine.TypeDefinition) == 1) {
+                    auto realTypeDefinition = m_pDataClient->Browse(machine.TypeDefinition, Dashboard::IDashboardDataClient::BrowseContext_t::HasSupertype()).front().NodeId;
+                    machine.TypeDefinition = realTypeDefinition;
+                }
 				try {
 					auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
 					auto ident = m_pDataClient->BrowseWithResultTypeFilter(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical(),

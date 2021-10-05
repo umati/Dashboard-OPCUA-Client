@@ -14,6 +14,7 @@ namespace Umati
         const std::string ns0UriFull = "http://opcfoundation.org/UA/";
         const std::string ns0Uri = "http://opcfoundation.org/UA/"; // Omitt for node Ids?
         const ModelOpcUa::NodeId_t NodeId_HasComponent = {ns0Uri, "i=47"};
+        const ModelOpcUa::NodeId_t NodeId_HasSubtype = {ns0Uri, "i=45"};
         const ModelOpcUa::NodeId_t NodeId_HierarchicalReferences = {ns0Uri, "i=33"};
         const ModelOpcUa::NodeId_t NodeId_HasTypeDefinition = {ns0Uri, "i=40"};
         const ModelOpcUa::NodeId_t NodeId_Organizes = {ns0Uri, "i=35"};

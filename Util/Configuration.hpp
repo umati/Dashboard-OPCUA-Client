@@ -33,13 +33,17 @@ namespace Umati {
 			std::uint8_t Security = 1;
 		};
 
+        struct TypeDefinitionConfig : ModelOpcUa::NodeId_t {
+            int BaseTypeLevel = 0;
+        };
+
 		/**
 		 * @brief NamespaceInformation
 		 * Describes how to handle types introduced by a namespace.
 		 */
 		struct NamespaceInformation {
 			std::string Namespace; /**< Namespace, e.g. https://opcfoundation.org/SurfaceTechnology */
-			std::vector<ModelOpcUa::NodeId_t> Types; /**< Types, this Namespace introduces */ 
+			std::vector<TypeDefinitionConfig> Types; /**< Types, this Namespace introduces */
 			ModelOpcUa::NodeId_t IdentificationType; /**< IdentificationType, child of types */
 		};
 

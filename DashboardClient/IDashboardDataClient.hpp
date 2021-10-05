@@ -100,6 +100,13 @@ namespace Umati
                     return ret;
                 }
 
+                inline static BrowseContext_t HasSupertype() {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_HasSubtype;
+                    ret.browseDirection = BrowseDirection::BACKWARD;
+                    return ret;
+                }
+
                 inline static BrowseContext_t WithReference(
                     ModelOpcUa::NodeId_t referenceTypeId)
                 {

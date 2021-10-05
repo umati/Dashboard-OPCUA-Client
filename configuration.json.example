@@ -14,15 +14,73 @@
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/MaterialSupplyRoom/",
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/DosingSystem/",
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/OvenBooth/",
-    "http://opcfoundation.org/UA/SurfaceTechnology/Example/Pretreatment"
+    "http://opcfoundation.org/UA/SurfaceTechnology/Example/Pretreatment",
+    "http://opcfoundation.org/UA/Woodworking/",
+    "http://opcfoundation.org/UA/Robotics/",
+    "http://DMGMORI.com/UA/OemExtensions/"
   ],
   "NamespaceInformations": [
     {
+      "Namespace": "http://DMGMORI.com/UA/OemExtensions/",
+      "Types": [
+        {
+          "Uri": "http://DMGMORI.com/UA/OemExtensions/",
+          "Id": "i=1003",
+          "BaseTypeLevel": 1,
+          "$comment": "DMGMORI_MachineToolType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/MachineTool/",
+        "Id": "i=11",
+        "$comment": "MachineToolIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/Robotics/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/Robotics/",
+          "Id": "i=1004",
+          "BaseTypeLevel": 0,
+          "$comment": "MotionDeviceType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/Robotics/",
+          "Id": "i=1003",
+          "BaseTypeLevel": 0,
+          "$comment": "ControllerType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/MachineTool-Prototyping/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/MachineTool-Prototyping/",
+          "Id": "i=1014",
+          "BaseTypeLevel": 0,
+          "$comment": "MachineToolType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/MachineTool-Prototyping/",
+        "Id": "i=1012",
+        "$comment": "MachineToolIdentificationType"
+      }
+    },
+    {
       "Namespace": "http://opcfoundation.org/UA/MachineTool/",
-	    "Types": [
+      "Types": [
         {
           "Uri": "http://opcfoundation.org/UA/MachineTool/",
           "Id": "i=13",
+          "BaseTypeLevel": 0,
           "$comment": "MachineToolType"
         }
       ],
@@ -30,50 +88,73 @@
         "Uri": "http://opcfoundation.org/UA/MachineTool/",
         "Id": "i=11",
         "$comment": "MachineToolIdentificationType"
-
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/Woodworking/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/Woodworking/",
+          "Id": "i=2",
+          "BaseTypeLevel": 0,
+          "$comment": "WwMachineType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
       }
     },
     {
       "Namespace": "http://opcfoundation.org/UA/SurfaceTechnology/",
-	    "Types": [
+      "Types": [
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1009",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologCoatingSystemType"
         },
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1006",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTecnologyObjectType"
         },
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1010",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologyDosingSystemType"
         },
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1011",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologyFilterSystemType"
         },
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1005",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologyPipeType"
         },
-           {
+        {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1008",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologyPumpType"
         },
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1004",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologyValveType"
         },
         {
           "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
           "Id": "i=1003",
+          "BaseTypeLevel": 0,
           "$comment": "SurfaceTechnologyVesselType"
         }
       ],
@@ -82,9 +163,8 @@
         "Id": "i=1012",
         "$comment": "MachineIdentificationType"
       }
-    }    
-  ]
-  ,
+    }
+  ],
   "OpcUa": {
     "Endpoint": "opc.tcp://localhost:4840",
     "Username": "",

@@ -36,6 +36,7 @@ namespace Umati
 
             /// \todo make the following internal structures private and provide access via funcitons
             std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_identificationTypeOfTypeDefinition;
+            std::map<ModelOpcUa::NodeId_t, int> m_baseTypeLevelOfTypeDefinition;
             std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNames;
@@ -43,6 +44,7 @@ namespace Umati
             std::shared_ptr<std::map<std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map<std::string, ModelOpcUa::NodeId_t>>();
             std::shared_ptr<ModelOpcUa::StructureNode> typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
             std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationTypeStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
+            int getBaseTypeLevel(const ModelOpcUa::NodeId_t &typeDefinition) const;
             ModelOpcUa::NodeId_t getIdentificationTypeNodeId(const ModelOpcUa::NodeId_t &typeDefinition) const;
         protected:
             /// Map of <TypeName, StructureBiNode>
