@@ -16,6 +16,45 @@ This is the OPC UA client for the [umati Dashboard](http://umati.app). The clien
 
 This project uses [cmake](https://cmake.org/) for building.
 
+### Ubuntu or Debian
+
+The following packages are necessary for building:
+- git 
+- build-essential 
+- gcc 
+- g++ 
+- cmake 
+- python3
+`
+
+```
+# Clone the repository and initialize the submodules
+git clone git@github.com:umati/Dashboard-OPCUA-Client.git
+cd Dashboard-OPCUA-Client
+git submodule update --init --recursive
+
+# Build the depencencies
+cd .github
+mkdir build
+cd build
+cmake ..
+make
+
+# Build the Dashboard OPC UA Client
+cd ../..
+mkdir build
+cd build
+cmake ..
+make
+
+# Adjust configuration regading your setup
+cp configuration.json.example configuration.json
+nano configuration.json
+
+# Start the Dashboard OPC UA Client
+./DashboardOpcUaClient
+```
+
 ## Components
 
 - [ModelOpcUa](ModelOpcUa) An abstration for OPC UA Type Definitions and OPC UA Types (e.g. NodeId and BrowseName)
