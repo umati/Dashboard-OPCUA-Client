@@ -79,6 +79,9 @@ namespace Umati
 			std::vector<std::string> Namespaces() override;
 
 			bool VerifyConnection() override;
+
+            bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType,
+                                 size_t maxDepth) override;
 		protected:
 			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus); 
 
@@ -167,6 +170,6 @@ namespace Umati
 			updateResultContainer();
 
 			void fillNamespaceCache(const std::vector<std::string> &uaNamespaces);
-		};
+        };
 	} // namespace OpcUa
 } // namespace Umati

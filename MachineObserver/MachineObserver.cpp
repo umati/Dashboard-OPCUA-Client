@@ -171,7 +171,26 @@ namespace Umati {
                     }
                 }
 				try {
-					auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
+                    auto subTypeToBaseType = m_pOpcUaTypeReader->m_subTypeDefinitionToKnownMachineTypeDefinition.find(machine.TypeDefinition);
+                    if (subTypeToBaseType == m_pOpcUaTypeReader->m_subTypeDefinitionToKnownMachineTypeDefinition.end()) {
+                        // If the machine does not have a proper, configured machine (Super)TypeDefinition, mark it as invalid
+                        // to prevent search for following machines with the same invalid (Super)TypeDefinition
+                        auto typeToSupertype = std::make_pair(machine.TypeDefinition, Dashboard::NodeId_UndefinedType);
+                        m_pOpcUaTypeReader->m_subTypeDefinitionToKnownMachineTypeDefinition.insert(typeToSupertype);
+                        for (const auto &md: m_pOpcUaTypeReader->m_knownMachineTypeDefinitions) {
+                            if (m_pDataClient->isSameOrSubtype(md, machine.TypeDefinition, 3)) {
+                                m_pOpcUaTypeReader->m_subTypeDefinitionToKnownMachineTypeDefinition[machine.TypeDefinition] = md;
+                                machine.TypeDefinition = md;
+                                break;
+                            }
+                        }
+                    } else {
+                        // Check if machines (Super)TypeDefinition is an invalid or not configured
+                        if (!(subTypeToBaseType->second == Dashboard::NodeId_UndefinedType)) {
+                            machine.TypeDefinition = subTypeToBaseType->second;
+                        }
+                    }
+                    auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
 					auto ident = m_pDataClient->BrowseWithResultTypeFilter(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical(),
 																		   typeDefinitionNodeId);
 					if (!ident.empty()) {

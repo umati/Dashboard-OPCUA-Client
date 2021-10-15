@@ -301,6 +301,21 @@ namespace Umati
 			return isSameOrSubtype(expectedType, superType, --maxDepth);
 		}
 
+        bool OpcUaClient::isSameOrSubtype(
+                const ModelOpcUa::NodeId_t &expectedType,
+                const ModelOpcUa::NodeId_t &checkType,
+                std::size_t maxDepth) {
+            auto expectedTypeUa = Converter::ModelNodeIdToUaNodeId(expectedType, m_uriToIndexCache).getNodeId();
+            auto checkTypeUa = Converter::ModelNodeIdToUaNodeId(checkType, m_uriToIndexCache).getNodeId();
+            bool ret;
+            try {
+                ret = isSameOrSubtype(expectedTypeUa, checkTypeUa, maxDepth);
+            } catch(std::exception &e) {
+                ret = false;
+            }
+            return ret;
+        }
+
 		void OpcUaClient::initializeNamespaceCache()
 		{
             std::lock_guard<std::recursive_mutex> l(m_clientMutex);

@@ -39,6 +39,8 @@ namespace Umati
             std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNames;
+            std::vector<ModelOpcUa::NodeId_t> m_knownMachineTypeDefinitions;
+            std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_subTypeDefinitionToKnownMachineTypeDefinition;
             std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap = std::make_shared<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>>();
             std::shared_ptr<std::map<std::string, ModelOpcUa::NodeId_t>> m_nameToId = std::make_shared<std::map<std::string, ModelOpcUa::NodeId_t>>();
             std::shared_ptr<ModelOpcUa::StructureNode> typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;

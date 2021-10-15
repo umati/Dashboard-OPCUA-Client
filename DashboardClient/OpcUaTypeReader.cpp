@@ -27,6 +27,8 @@ namespace Umati
                 m_availableObjectTypeNamespaces[el.Namespace] = el;
                 for (auto const &e: el.Types) {
                     m_identificationTypeOfTypeDefinition.insert(std::make_pair(e, el.IdentificationType));
+                    m_knownMachineTypeDefinitions.emplace_back(e);
+                    m_subTypeDefinitionToKnownMachineTypeDefinition.insert(std::make_pair(e,e));
                 }
             }
         }

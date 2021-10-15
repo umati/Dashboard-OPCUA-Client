@@ -136,6 +136,12 @@ namespace Umati
                 ModelOpcUa::NodeId_t startNode,
                 BrowseContext_t browseContext) = 0;
 
+            virtual bool
+            isSameOrSubtype(
+                const ModelOpcUa::NodeId_t &expectedType,
+                const ModelOpcUa::NodeId_t &checkType,
+                std::size_t maxDepth) = 0;
+
             virtual std::list<ModelOpcUa::BrowseResult_t>
             BrowseWithResultTypeFilter(
                 ModelOpcUa::NodeId_t startNode,
