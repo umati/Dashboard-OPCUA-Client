@@ -25,7 +25,6 @@ The following packages are necessary for building:
 - g++ 
 - cmake 
 - python3
-`
 
 ```
 # Clone the repository and initialize the submodules
@@ -53,6 +52,13 @@ nano configuration.json
 
 # Start the Dashboard OPC UA Client
 ./DashboardOpcUaClient
+
+# Alternatively build everything in one go:
+mkdir -p install
+mkdir -p build
+cd build
+cmake ../.github/ -DCMAKE_INSTALL_PREFIX:PATH=<PATH/TO/>Dashboard-OPCUA-Client/install/ -DCMAKE_BUILD_TYPE=Debug
+cmake --build .
 ```
 
 ## Components
