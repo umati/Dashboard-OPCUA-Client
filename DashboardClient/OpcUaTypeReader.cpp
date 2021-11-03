@@ -10,8 +10,9 @@
 #include "OpcUaTypeReader.hpp"
 #include <easylogging++.h>
 #include <regex>
+#include <Exceptions/OpcUaException.hpp>
 
-namespace Umati
+ namespace Umati
 {
     namespace Dashboard
     {
@@ -334,13 +335,18 @@ namespace Umati
 
             for (auto &browseResult : browseResults)
             {
-                ModelOpcUa::ModellingRule_t modellingRule = m_pClient->BrowseModellingRule(browseResult.NodeId);
-                // LOG(INFO) << "currently at " << startNodeId.Uri << startNodeId.Id;
-                std::weak_ptr<ModelOpcUa::StructureBiNode> current = handleBrowseTypeResult(bidirectionalTypeMap, browseResult, parent, modellingRule,
-                                                      ofBaseDataVariableType);
+                ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::None;
+                try {
+                    modellingRule = m_pClient->BrowseModellingRule(browseResult.NodeId);
+                } catch (Exceptions::UmatiException &e) {
+                    LOG(ERROR) << "Error browsing modelling rule of " << browseResult.NodeId << ": " << e.what();
+                }
+                std::weak_ptr<ModelOpcUa::StructureBiNode> current = handleBrowseTypeResult(bidirectionalTypeMap,
+                                                                                            browseResult, parent,
+                                                                                            modellingRule,
+                                                                                            ofBaseDataVariableType);
                 browseTypes(bidirectionalTypeMap, browseResult.NodeId, current, ofBaseDataVariableType);
             }
-            
         }
 
         std::shared_ptr<ModelOpcUa::StructureNode> OpcUaTypeReader::typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const
