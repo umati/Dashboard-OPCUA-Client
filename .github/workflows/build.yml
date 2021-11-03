@@ -13,7 +13,7 @@ jobs:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
@@ -44,7 +44,7 @@ jobs:
       IS_NOT_PR: ${{ !github.head_ref && true }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
