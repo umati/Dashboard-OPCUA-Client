@@ -349,7 +349,7 @@ namespace Umati
 					ModelOpcUa::PlaceholderElement plElement;
 					plElement.BrowseName = browseResult.BrowseName;
 					plElement.pNode = TransformToNodeIds(browseResult.NodeId, sharedPossibleType);
-
+                    plElement.TypeDefinition = browseResult.TypeDefinition;
 					pPlaceholderNode->addInstance(plElement);
 				}
 				else
