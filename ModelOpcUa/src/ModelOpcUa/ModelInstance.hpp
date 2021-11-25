@@ -56,6 +56,7 @@ namespace ModelOpcUa {
 	struct PlaceholderElement {
 		std::shared_ptr<const SimpleNode> pNode;
 		QualifiedName_t BrowseName;
+        NodeId_t TypeDefinition;
 	};
 
 	// ModellingRule is one of {OptionalPlaceholder, MandatoryPlaceholder}

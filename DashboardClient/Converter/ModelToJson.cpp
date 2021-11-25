@@ -20,7 +20,9 @@ namespace Umati {
 					const std::shared_ptr<const ModelOpcUa::Node> &pNode,
 					const getValue_t &getValue, bool serializeNodeInformation, bool nestAsChildren,
 					bool publishNullValues) {
-
+                // if (serializeNodeInformation) {
+                //     m_json["nodeClass"] = nodeClassToString(pNode->NodeClass);
+                // }
 				switch (pNode->ModellingRule) {
 					case ModelOpcUa::ModellingRule_t::Mandatory:
 					case ModelOpcUa::ModellingRule_t::Optional: {
@@ -78,9 +80,11 @@ namespace Umati {
 						nlohmann::json placeholderJsonElements;
 
 						for (const auto &pPlaceholderElement : placeholderElements) {
-							placeholderJsonElements[pPlaceholderElement.BrowseName.Name] = (ModelToJson(
-									pPlaceholderElement.pNode, getValue, serializeNodeInformation, nestAsChildren,
-									publishNullValues).getJson());
+                            auto el = (ModelToJson(
+                                    pPlaceholderElement.pNode, getValue, serializeNodeInformation, nestAsChildren,
+                                    publishNullValues).getJson());
+                            el["$TypeDefinition"] = static_cast<std::string>(pPlaceholderElement.TypeDefinition);
+							placeholderJsonElements[pPlaceholderElement.BrowseName.Name] = el;
 						}
 						if (serializeNodeInformation) {
 							m_json["placeholderElements"] = placeholderJsonElements;
@@ -95,9 +99,6 @@ namespace Umati {
 					default:
 						LOG(ERROR) << "Unknown Modelling Rule." << std::endl;
 						return;
-				}
-				if (serializeNodeInformation) {
-					m_json["nodeClass"] = nodeClassToString(pNode->NodeClass);
 				}
 			}
 			//TODO use another function to check for i=17570 aka AnalogUnitRangeType and i=2755 aka StateVariableType
