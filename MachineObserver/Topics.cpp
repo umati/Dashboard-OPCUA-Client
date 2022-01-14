@@ -13,7 +13,7 @@ namespace Umati
 {
     namespace MachineObserver
     {
-        std::string const Topics::Prefix = "/umati";
+        std::string const Topics::Prefix = "umati";
         std::string Topics::Machine(
             const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
             const std::string &namespaceUri)
