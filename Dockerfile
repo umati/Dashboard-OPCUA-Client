@@ -1,7 +1,7 @@
 FROM alpine:3.15.0 as build-env
 
 RUN apk --no-cache add \
-      bash=5.1.8-r0 \
+      bash=5.1.16-r0 \
       cmake=3.21.3-r0 \
       gcc=10.3.1_git20211027-r0 \
       g++=10.3.1_git20211027-r0 \
