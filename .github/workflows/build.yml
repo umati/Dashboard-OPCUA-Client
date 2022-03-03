@@ -35,7 +35,7 @@ jobs:
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
           cmake --build . ${{env.CMAKE_BUILD_ARGS}}
       - name: Upload Artefacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}
           path: |
