@@ -14,6 +14,7 @@
 namespace Umati {
 	namespace OpcUa {
 		namespace Converter {
+
 			UaDataValueToJsonValue::UaDataValueToJsonValue(const UA_DataValue &dataValue,
 														   bool serializeStatusInformation) {
 				setValueFromDataValue(dataValue, serializeStatusInformation);
@@ -22,24 +23,7 @@ namespace Umati {
 				}
 			}
 
-			void UaDataValueToJsonValue::setValueFromDataValue(const UA_DataValue &dataValue,
-															   bool serializeStatusInformation) {
-				auto &jsonValue = m_value;
-				if (serializeStatusInformation) {
-					jsonValue = m_value["value"];
-				}
-				
-				UA_Variant variant; 
-				UA_Variant_init(&variant);
-				variant = dataValue.value;
-				
-				if (UA_Variant_isEmpty(&variant)) {
-					return;
-				}
-				if (!UA_Variant_isScalar(&variant)) {
-					LOG(ERROR) << "Only scalar values are supported.";
-				}
-
+			void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nlohmann::json &jsonValue, bool serializeStatusInformation) {
 				switch (variant.type->typeKind) {
 
 					case UA_DATATYPEKIND_BOOLEAN: {
@@ -169,11 +153,51 @@ namespace Umati {
 						jsonValue["text"] =  std::string((char*)localText.text.data,localText.text.length);
 						break;
 					}
+					UA_NodeId x;
 					
 					case UA_DATATYPEKIND_EXTENSIONOBJECT: {
 						UA_ExtensionObject exObj(*(UA_ExtensionObject*)variant.data);
 						jsonValue = {};
 						if (exObj.content.encoded.typeId.namespaceIndex != 0) {
+							UA_UInt32* x = (UA_UInt32*) &exObj.content.encoded.body;
+		
+							/*
+							exObj.content.encoded.body.data.
+							struct ProcessingTimesDataType {
+								UA_DateTime StartTime;		   // M
+								UA_DateTime EndTime;		   // M
+								UA_Double AcquisitionDuration; // O
+								UA_Double ProccessingDuration; // O
+							};
+							struct ResultMetaDataType {
+								UA_String ResultId;						// 0
+								UA_Boolean HasTransferableDataOnFile;	// 0
+								UA_Boolean IsPartial;					// 0
+								UA_Boolean IsSimulated;					// 0
+								UA_Int32 ResultState;					// 0
+								UA_String StepId;						// 0
+								UA_String PartId;						// 0
+								UA_String ExternalRecipeId;				// 0
+								UA_String InternalRecipeId;				// 0
+								UA_String ProductId;					// 0
+								UA_String ExternalConfigurationId;		// 0
+								UA_String InternalConfigurationId;		// 0
+								UA_String JobId;						// 0
+								UA_DateTime CreationTime;				// 0
+								ProcessingTimesDataType ProcessingTimes;// 0
+								UA_ListOfString ResultUri;				// 0
+								ResultEvaluationEnum ResultEvaluation;	// 0
+								UA_Int32 ResultEvaluationCode;			// 0	
+								UA_LocalizedText ResultEvaluationDetails;// 0
+								UA_ListOfString FileFormat;				// 0
+							};
+
+							struct ResultDataType {
+								ResultMetaDataType ResultMetaData; //Liste
+								UA_Variant ResultContent; //Liste
+
+							}
+							*/
 							LOG(ERROR)
 									<< "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
 							break;
@@ -211,7 +235,7 @@ namespace Umati {
 
 							default: {
 								LOG(ERROR) << "Not implemented conversion from type: "
-										   << exObj.content.encoded.body.data;							}
+										<< exObj.content.encoded.body.data;							}
 						}
 						break;
 					}
@@ -233,7 +257,7 @@ namespace Umati {
 
 					case UA_DATATYPEKIND_STRUCTURE: {
 
-						 if(strcmp(variant.type->typeName, "EUInformation")== 0){
+						if(strcmp(variant.type->typeName, "EUInformation")== 0){
 								UA_EUInformation euInfo(*(UA_EUInformation*)variant.data);
 								jsonValue["namespaceUri"] = std::string((char*)euInfo.namespaceUri.data,euInfo.namespaceUri.length);
 								jsonValue["unitId"] = euInfo.unitId;
@@ -254,15 +278,15 @@ namespace Umati {
 										.getValue();
 								}
 								break;
-						 	}else if (strcmp(variant.type->typeName, "Range")== 0){
+							}else if (strcmp(variant.type->typeName, "Range")== 0){
 								UA_Range range(*(UA_Range*)variant.data);
 								jsonValue["low"] = range.low;
 								jsonValue["high"] = range.high;
 								break;
-						 }else{
-							 LOG(ERROR) << "Unknown data type. ";
-							 break;
-						 }
+						}else{
+							LOG(ERROR) << "Unknown data type. ";
+							break;
+						}
 					}
 
 					default: {
@@ -271,6 +295,125 @@ namespace Umati {
 					}
 				}
 
+			}
+		
+
+			template<typename T>
+			void UaDataValueToJsonValue::getValueFromDataValueArray(const UA_Variant *variant, UA_UInt32 dimensionNumber,
+																	nlohmann::json *j, T *variantData, bool serializeStatusInformation) {
+				if (dimensionNumber == variant->arrayDimensionsSize - 1) {
+					for(int i = 0; i < variant->arrayDimensions[dimensionNumber]; i++) {												
+						nlohmann::json jsonValue;
+						UA_Variant var = {
+							variant->type,  			/* The data type description */
+							variant->storageType,
+							0,           				/* The number of elements in the data array */
+							(void*) (&variantData[i]), /* Points to the scalar or array data */
+							variant->arrayDimensionsSize, /* The number of dimensions */
+							NULL						/* Pointer to dimensionsArray */
+						};
+						setValueFromScalarVariant(var, jsonValue, serializeStatusInformation);
+						j->push_back(jsonValue);
+					}
+					return;
+				}				
+				UA_UInt32 offset = 1;
+				for(UA_UInt32 i = dimensionNumber + 1; i < variant->arrayDimensionsSize - 1; i++) {
+					offset = offset * variant->arrayDimensions[i];
+				}
+				for(UA_UInt32 i = 0; i < variant->arrayDimensions[dimensionNumber]; i++) {
+					auto nestedj = nlohmann::json::array();
+					getValueFromDataValueArray<T>(variant, dimensionNumber + 1, &nestedj, &variantData[i * offset], serializeStatusInformation);
+					j->push_back(nestedj);
+				}
+			}
+
+
+#define VALUEFROMDATAARRAY(ENUM, VAR) UA_##VAR *v = (UA_##VAR*) variant.data; \
+		getValueFromDataValueArray<UA_##VAR>(&variant, UA_UInt32(0), &jsonValue, v, serializeStatusInformation); \
+
+#define SIMPLECASE(ENUM, VAR) case UA_DATATYPEKIND_##ENUM: { \
+		UA_##VAR *v = (UA_##VAR*) variant.data; \
+		getValueFromDataValueArray<UA_##VAR>(&variant, UA_UInt32(0), &jsonValue, v, serializeStatusInformation); \
+		break; }
+
+#define CASENOTIMPLEMENTED(ENUM, VAR) case UA_DATATYPEKIND_##ENUM: { \
+		LOG(ERROR) << "Not implented conversion to UA_" << #VAR; \
+		break; }
+
+			void UaDataValueToJsonValue::setValueFromArrayVariant(UA_Variant &variant, nlohmann::json &jsonValue, bool serializeStatusInformation) {
+				switch (variant.type->typeKind) {
+					SIMPLECASE(BOOLEAN, Boolean);
+					SIMPLECASE(SBYTE, SByte);
+					SIMPLECASE(BYTE, Byte);
+					SIMPLECASE(INT16, Int16);
+					SIMPLECASE(UINT16, UInt16);
+					SIMPLECASE(INT32, Int32);
+					SIMPLECASE(UINT32, UInt32);
+					SIMPLECASE(INT64, Int64);
+					SIMPLECASE(UINT64, UInt64);
+					SIMPLECASE(FLOAT, Float);
+					SIMPLECASE(DOUBLE, Double);
+					SIMPLECASE(STRING, String);
+					SIMPLECASE(DATETIME, DateTime);
+					SIMPLECASE(LOCALIZEDTEXT, LocalizedText);
+					SIMPLECASE(NODEID, NodeId);
+					SIMPLECASE(EXTENSIONOBJECT, ExtensionObject);
+					CASENOTIMPLEMENTED(GUID, Guid);
+					CASENOTIMPLEMENTED(BYTESTRING, ByteString);
+					CASENOTIMPLEMENTED(XMLELEMENT, XmlElement);
+					CASENOTIMPLEMENTED(EXPANDEDNODEID, ExpandedNodeId);
+					CASENOTIMPLEMENTED(STATUSCODE, StatusCode);
+					CASENOTIMPLEMENTED(QUALIFIEDNAME, QualifiedName);
+					CASENOTIMPLEMENTED(DATAVALUE, DataValue);
+					CASENOTIMPLEMENTED(VARIANT, Variant);
+					CASENOTIMPLEMENTED(DIAGNOSTICINFO, DiagnosticInfo);
+
+					case UA_DATATYPEKIND_STRUCTURE: {
+						if (strcmp(variant.type->typeName, "EUInformation") == 0) {
+							VALUEFROMDATAARRAY(EUINFORMATION, EUInformation);
+							break;
+						} else if (strcmp(variant.type->typeName, "Range") == 0) {
+							VALUEFROMDATAARRAY(RANGE, Range);
+							break;
+						} else {
+							LOG(ERROR) << "Unknown data type. ";
+							break;
+						}
+					}
+
+					default: {
+						LOG(ERROR) << "Unknown data type. ";
+						break;
+					}
+				}
+
+			}
+
+			void UaDataValueToJsonValue::setValueFromDataValue(const UA_DataValue &dataValue,
+															   bool serializeStatusInformation) {
+				auto &jsonValue = m_value;
+				if (serializeStatusInformation) {
+					jsonValue = m_value["value"];
+				}
+				
+				UA_Variant variant; 
+				UA_Variant_init(&variant);
+				variant = dataValue.value;
+				
+				if (UA_Variant_isEmpty(&variant)) {
+					return;
+				}
+				if (!UA_Variant_isScalar(&variant)) {
+					UA_UInt32 x = variant.arrayLength;
+					if (variant.arrayDimensionsSize == 0) {
+						variant.arrayDimensionsSize = 1;
+						variant.arrayDimensions = &x;
+					}
+					setValueFromArrayVariant(variant, jsonValue, serializeStatusInformation);
+				} else {
+					setValueFromScalarVariant(variant, jsonValue, serializeStatusInformation);
+				}
 			}
 		
 			void UaDataValueToJsonValue::setStatusCodeFromDataValue(const UA_DataValue &dataValue) {
