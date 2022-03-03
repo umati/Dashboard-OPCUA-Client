@@ -51,6 +51,11 @@ void DashboardOpcUaClient::ReadTypes() {
     m_pOpcUaTypeReader->readTypes();
 }
 
+void DashboardOpcUaClient::ReadTypeDictionaries() {
+    m_pOpcUaTypeReader->readTypeDictionaries();
+    
+}
+
 void DashboardOpcUaClient::StartMachineObserver() {
     m_pMachineObserver = std::make_shared<Umati::MachineObserver::DashboardMachineObserver>(
         m_pClient,

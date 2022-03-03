@@ -5,8 +5,10 @@
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
+ * Copyright 2022 (c) Moritz Walker, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
+#include <tinyxml2.h>
 #include "OpcUaClient.hpp"
 #include "ScopeExitGuard.hpp"
 #include "SetupSecurity.hpp"
@@ -88,8 +90,7 @@ namespace Umati
 			m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)),
 			m_security(static_cast<UA_MessageSecurityMode>(security)),
 			m_subscr(m_uriToIndexCache, m_indexToUriCache),
-			m_pClient(UA_Client_new(), UA_Client_delete),
-			m_dataTypeArray(getMachineryResultTypes())
+			m_pClient(UA_Client_new(), UA_Client_delete)
         {
 			{
 				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
@@ -113,6 +114,15 @@ namespace Umati
 			// Try connecting at least once
 			this->connect();
 			m_connectThread = std::make_shared<std::thread>([this]() { this->threadConnectExecution(); });
+		}
+
+		void OpcUaClient::updateCustomTypes()
+		{
+			{
+				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+				UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
+				config->customDataTypes = m_dataTypeArray;
+			}
 		}
 
 		bool OpcUaClient::connect()
@@ -490,6 +500,283 @@ namespace Umati
 			}
 		}
 
+		void OpcUaClient::buildCustomDataTypes()
+		{	
+			/* TODO: Handle Cross Referencing TypeDictionaries! */
+			m_dataTypeArray = (UA_DataTypeArray *)malloc(sizeof(UA_DataTypeArray) * 10);
+			UA_DataTypeArray *lastElement = nullptr;
+
+			for (auto &td : m_ptdv) {
+				for (auto &st : td.StructuredTypes)	{
+					st.Kind = UA_DATATYPEKIND_STRUCTURE;
+					for (auto &member : st.Fields) {
+						if (member.TypeName == "opc:Bit") {
+							member.redundant = true;
+							st.Kind = UA_DATATYPEKIND_OPTSTRUCT;
+						}
+						if (member.LengthField != "") {
+							for (auto &member1 : st.Fields) {
+								if (member.LengthField == member1.Name)	{
+									member1.redundant = true;
+								}
+							}
+						}
+					}
+					st.Fields.erase(std::remove_if(st.Fields.begin(), st.Fields.end(), [](const auto &x){ return x.redundant; }), st.Fields.end());
+				}
+			}
+
+			for (auto &td : m_ptdv)	{
+				const size_t noEnums = td.EnumeratedTypes.size();
+				const size_t noStructs = td.StructuredTypes.size();
+				const size_t size = noStructs + td.EnumeratedTypes.size();
+				UA_DataType *types = new UA_DataType[size];
+				const UA_DataTypeArray *next = lastElement;
+				std::vector<std::tuple<UA_DataType *, UA_DataTypeMember *, TypeDictionary::Field *>> withUnsatisfiedMemberType;
+				std::map<std::string, UA_DataType *> dataTypeNameToDataType;
+
+				for (size_t i = 0; i < noEnums; i++) {
+					auto &st = td.EnumeratedTypes[i];
+					types[i].typeName = st.Name.c_str();
+					types[i].typeId = *Converter::ModelNodeIdToUaNodeId(st.NodeId, m_uriToIndexCache).getNodeId().NodeId;
+					UA_NodeId bNodeId = types[i].typeId;
+					bNodeId.identifier.numeric = 0;
+					types[i].binaryEncodingId = bNodeId;
+					types[i].typeKind = UA_DATATYPEKIND_ENUM;
+					types[i].overlayable = UA_BINARY_OVERLAYABLE_INTEGER;
+					types[i].membersSize = 0;
+					types[i].members = nullptr;
+					types[i].memSize = sizeof(UA_Int32);
+					types[i].pointerFree = true;
+					dataTypeNameToDataType.insert({std::string("tns:") + types[i].typeName, &types[i]});
+				}
+
+				for (size_t i = 0; i < noStructs; i++) {
+					auto &st = td.StructuredTypes[i];
+					types[i + noEnums].typeName = st.Name.c_str();
+					types[i + noEnums].membersSize = st.Fields.size();
+					types[i + noEnums].binaryEncodingId = *Converter::ModelNodeIdToUaNodeId(st.BinaryNodeId, m_uriToIndexCache).getNodeId().NodeId;
+					types[i + noEnums].typeId = *Converter::ModelNodeIdToUaNodeId(st.NodeId, m_uriToIndexCache).getNodeId().NodeId;
+					types[i + noEnums].typeKind = st.Kind;
+					types[i + noEnums].pointerFree = false;
+					types[i + noEnums].overlayable = false;
+					types[i + noEnums].members = new UA_DataTypeMember[st.Fields.size()];
+					dataTypeNameToDataType.insert({std::string("tns:") + types[i + noEnums].typeName, &types[i + noEnums]});
+
+					for (size_t j = 0; j < st.Fields.size(); j++) {
+						types[i + noEnums].members[j].isArray = !st.Fields[j].LengthField.empty();
+						types[i + noEnums].members[j].isOptional = !st.Fields[j].SwitchField.empty();
+						auto it = XMLtoUaType.find(st.Fields[j].TypeName);
+						if (it == XMLtoUaType.end()) {
+							withUnsatisfiedMemberType.push_back(std::make_tuple(&types[i + noEnums], &types[i + noEnums].members[j], &st.Fields[j]));
+						}
+						else {
+							types[i + noEnums].members[j].memberType = &UA_TYPES[it->second];
+						}
+						types[i + noEnums].members[j].memberName = st.Fields[j].Name.c_str();
+					}
+				}
+
+				TypeDictionary::DependecyGraph<UA_DataType> depGraph{};
+				for (auto &uns : withUnsatisfiedMemberType)	{
+					auto targetDataType = dataTypeNameToDataType.at(std::get<2>(uns)->TypeName);
+					std::get<1>(uns)->memberType = targetDataType;
+					depGraph.addEdge(targetDataType, std::get<0>(uns));
+				}
+
+				depGraph.topologicalSort();
+				auto &result = depGraph.getResult();
+
+				while (!result.empty())	{
+					auto res = result.top();
+					UA_UInt32 padding = 0;
+					for (size_t i = 0; i < res->membersSize; i++) {	
+						res->members[i].padding = padding;
+						if (res->members[i].isArray) {
+							padding += sizeof(void *);
+							padding += sizeof(size_t);
+						}
+						else if (res->members[i].isOptional) {
+							padding += sizeof(void *);
+						}
+						else {
+							padding += res->members[i].memberType->memSize;
+						}
+					}
+					res->memSize = padding;
+					result.pop();
+				}
+
+				for (size_t i = 0; i < noStructs; i++) {
+					auto &st = td.StructuredTypes[i];
+					UA_Byte padding = 0;
+					for (size_t j = 0; j < st.Fields.size(); j++) {	
+						if(j > 0) types[i + noEnums].members[j - 1].padding = 0;
+						types[i + noEnums].members[j].padding = padding;
+						if (types[i + noEnums].members[j].isArray) {
+							padding += sizeof(size_t);
+							padding += sizeof(void *);
+						}
+						else if (types[i + noEnums].members[j].isOptional) {
+							padding += sizeof(void *);
+						}
+						else {
+							padding += types[i + noEnums].members[j].memberType->memSize;
+						}
+					}
+					types[i + noEnums].memSize = padding;
+					types[i + noEnums].members[st.Fields.size() - 1].padding = 0;
+				}
+				m_dataTypeArray = new UA_DataTypeArray{lastElement, size, types};
+				lastElement = m_dataTypeArray;
+			}
+		}
+
+		void OpcUaClient::readTypeDictionaries()
+		{
+
+			std::map<ModelOpcUa::QualifiedName_t, ModelOpcUa::NodeId_t> nameToNodeId{};
+			std::map<ModelOpcUa::QualifiedName_t, ModelOpcUa::NodeId_t> nameToBinaryNodeId{};
+			const char *buffer = new char[1000];
+			UA_NodeId nodeId;
+			UA_Variant v;
+
+			UA_NodeId_init(&nodeId);
+			UA_Variant_init(&v);
+
+			typedef struct {
+				size_t visitedElements;
+				tinyxml2::XMLElement *current;
+			} XMLIterator;
+
+			auto dictionaryResults = Browse(Dashboard::NodeId_OPC_Binary, Dashboard::IDashboardDataClient::BrowseContext_t::HasComponent());
+			for (auto &dict : dictionaryResults)
+			{
+				if (dict.BrowseName.Name == "Opc.Ua" || dict.BrowseName.Name == "Opc.Ua.Di") continue;
+
+				TypeDictionary::TypeDictionary td{};
+				auto nodesInTypeDict = Browse(dict.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical());
+				
+				for (auto &node : nodesInTypeDict)
+				{
+					if (node.BrowseName == ModelOpcUa::QualifiedName_t{"", "NamespaceUri"})	{}
+					else if (node.TypeDefinition.Id == Dashboard::NodeId_DataTypeDescriptionType.Id)
+					{
+						auto describedNode = Browse(node.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::DescriptionOf()).front();
+						auto encodedNode = Browse(describedNode.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::EncodingOf()).front();
+						auto nameOfDescribedStructuredType = node.BrowseName;
+						nameToNodeId.insert({nameOfDescribedStructuredType, encodedNode.NodeId});
+						nameToBinaryNodeId.insert({nameOfDescribedStructuredType, describedNode.NodeId});
+					}
+				}
+				/* Search for EnumTypes */
+				tinyxml2::XMLError eResult;
+				tinyxml2::XMLDocument xml_file;
+				tinyxml2::XMLElement *xml_element;
+				nodeId = *Converter::ModelNodeIdToUaNodeId(dict.NodeId, m_uriToIndexCache).getNodeId().NodeId;
+   				UA_Client_readValueAttribute(m_pClient.get(), nodeId, &v);
+				UA_String s = *(UA_String *)v.data;
+				std::string typeDictXMLString((char *)s.data, s.length);			
+
+				eResult = xml_file.Parse(typeDictXMLString.c_str());
+				if (eResult != tinyxml2::XML_SUCCESS)
+				{
+					LOG(ERROR) << "Error parsing TypeDictionary XML " << dict.NodeId;
+					continue;
+				}
+
+				xml_element = xml_file.RootElement();
+				if (xml_element == nullptr)
+				{	
+					LOG(ERROR) << "Error finding XMLRootElement of TypeDictionary " << dict.NodeId;
+					continue;
+				}
+
+				eResult = xml_element->QueryStringAttribute("TargetNamespace", &buffer);
+				if (eResult != tinyxml2::XML_SUCCESS) {
+					LOG(ERROR) << "Error reading TargetNamespace in XML of TypeDictionary " << dict.NodeId;
+					continue;
+				}
+				td.TargetNamespace = std::string(buffer);
+
+				auto firstNode = xml_element->FirstChildElement("opc:StructuredType");
+				for (XMLIterator it = {.visitedElements = 0, .current = firstNode};
+					 it.current != nullptr || (it.current != firstNode && it.visitedElements != 0);
+					 it = {.visitedElements = it.visitedElements++, .current = it.current->NextSiblingElement("opc:StructuredType")})
+				{
+					TypeDictionary::StructuredType stype;
+					eResult = it.current->QueryStringAttribute("BaseType", &buffer);
+					if (eResult != tinyxml2::XML_SUCCESS)
+						continue;
+					stype.BaseType = std::string(buffer);
+					eResult = it.current->QueryStringAttribute("Name", &buffer);
+					if (eResult != tinyxml2::XML_SUCCESS)
+						continue;
+					stype.Name = std::string(buffer);
+					auto firstNodeInner = it.current->FirstChildElement("opc:Field");
+					for (XMLIterator it2 = {.visitedElements = 0, .current = firstNodeInner};
+						 it2.current != nullptr || (it2.current != firstNodeInner && it2.visitedElements != 0);
+						 it2 = {.visitedElements = it2.visitedElements++, .current = it2.current->NextSiblingElement("opc:Field")})
+					{
+						TypeDictionary::Field field{};
+						eResult = it2.current->QueryStringAttribute("TypeName", &buffer);
+						if (eResult == tinyxml2::XML_SUCCESS)
+							field.TypeName = std::string(buffer);
+						eResult = it2.current->QueryStringAttribute("Name", &buffer);
+						if (eResult == tinyxml2::XML_SUCCESS)
+							field.Name = std::string(buffer);
+						eResult = it2.current->QueryStringAttribute("LengthField", &buffer);
+						if (eResult == tinyxml2::XML_SUCCESS)
+							field.LengthField = std::string(buffer);
+						eResult = it2.current->QueryStringAttribute("SwitchField", &buffer);
+						if (eResult == tinyxml2::XML_SUCCESS)
+							field.SwitchField = std::string(buffer);
+						eResult = it2.current->QueryStringAttribute("Terminator", &buffer);
+						if (eResult == tinyxml2::XML_SUCCESS)
+							field.Terminator = std::string(buffer);
+						eResult = it2.current->QueryUnsigned64Attribute("Length", &field.Length);
+						eResult = it2.current->QueryUnsigned64Attribute("SwitchValue", &field.SwitchValue);
+						eResult = it2.current->QueryBoolAttribute("IsLengthInBytes", &field.IsLengthInBytes);
+						stype.Fields.push_back(field);
+					}
+					stype.NodeId = nameToNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
+					stype.BinaryNodeId = nameToBinaryNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
+					td.StructuredTypes.push_back(stype);
+				}
+
+				xml_element = xml_file.RootElement();
+				if (xml_element == nullptr)	{
+					LOG(ERROR) << "Error finding XMLRootElement of TypeDictionary " << dict.NodeId;
+					continue;
+				}
+
+				firstNode = xml_element->FirstChildElement("opc:EnumeratedType");
+				for (XMLIterator it = {.visitedElements = 0, .current = firstNode};
+					 it.current != nullptr || (it.current != firstNode && it.visitedElements != 0);
+					 it = {.visitedElements = it.visitedElements++, .current = it.current->NextSiblingElement("opc:EnumeratedType")})
+				{
+					TypeDictionary::EnumeratedType etype;
+					eResult = it.current->QueryStringAttribute("Name", &buffer);
+					if (eResult == tinyxml2::XML_SUCCESS) etype.Name = std::string(buffer);
+					eResult = it.current->QueryUnsigned64Attribute("LengthInBits", &etype.LengthInBits);
+					auto firstNodeInner = it.current->FirstChildElement("opc:EnumeratedValue");
+					for (XMLIterator it2 = {.visitedElements = 0, .current = firstNodeInner};
+						 it2.current != nullptr || (it2.current != firstNodeInner && it2.visitedElements != 0);
+						 it2 = {.visitedElements = it2.visitedElements++, .current = it2.current->NextSiblingElement("opc:EnumeratedValue")})
+					{
+						TypeDictionary::EnumeratedValue evalue{};
+						eResult = it2.current->QueryStringAttribute("Name", &buffer);
+						if (eResult == tinyxml2::XML_SUCCESS) evalue.Name = std::string(buffer);
+						eResult = it2.current->QueryInt64Attribute("Value", &evalue.Value);
+						etype.EnumeratedValues.push_back(evalue);
+					}
+					auto id = TranslateBrowsePathToNodeId(Dashboard::NodeId_Enumeration, ModelOpcUa::QualifiedName_t{td.TargetNamespace, etype.Name});
+					etype.NodeId = id;
+					td.EnumeratedTypes.push_back(etype);
+				}
+				m_ptdv.push_back(td);
+			}
+		}
 
 		OpcUaClient::~OpcUaClient()
 		{
@@ -582,7 +869,7 @@ namespace Umati
 			std::function<bool(const UA_ReferenceDescription &)> filter)
 		{
 			Converter::ModelNodeIdToUaNodeId conv = Converter::ModelNodeIdToUaNodeId(startNode, m_uriToIndexCache);
-			open62541Cpp::UA_NodeId startUaNodeId = conv.getNodeId();
+			open62541Cpp::UA_NodeId currentUaNodeId = conv.getNodeId();
 
 			UA_ByteString continuationPoint;
 			UA_ByteString_init(&continuationPoint);
@@ -592,7 +879,7 @@ namespace Umati
 			checkConnection();
 			{
 			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-			uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ startUaNodeId, browseContext,
+			uaResult = m_opcUaWrapper->SessionBrowse(m_pClient.get(), /*m_defaultServiceSettings,*/ currentUaNodeId, browseContext,
 														  continuationPoint, referenceDescriptions);
 			}
 
@@ -604,8 +891,8 @@ namespace Umati
 
 			if (uaResult.resultsSize > 0 && UA_StatusCode_isBad(uaResult.results->statusCode))
 			{
-				LOG(ERROR) << "Bad return from browse with startUaNodeId: "
-						   << startUaNodeId.NodeId->identifier.string.data
+				LOG(ERROR) << "Bad return from browse with currentUaNodeId: "
+						   << currentUaNodeId.NodeId->identifier.string.data
 						   << " and ref id " << browseContext.referenceTypeId.identifier.string.data
 						   << "Updating NamespaceCache...";
 				updateNamespaceCache();
@@ -726,7 +1013,7 @@ namespace Umati
 				throw std::invalid_argument("startNode is NULL");
 			}
 
-			auto startUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode,
+			auto currentUaNodeId = Converter::ModelNodeIdToUaNodeId(startNode,
 																  m_uriToIndexCache)
 																  .getNodeId();
 
@@ -742,7 +1029,7 @@ namespace Umati
 			uaBrowsePaths.relativePath.elements->isInverse = UA_FALSE;
 			uaBrowsePaths.relativePath.elements->referenceTypeId.identifier.numeric = UA_NS0ID_HIERARCHICALREFERENCES;
 			uaBrowsePaths.relativePath.elements->targetName = uaBrowseName;
-			UA_NodeId_copy(startUaNodeId.NodeId, &uaBrowsePaths.startingNode);
+			UA_NodeId_copy(currentUaNodeId.NodeId, &uaBrowsePaths.startingNode);
 
 			UA_BrowsePathResult uaBrowsePathResults;
 			UA_DiagnosticInfo uaDiagnosticInfos;

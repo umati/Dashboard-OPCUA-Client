@@ -101,6 +101,16 @@ namespace ModelOpcUa
 		{
 			return this->Uri == other.Uri && this->Name == other.Name;
 		}
+
+		bool operator<(const QualifiedName_t &other) const
+		{
+			if (this->Uri != other.Uri)
+			{
+				return this->Uri < other.Uri;
+			}
+
+			return this->Name < other.Name;
+		}
 	};
 
 	enum ModellingRule_t : unsigned int
