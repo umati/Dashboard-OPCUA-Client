@@ -85,13 +85,12 @@ int main(int argc, char *argv[])
 			reset = false;
 		}
 		DashboardOpcUaClient dashboardClient(config, issueReset);
-
 		if (!dashboardClient.connect(running))
 		{
 			LOG(INFO) << "Connection not established, exiting.";
 			return -1;
 		}
-
+		dashboardClient.ReadTypeDictionaries();
 		dashboardClient.ReadTypes();
 		dashboardClient.StartMachineObserver();
 		while (running && !reset)

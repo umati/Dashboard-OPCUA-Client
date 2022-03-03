@@ -40,6 +40,13 @@
             }
         }
 
+        void OpcUaTypeReader::readTypeDictionaries()
+        {   
+            m_pClient->readTypeDictionaries();
+            m_pClient->buildCustomDataTypes();
+            m_pClient->updateCustomTypes();
+        }
+
         void OpcUaTypeReader::readTypes()
         {
             std::vector<std::string> notFoundObjectTypeNamespaces;

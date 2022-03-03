@@ -27,7 +27,7 @@
 #include <atomic>
 #include "ModelOpcUa/ModelDefinition.hpp"
 #include "ModelOpcUa/ModelInstance.hpp"
-
+#include "TypeDictionary/TypeDictionary.hpp"
 #include "Subscription.hpp"
 #include "OpcUaInterface.hpp"
 #include <functional>
@@ -82,6 +82,13 @@ namespace Umati
 
             bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType,
                                  size_t maxDepth) override;
+
+			void buildCustomDataTypes() override;
+
+			void readTypeDictionaries() override;
+
+			void updateCustomTypes() override;
+
 		protected:
 			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus); 
 
@@ -111,6 +118,8 @@ namespace Umati
 			std::string m_username;
 			std::string m_password;
 			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_NONE;
+			UA_DataTypeArray *m_dataTypeArray;
+			std::vector<TypeDictionary::TypeDictionary> m_ptdv;
 
 			std::shared_ptr<std::thread> m_connectThread;
 			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
@@ -118,6 +127,42 @@ namespace Umati
 			std::atomic_bool m_tryConnecting = {false};
 
 			Subscription m_subscr;
+
+			const std::map<std::string, size_t> XMLtoUaType={
+				{ "opc:Boolean", UA_TYPES_BOOLEAN },
+				{ "opc:SByte", UA_TYPES_SBYTE },
+				{ "opc:Byte", UA_TYPES_BYTE },
+				{ "opc:Int16", UA_TYPES_INT16 },
+				{ "opc:UInt16", UA_TYPES_UINT16 },
+				{ "opc:Int32", UA_TYPES_INT32 },
+				{ "opc:UInt32", UA_TYPES_UINT32 },
+				{ "opc:Int64", UA_TYPES_INT64 },
+				{ "opc:UInt64", UA_TYPES_UINT64 },
+				{ "opc:Float", UA_TYPES_FLOAT },
+				{ "opc:Double", UA_TYPES_DOUBLE },
+				{ "opc:CharArray", UA_TYPES_STRING },
+				{ "opc:DateTime", UA_TYPES_DATETIME },
+				{ "opc:Guid", UA_TYPES_GUID },
+				{ "opc:ByteString", UA_TYPES_BYTESTRING },
+				{ "ua:XmlElement", UA_TYPES_XMLELEMENT },
+				{ "ua:NodeId", UA_TYPES_NODEID },
+				{ "ua:ExpandedNodeId", UA_TYPES_EXPANDEDNODEID },
+				{ "ua:StatusCode", UA_TYPES_STATUSCODE },
+				{ "ua:QualifiedName", UA_TYPES_QUALIFIEDNAME },
+				{ "ua:LocalizedText", UA_TYPES_LOCALIZEDTEXT },
+				{ "ua:ExtensionObject", UA_TYPES_EXTENSIONOBJECT },
+				{ "ua:DataValue", UA_TYPES_DATAVALUE },
+				{ "ua:Variant", UA_TYPES_VARIANT },
+				{ "ua:DiagnosticInfo", UA_TYPES_DIAGNOSTICINFO },
+
+				/* TODO ??? 
+				{ "", UA_TYPES_DECIMAL },
+				{ "", UA_TYPES_ENUM },
+				{ "", UA_TYPES_STRUCTURE },
+				{ "", UA_TYPES_OPTSTRUCT }, 
+				{ "", UA_TYPES_UNION },
+				{ "", UA_TYPES_BITFIELDCLUSTER } */
+			};
 
 			struct UaNodeId_Compare
 			{
