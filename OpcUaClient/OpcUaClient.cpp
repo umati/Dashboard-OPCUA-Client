@@ -20,6 +20,7 @@
 #include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
+#include "Converter/CustomDataTypes/types_machinery_result_generated_handling.h"
 
 namespace Umati
 {
@@ -80,8 +81,8 @@ namespace Umati
 			m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)),
 			m_security(static_cast<UA_MessageSecurityMode>(security)),
 			m_subscr(m_uriToIndexCache, m_indexToUriCache),
-			m_pClient(UA_Client_new(), UA_Client_delete)
-			 
+			m_pClient(UA_Client_new(), UA_Client_delete),
+			m_dataTypeArray({NULL, 5, UA_TYPES_MACHINERY_RESULT})
         {
 			{
 				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
@@ -93,6 +94,7 @@ namespace Umati
 				config->timeout = 2000;
 				config->inactivityCallback = inactivityCallback;
 				config->stateCallback = stateCallback;
+				config->customDataTypes = &m_dataTypeArray;
 			}
 
 			m_opcUaWrapper = std::move(opcUaWrapper);
