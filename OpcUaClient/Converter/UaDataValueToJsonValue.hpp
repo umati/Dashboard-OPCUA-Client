@@ -23,9 +23,9 @@ namespace Umati {
 					return m_value;
 				};
 			protected:
-			    void setValueFromScalarVariant(UA_Variant &variant, nlohmann::json &jsonValue, bool serializeStatusInformation);
+			    void setValueFromScalarVariant(UA_Variant &variant, nlohmann::json *jsonValue, bool serializeStatusInformation);
 
-				void setValueFromArrayVariant(UA_Variant &variant, nlohmann::json &jsonValue, bool serializeStatusInformation);
+				void setValueFromArrayVariant(UA_Variant &variant, nlohmann::json *jsonValue, bool serializeStatusInformation);
 
 				template<typename T>
 				void getValueFromDataValueArray(const UA_Variant *variant, UA_UInt32 dimensionNumber, 
