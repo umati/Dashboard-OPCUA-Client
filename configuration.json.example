@@ -6,6 +6,7 @@
     "http://opcfoundation.org/UA/IA-Prototyping/",
     "http://opcfoundation.org/UA/DI/",
     "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/Machinery/Result/",
     "http://opcfoundation.org/UA/MachineTool/",
     "http://opcfoundation.org/UA/MachineTool-Prototyping/",
     "http://opcfoundation.org/UA/SurfaceTechnology/",
@@ -14,7 +15,8 @@
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/MaterialSupplyRoom/",
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/DosingSystem/",
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/OvenBooth/",
-    "http://opcfoundation.org/UA/SurfaceTechnology/Example/Pretreatment"
+    "http://opcfoundation.org/UA/SurfaceTechnology/Example/Pretreatment",
+    "http://opcfoundation.org/GMS/"
   ],
   "NamespaceInformations": [
     {
@@ -82,7 +84,22 @@
         "Id": "i=1012",
         "$comment": "MachineIdentificationType"
       }
-    }    
+    },
+    {
+       "Namespace":"http://opcfoundation.org/GMS/",
+       "Types":[
+         {
+           "Uri":"http://opcfoundation.org/GMS/",
+           "Id":"i=1002",
+           "$comment":"GMSType"
+         }
+       ],
+       "IdentificationType":{
+         "Uri":"http://opcfoundation.org/GMS/",
+         "Id":"i=1011",
+         "$comment":"GMSIdentificationType"
+       }
+    }
   ]
   ,
   "OpcUa": {
