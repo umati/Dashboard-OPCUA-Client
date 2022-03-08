@@ -1,7 +1,7 @@
  /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
@@ -80,14 +80,14 @@ namespace Umati {
 						*jsonValue = v;
 						break;
 					}
-	
-					
+
+
 					case UA_DATATYPEKIND_FLOAT: {
 						UA_Float v(*(UA_Float*)variant.data);
 						*jsonValue = v;
 						break;
 					}
-					
+
 					case UA_DATATYPEKIND_DOUBLE: {
 						UA_Double v(*(UA_Double*)variant.data);
 						*jsonValue = v;
@@ -98,7 +98,7 @@ namespace Umati {
 						*jsonValue = std::string((char*)s.data,s.length);
 						break;
 					}
-				
+
 					case UA_DATATYPEKIND_DATETIME: {
 						UA_DateTime dateTime(*(UA_DateTime*)variant.data);
 						auto dtStruct = UA_DateTime_toStruct(dateTime);
@@ -154,7 +154,7 @@ namespace Umati {
 						(*jsonValue)["text"] =  std::string((char*)localText.text.data,localText.text.length);
 						break;
 					}
-		
+
 					case UA_DATATYPEKIND_EXTENSIONOBJECT: {
 						UA_ExtensionObject exObj(*(UA_ExtensionObject*)variant.data);
 						*jsonValue = {};
@@ -254,22 +254,36 @@ namespace Umati {
 							UA_ResultDataType result(*(UA_ResultDataType*)variant.data);
 							UA_DataValue dataVal;
 							UA_DataValue_init(&dataVal);
+							nlohmann::json resultMetaDataJson = {};
 							{
 								UA_Variant_setScalar(&dataVal.value, &result.resultMetaData.resultId, &UA_TYPES[UA_TYPES_STRING]);
-								(*jsonValue)["ResultId"] = UaDataValueToJsonValue(
-									dataVal,
-									serializeStatusInformation)
-									.getValue();
-								LOG(INFO) << jsonValue;
-								int a = 0;
-							}
-							{							
-								UA_Variant_setScalar(&dataVal.value, result.resultMetaData.resultUri, &UA_TYPES[UA_TYPES_STRING]);
-								(*jsonValue)["ResultUri"] = UaDataValueToJsonValue(
+								resultMetaDataJson["ResultId"] = UaDataValueToJsonValue(
 									dataVal,
 									serializeStatusInformation)
 									.getValue();
 							}
+							if (result.resultMetaData.resultState) {
+								UA_Variant_setScalar(&dataVal.value, result.resultMetaData.resultState, &UA_TYPES[UA_TYPES_INT32]);
+								resultMetaDataJson["ResultState"] = UaDataValueToJsonValue(
+									dataVal,
+									serializeStatusInformation)
+									.getValue();
+							}
+							if (result.resultMetaData.resultUri) {
+								UA_Variant_setArray(&dataVal.value, result.resultMetaData.resultUri, result.resultMetaData.resultUriSize, &UA_TYPES[UA_TYPES_STRING]);
+								resultMetaDataJson["ResultUri"] = UaDataValueToJsonValue(
+									dataVal,
+									serializeStatusInformation)
+									.getValue();
+							}
+							if (result.resultMetaData.fileFormat) {
+								UA_Variant_setArray(&dataVal.value, result.resultMetaData.fileFormat, result.resultMetaData.fileFormatSize, &UA_TYPES[UA_TYPES_STRING]);
+								resultMetaDataJson["FileFormat"] = UaDataValueToJsonValue(
+									dataVal,
+									serializeStatusInformation)
+									.getValue();
+							}
+							(*jsonValue)["ResultMetaData"] = resultMetaDataJson;
 						} else {
 							LOG(ERROR) << "Unknown data type. ";
 						}
@@ -278,13 +292,13 @@ namespace Umati {
 				}
 
 			}
-		
+
 
 			template<typename T>
 			void UaDataValueToJsonValue::getValueFromDataValueArray(const UA_Variant *variant, UA_UInt32 dimensionNumber,
 																	nlohmann::json *j, T *variantData, bool serializeStatusInformation) {
 				if (dimensionNumber == variant->arrayDimensionsSize - 1) {
-					for(int i = 0; i < variant->arrayDimensions[dimensionNumber]; i++) {												
+					for(int i = 0; i < variant->arrayDimensions[dimensionNumber]; i++) {
 						nlohmann::json jsonValue;
 						UA_Variant var = {
 							variant->type,  			/* The data type description */
@@ -298,7 +312,7 @@ namespace Umati {
 						j->push_back(jsonValue);
 					}
 					return;
-				}				
+				}
 				UA_UInt32 offset = 1;
 				for(UA_UInt32 i = dimensionNumber + 1; i < variant->arrayDimensionsSize - 1; i++) {
 					offset = offset * variant->arrayDimensions[i];
@@ -378,11 +392,11 @@ namespace Umati {
 				if (serializeStatusInformation) {
 					jsonValue = &m_value["value"];
 				}
-				
-				UA_Variant variant; 
+
+				UA_Variant variant;
 				UA_Variant_init(&variant);
 				variant = dataValue.value;
-				
+
 				if (UA_Variant_isEmpty(&variant)) {
 					return;
 				}
@@ -397,13 +411,13 @@ namespace Umati {
 					setValueFromScalarVariant(variant, jsonValue, serializeStatusInformation);
 				}
 			}
-		
+
 			void UaDataValueToJsonValue::setStatusCodeFromDataValue(const UA_DataValue &dataValue) {
 				auto &jsonStatusCode = m_value["statusCode"];
 
 				jsonStatusCode["code"] = dataValue.status;
 				jsonStatusCode["isGood"] = ( dataValue.status == UA_STATUSCODE_GOOD) ?  UA_TRUE : UA_FALSE;
-				
+
 			}
 		}
 	}
