@@ -23,7 +23,7 @@ _UA_BEGIN_DECLS
  * These descriptions are used during type handling (copying, deletion,
  * binary encoding, ...). */
 #define UA_TYPES_MACHINERY_RESULT_COUNT 5
-extern UA_EXPORT const UA_DataType UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_COUNT];
+extern UA_EXPORT UA_DataType UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_COUNT];
 
 /**
  * ProcessingTimesDataType

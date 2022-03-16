@@ -1,7 +1,7 @@
  /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
@@ -28,7 +28,7 @@ namespace Umati
 	namespace OpcUa
 	{
 
-		
+
 		static void stateCallback(UA_Client *client,
                           UA_SecureChannelState channelState,
                           UA_SessionState sessionState,
@@ -53,7 +53,7 @@ namespace Umati
 				}
 
 			switch(sessionState) {
-    			case UA_SESSIONSTATE_ACTIVATED: 
+    			case UA_SESSIONSTATE_ACTIVATED:
       				LOG(INFO) << "A session with the server is activated";
 					break;
 				case UA_SESSIONSTATE_CLOSED:
@@ -73,7 +73,11 @@ namespace Umati
 		    LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n";
 		}
 
-		OpcUaClient::OpcUaClient(std::string serverURI, std::function<void()> issueReset, 
+		static UA_DataTypeArray getMachineryResultTypes () {
+			return {NULL, 5, UA_TYPES_MACHINERY_RESULT};
+		}
+
+		OpcUaClient::OpcUaClient(std::string serverURI, std::function<void()> issueReset,
 								 std::string Username, std::string Password,
 								 std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces,
 								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
@@ -82,7 +86,7 @@ namespace Umati
 			m_security(static_cast<UA_MessageSecurityMode>(security)),
 			m_subscr(m_uriToIndexCache, m_indexToUriCache),
 			m_pClient(UA_Client_new(), UA_Client_delete),
-			m_dataTypeArray({NULL, 5, UA_TYPES_MACHINERY_RESULT})
+			m_dataTypeArray(getMachineryResultTypes())
         {
 			{
 				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
@@ -126,15 +130,15 @@ namespace Umati
 				if(result == UA_STATUSCODE_BADDISCONNECT || result == UA_STATUSCODE_BADUSERACCESSDENIED || result == UA_STATUSCODE_BADCONNECTIONCLOSED || result == UA_STATUSCODE_BADAPPLICATIONSIGNATUREINVALID){
 					m_tryConnecting = false;
 				}
-				return false;	
-			} 
+				return false;
+			}
 			connectionStatusChanged(0,UA_SERVERSTATE_RUNNING);
 
 			return true;
 		}
 		UA_ApplicationDescription &
 		OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo)
-		{	
+		{
 			sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT_ALLOC("en-US", "KonI4.0 OPC UA Data Client");
 			sessionConnectInfo.applicationUri = UA_STRING_ALLOC("http://dashboard.umati.app/OPCUA_DataClient");
 		 	sessionConnectInfo.productUri = UA_STRING_ALLOC("KonI40OpcUaClient_Product");
@@ -156,7 +160,7 @@ namespace Umati
 
 		std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
 		{
-            
+
 			auto nodeId = Converter::ModelNodeIdToUaNodeId(_nodeId, m_uriToIndexCache).getNodeId();
 			checkConnection();
 
@@ -226,7 +230,7 @@ namespace Umati
 			browseContext.resultMask = UA_BROWSERESULTMASK_NONE;
 
 			UA_NodeClass nodeClass = readNodeClass(typeNodeId);
-			
+
 			switch (nodeClass)
 			{
 			case UA_NODECLASS_OBJECTTYPE:
@@ -267,7 +271,7 @@ namespace Umati
 				LOG(ERROR) << "Found multiple superTypes for " << typeNodeId.NodeId->identifier.string.data;
 				return open62541Cpp::UA_NodeId();
 			}
-		
+
 			UA_ExpandedNodeId retExpandedNodeId;
 			UA_ExpandedNodeId_copy(&referenceDescriptions.at(0).nodeId,&retExpandedNodeId);
 
@@ -333,7 +337,7 @@ namespace Umati
 			initializeNamespaceCache();
 
 			auto uaNamespaces = m_opcUaWrapper->SessionGetNamespaceTable();
-		
+
 			fillNamespaceCache(uaNamespaces);
 			if(!verifyCompatibleNamespaceCache(existingIndexToUri)) {
 				m_issueReset();
@@ -362,17 +366,33 @@ namespace Umati
 			for(size_t i = 0; i < uaNamespaces.size(); ++i){
 
 				std::string namespaceURI = uaNamespaces.at(i);
-				
+
 				if ( m_uriToIndexCache.find(namespaceURI) == m_uriToIndexCache.end() ) {
 				    m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
 					m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
+
+					updateCustomDataTypesNamespace(namespaceURI, i);
 				} else {
                     LOG(INFO) << "Namespace already in cache";
 				}
-		
+
 				LOG(INFO) << "index: " << std::to_string(i) << ", namespaceURI: " << namespaceURI;
-			} 
-			
+			}
+
+		}
+
+		void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::size_t namespaceIndex)
+		{
+			if (namespaceURI == "http://opcfoundation.org/UA/Machinery/Result/") {
+				uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
+
+				for(size_t j = 0; j < UA_TYPES_MACHINERY_RESULT_COUNT; j++) {
+					UA_TYPES_MACHINERY_RESULT[j].typeId.namespaceIndex = nsIdx;
+					UA_TYPES_MACHINERY_RESULT[j].binaryEncodingId.namespaceIndex = nsIdx;
+				}
+
+				m_dataTypeArray.types = UA_TYPES_MACHINERY_RESULT;
+			}
 		}
 
 		ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(const open62541Cpp::UA_NodeId &uaNodeId)
@@ -400,7 +420,7 @@ namespace Umati
 
 			UA_BrowseDescription_clear(&browseContext2);
 			UA_BrowseResponse_clear(&uaResult2);
-			
+
 			for (UA_Int32 i = 0; i < referenceDescriptions.size(); i++)
 			{
 				auto refDescr = referenceDescriptions.at(i);
@@ -436,7 +456,7 @@ namespace Umati
 			return ret;
 		}
 
-		void OpcUaClient::connectionStatusChanged(UA_Int32  /*clientConnectionId*/,UA_ServerState serverStatus) 
+		void OpcUaClient::connectionStatusChanged(UA_Int32  /*clientConnectionId*/,UA_ServerState serverStatus)
 		{
 			switch (serverStatus)
 			{
@@ -454,7 +474,7 @@ namespace Umati
 				break;
 			}
 		}
-		
+
 
 		OpcUaClient::~OpcUaClient()
 		{
@@ -520,11 +540,11 @@ namespace Umati
 		UA_NodeClass OpcUaClient::nodeClassFromNodeId(const open62541Cpp::UA_NodeId &typeDefinitionUaNodeId)
 		{
 			UA_NodeClass nodeClass = readNodeClass(typeDefinitionUaNodeId);
-			
+
 			switch (nodeClass)
 			{
 			case UA_NODECLASS_OBJECTTYPE:
-			{	
+			{
 				return UA_NODECLASS_OBJECT;
 				break;
 			}
@@ -593,7 +613,7 @@ namespace Umati
 				for (UA_Int32 i = 0; i < referenceDescriptions.size(); i++)
 			{
 				if (!filter(referenceDescriptions.at(i)))
-				{					
+				{
 				continue;
 				}
 					UA_ReferenceDescription tmp = referenceDescriptions.at(i);
@@ -626,7 +646,7 @@ namespace Umati
 			UA_NodeId_copy(&referenceDescription.referenceTypeId, referenceTypeUaNodeId.NodeId);
 
 			auto referenceTypeModelNodeId = Converter::UaNodeIdToModelNodeId(referenceTypeUaNodeId,m_indexToUriCache).getNodeId();
-		
+
 			entry.ReferenceTypeId = referenceTypeModelNodeId;
 			open62541Cpp::UA_QualifiedName browseName(referenceDescription.browseName.namespaceIndex,
 														std::string((char*)referenceDescription.browseName.name.data,
@@ -634,7 +654,7 @@ namespace Umati
 
 			entry.BrowseName = Converter::UaQualifiedNameToModelQualifiedName(browseName,m_indexToUriCache).getQualifiedName();
 
-			return entry;		
+			return entry;
 		}
 
 		UA_BrowseDescription OpcUaClient::prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId)
@@ -748,7 +768,7 @@ namespace Umati
 			}
 
 			UA_StatusCode uaResultElement(uaBrowsePathResults.statusCode);
-			
+
 			if (UA_StatusCode_isBad(uaResultElement))
 			{
 				std::stringstream ss;
@@ -805,7 +825,7 @@ namespace Umati
 			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			m_opcUaWrapper->SubscriptionUnsubscribe(m_pClient.get(), monItemIds, clientHandles);
 		}
-	
+
 		std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds)
 		{
 			return readValues2(modelNodeIds);
@@ -815,7 +835,7 @@ namespace Umati
 		{
 
 			std::vector<nlohmann::json> readValues;
-		
+
 			UA_DiagnosticInfo info;
 			UA_DiagnosticInfo_init(&info);
 
@@ -827,13 +847,13 @@ namespace Umati
 			for (const auto &modelNodeId : modelNodeIds)
 			{
 				open62541Cpp::UA_NodeId nodeId = Converter::ModelNodeIdToUaNodeId(modelNodeId, m_uriToIndexCache).getNodeId();
-				
+
 				readValueId[index].attributeId = UA_ATTRIBUTEID_VALUE;
 				UA_NodeId_copy(nodeId.NodeId, &readValueId[index].nodeId);
 				index++;
 			}
 
-			std::lock_guard<std::recursive_mutex> l(m_clientMutex);			
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 			auto ret = m_opcUaWrapper->SessionRead(m_pClient.get(),0.0,UA_TIMESTAMPSTORETURN_BOTH, readValueId,  readValueSize, info);
 
 			if (UA_StatusCode_isBad(ret.results->status))
@@ -855,7 +875,7 @@ namespace Umati
 					readValues.push_back(val);
 				}
 			}
-			
+
 			for(int i = 0; i < readValueSize; i++){
 				UA_NodeId_clear(&readValueId[i].nodeId);
 			}

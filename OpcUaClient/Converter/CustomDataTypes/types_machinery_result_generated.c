@@ -207,7 +207,7 @@ static UA_DataTypeMember ResultDataType_members[2] = {
     true, /* .isArray */
     true  /* .isOptional */
 },};
-const UA_DataType UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_COUNT] = {
+UA_DataType UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_COUNT] = {
 /* ProcessingTimesDataType */
 {
     UA_TYPENAME("ProcessingTimesDataType") /* .typeName */
