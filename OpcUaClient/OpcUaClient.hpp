@@ -1,7 +1,7 @@
  /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
@@ -34,7 +34,7 @@
 
 namespace Umati
 {
-	
+
 	namespace OpcUa
 	{
 		class OpcUaClient : public Dashboard::IDashboardDataClient
@@ -83,7 +83,7 @@ namespace Umati
             bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType,
                                  size_t maxDepth) override;
 		protected:
-			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus); 
+			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
 
 			bool connect();
 
@@ -95,7 +95,7 @@ namespace Umati
 
 			// Max search depth
 			bool isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth = 100);
-			
+
 			double m_maxAgeRead_ms = 100.0;
 
 			void updateNamespaceCache();
@@ -123,14 +123,14 @@ namespace Umati
 			struct UaNodeId_Compare
 			{
 				bool operator()(const open62541Cpp::UA_NodeId &left, const open62541Cpp::UA_NodeId &right) const
-				{	
+				{
 						   return left < right;
 				}
 			};
 
 			/// Map for chaching super types. Key = Type, Value = Supertype
 			std::map<open62541Cpp::UA_NodeId, open62541Cpp::UA_NodeId, UaNodeId_Compare> m_superTypes;
-		
+
         public:
 			std::shared_ptr<UA_Client> m_pClient; // Zugriff aus dem ConnectThread, dem PublisherThread
             std::recursive_mutex m_clientMutex;
@@ -171,6 +171,7 @@ namespace Umati
 			updateResultContainer();
 
 			void fillNamespaceCache(const std::vector<std::string> &uaNamespaces);
+			void updateCustomDataTypesNamespace(const std::string namespaceURI, const std::size_t namespaceIndex);
         };
 	} // namespace OpcUa
 } // namespace Umati
