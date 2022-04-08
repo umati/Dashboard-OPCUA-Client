@@ -11,6 +11,7 @@
 
 #include <easylogging++.h>
 #include "CustomDataTypes/types_machinery_result_generated_handling.h"
+#include "../deps/open62541/src/ua_types_encoding_binary.h"
 
 namespace Umati {
 	namespace OpcUa {
@@ -159,7 +160,49 @@ namespace Umati {
 						UA_ExtensionObject exObj(*(UA_ExtensionObject*)variant.data);
 						*jsonValue = {};
 						if (exObj.content.encoded.typeId.namespaceIndex != 0) {
-							LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
+
+							if (exObj.content.encoded.typeId.identifier.numeric == 5008) {
+								size_t offset = 0;
+								UA_ResultDataType result;
+								UA_StatusCode retval = UA_decodeBinaryInternal(&exObj.content.encoded.body, &offset, &result,
+														&UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTDATATYPE], NULL);
+
+								UA_DataValue dataVal;
+								UA_DataValue_init(&dataVal);
+								nlohmann::json resultMetaDataJson = {};
+								{
+									UA_Variant_setScalar(&dataVal.value, &result.resultMetaData.resultId, &UA_TYPES[UA_TYPES_STRING]);
+									resultMetaDataJson["ResultId"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
+								if (result.resultMetaData.resultState) {
+									UA_Variant_setScalar(&dataVal.value, result.resultMetaData.resultState, &UA_TYPES[UA_TYPES_INT32]);
+									resultMetaDataJson["ResultState"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
+								if (result.resultMetaData.resultUri) {
+									UA_Variant_setArray(&dataVal.value, result.resultMetaData.resultUri, result.resultMetaData.resultUriSize, &UA_TYPES[UA_TYPES_STRING]);
+									resultMetaDataJson["ResultUri"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
+								if (result.resultMetaData.fileFormat) {
+									UA_Variant_setArray(&dataVal.value, result.resultMetaData.fileFormat, result.resultMetaData.fileFormatSize, &UA_TYPES[UA_TYPES_STRING]);
+									resultMetaDataJson["FileFormat"] = UaDataValueToJsonValue(
+										dataVal,
+										serializeStatusInformation)
+										.getValue();
+								}
+								(*jsonValue)["ResultMetaData"] = resultMetaDataJson;
+							} else {
+								LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
+							}
+
 							break;
 						}
 
@@ -195,7 +238,8 @@ namespace Umati {
 
 							default: {
 								LOG(ERROR) << "Not implemented conversion from type: "
-										<< exObj.content.encoded.body.data;							}
+										<< exObj.content.encoded.body.data;
+							}
 						}
 						break;
 					}
