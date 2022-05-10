@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, windows-2022]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022]
         build_type: [Debug, Release]
     runs-on: ${{matrix.os}}
     env:
@@ -43,7 +43,7 @@ jobs:
             ${{ env.CMAKE_INSTALL_PREFIX }}/lib/*.so*
             ${{ env.CMAKE_INSTALL_PREFIX }}/lib64/*.so*
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       # Check if this is not a pull request and GITHUB_TOKEN is set
       # As all env variables are strings, you need to compaire against "== 'true'" (not "== true")
