@@ -16,7 +16,7 @@ namespace Umati
         class Topics
         {
         public:
-            static std::string const Prefix;
+            static std::string Prefix;
             static std::string Machine(
                 const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
                 const std::string &namespaceUri);
