@@ -13,6 +13,7 @@
 #include <MqttPublisher_Paho.hpp>
 #include <DashboardMachineObserver.hpp>
 #include "Util/Configuration.hpp"
+#include "MachineObserver/Topics.hpp"
 #include <memory>
 #include <functional>
 

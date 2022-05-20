@@ -112,6 +112,7 @@
     "Hostname": "localhost",
     "Port": 1883,
     "Username": "opcua_client",
-    "Password": ""
+    "Password": "",
+    "Prefix": "umati"
   }
 }

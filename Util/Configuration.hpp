@@ -23,6 +23,7 @@ namespace Umati {
 			std::string Username;
 			/// Might be empty if no authentification required
 			std::string Password;
+			std::string Prefix;
 		};
 
 		struct OpcUaConfig {

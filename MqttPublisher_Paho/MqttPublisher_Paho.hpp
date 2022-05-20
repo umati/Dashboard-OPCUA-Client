@@ -17,6 +17,7 @@
 #include <cstring>
 #include <ctime>
 
+#include "../MachineObserver/Topics.hpp"
 #include <IPublisher.hpp>
 #include <mqtt/async_client.h>
 
@@ -58,7 +59,7 @@ namespace Umati {
 
 			mqtt::async_client m_cli;
 			MqttCallbacks m_callbacks;
-			const std::string m_onlineTopic = "umati/opcUaToMqttOnline";
+			const std::string m_onlineTopic = Umati::MachineObserver::Topics::Prefix + "/opcUaToMqttOnline";
 		};
 	}
 }
