@@ -28,6 +28,10 @@
 
 namespace Umati {
 	namespace OpcUa {
+		UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert) {
+			return UA_STATUSCODE_GOOD;
+		}
+
 		SetupSecurity::paths_t SetupSecurity::paths = {
 				"./pki/",
 				"./pki/server/trusted/",

@@ -26,6 +26,7 @@ namespace Umati {
 		class MqttPublisher_Paho : public Umati::Dashboard::IPublisher {
 		public:
 			MqttPublisher_Paho(
+					const std::string &protocol,
 					const std::string &host,
 					std::uint16_t port,
 					const std::string &username = std::string(),
@@ -43,7 +44,7 @@ namespace Umati {
 			mqtt::will_options getLastWill() const;
 
 			static mqtt::connect_options getOptions(const std::string &username, const std::string &password);
-			static std::string getUri(std::string host, std::uint16_t port);
+			static std::string getUri(std::string protocol, std::string host, std::uint16_t port);
 
 			class MqttCallbacks : public mqtt::callback {
 				friend class MqttPublisher_Paho;

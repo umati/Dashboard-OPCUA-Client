@@ -44,7 +44,8 @@ namespace Umati
 			explicit OpcUaClient(std::string serverURI, std::function<void()> issueReset, std::string Username = std::string(),
 								 std::string Password = std::string(), std::uint8_t security = 1,
 								 std::vector<std::string> expectedObjectTypeNamespaces = std::vector<std::string>(),
-								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>());
+								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>(),
+								 bool bypassCertVerification = false);
 			~OpcUaClient() ;
 
 			bool disconnect();

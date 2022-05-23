@@ -19,8 +19,11 @@ m_pClient(std::make_shared<Umati::OpcUa::OpcUaClient>(
         configuration->getOpcUa().Password,
         configuration->getOpcUa().Security,
         configuration->getObjectTypeNamespaces(),
-        m_opcUaWrapper)),
+        m_opcUaWrapper,
+        configuration->getOpcUa().ByPassCertVerification
+        )),
 m_pPublisher(std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
+        configuration->getMqtt().Protocol,
         configuration->getMqtt().Hostname,
         configuration->getMqtt().Port,
         configuration->getMqtt().Username,

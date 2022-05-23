@@ -1,0 +1,13 @@
+diff --git a/src/SSLSocket.c b/src/SSLSocket.c
+index fd80c72..1dbd03b 100644
+--- a/src/SSLSocket.c
++++ b/src/SSLSocket.c
+@@ -593,7 +593,7 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
+ 		}
+ 	}
+ 
+-#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
++#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER))
+ 	SSL_CTX_set_security_level(net->ctx, 1);
+ #endif
+ 

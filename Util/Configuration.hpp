@@ -23,7 +23,8 @@ namespace Umati {
 			std::string Username;
 			/// Might be empty if no authentification required
 			std::string Password;
-			std::string Prefix;
+			std::string Prefix = "umati";
+			std::string Protocol = "tcp";
 		};
 
 		struct OpcUaConfig {
@@ -32,6 +33,7 @@ namespace Umati {
 			std::string Username;
 			std::string Password;			/// 1 = None, 2 Sign, 3 = Sign&Encrypt
 			std::uint8_t Security = 1;
+			bool ByPassCertVerification = false;
 		};
 
 		/**
