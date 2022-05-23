@@ -80,7 +80,7 @@ namespace Umati
 		OpcUaClient::OpcUaClient(std::string serverURI, std::function<void()> issueReset,
 								 std::string Username, std::string Password,
 								 std::uint8_t security, std::vector<std::string> expectedObjectTypeNamespaces,
-								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper)
+								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper, bool bypassCertVerification)
 			: m_issueReset(issueReset),
 			m_serverUri(std::move(serverURI)), m_username(std::move(Username)), m_password(std::move(Password)),
 			m_security(static_cast<UA_MessageSecurityMode>(security)),
@@ -91,6 +91,9 @@ namespace Umati
 			{
 				std::lock_guard<std::recursive_mutex> l(m_clientMutex);
 				UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
+				if (bypassCertVerification) {
+					config->certificateVerification.verifyCertificate = &bypassVerify;
+				}
 				SetupSecurity::setupSecurity(config, m_pClient.get());
 				config->securityMode = UA_MessageSecurityMode(security);
 				UA_ApplicationDescription_clear(&config->clientDescription);

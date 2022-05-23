@@ -14,12 +14,21 @@
 namespace Umati {
 	namespace MqttPublisher_Paho {
 
-		MqttPublisher_Paho::MqttPublisher_Paho(const std::string &host, std::uint16_t port, const std::string &username,
+		MqttPublisher_Paho::MqttPublisher_Paho(const std::string &protocol, const std::string &host, std::uint16_t port, const std::string &username,
 											   const std::string &password)
-				: m_cli(getUri(host, port), getClientId(), 100, nullptr), m_callbacks(this) {
+				: m_cli(getUri(protocol, host, port), getClientId(), 100, nullptr), m_callbacks(this) {
 			m_cli.set_callback(m_callbacks);
 
-			mqtt::connect_options opts_conn = getOptions(username, password);
+	 		mqtt::connect_options opts_conn = getOptions(username, password);
+
+#ifndef WIN32
+			if (protocol == "wss") {
+				mqtt::ssl_options ssl_opts;
+				ssl_opts.ca_path("/etc/ssl/certs/");
+				ssl_opts.set_verify(true);
+				opts_conn.set_ssl(ssl_opts);
+			}
+#endif
 			mqtt::will_options opts_will = getLastWill();
 			opts_conn.set_will(opts_will);
 
@@ -32,10 +41,10 @@ namespace Umati {
 			}
 		}
 
-		std::string MqttPublisher_Paho::getUri(std::string host, std::uint16_t port)
+		std::string MqttPublisher_Paho::getUri(std::string protocol, std::string host, std::uint16_t port)
 		{
 			std::stringstream ss;
-			ss << "tcp://" << host << ":" << port;
+			ss << protocol << "://" << host << ":" << port << "/ws";
 			return ss.str();
 		}
 

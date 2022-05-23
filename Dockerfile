@@ -18,12 +18,14 @@ COPY . /src/DashboardOpcUaClient
 WORKDIR /build
 RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DPAHO_WITH_SSL:BOOL=1 \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
     cmake --build .
 
 FROM alpine:3.16.0 as runtime
 RUN apk --no-cache add \
-      libstdc++=11.2.1_git20220219-r2
+      libstdc++=11.2.1_git20220219-r2 \
+      ca-certificates=20211220-r0
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
