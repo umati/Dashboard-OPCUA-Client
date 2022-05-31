@@ -10,6 +10,7 @@
 #include "UaDataValueToJsonValue.hpp"
 
 #include <easylogging++.h>
+#include <iomanip>
 #include "CustomDataTypes/types_machinery_result_generated_handling.h"
 #include "../deps/open62541/src/ua_types_encoding_binary.h"
 
@@ -113,7 +114,14 @@ namespace Umati {
 					}
 
 					case UA_DATATYPEKIND_GUID: {
-						LOG(ERROR) << "Not implemented conversion to OpcUaType_Guid. ";
+						UA_Guid guid(*(UA_Guid*) variant.data);
+						std::stringstream str;
+						str << std::hex << (uint32_t) guid.data1 
+							<< '-' << (uint16_t) guid.data2 
+							<< '-' << (uint16_t) guid.data3
+							<< '-' << *(uint32_t*) &guid.data4[0] 
+							<< '-' << *(uint32_t*) &guid.data4[4];
+						*jsonValue = str.str();
 						break;
 					}
 
@@ -236,6 +244,16 @@ namespace Umati {
 								break;
 							}
 
+							case UA_TYPES_GUID: {
+								UA_Guid guid(*(UA_Guid*)exObj.content.decoded.data);
+								std::stringstream str;
+								str << 		  std::hex << guid.data1 
+									<< '-' << std::hex << guid.data2 
+									<< '-' << std::hex << guid.data3
+									<< '-' << std::hex << guid.data4; 
+								(*jsonValue) = str.str();
+								break;
+							}
 							default: {
 								LOG(ERROR) << "Not implemented conversion from type: "
 										<< exObj.content.encoded.body.data;

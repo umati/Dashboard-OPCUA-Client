@@ -16,6 +16,7 @@ namespace Umati
         const ModelOpcUa::NodeId_t NodeId_HasComponent = {ns0Uri, "i=47"};
         const ModelOpcUa::NodeId_t NodeId_HierarchicalReferences = {ns0Uri, "i=33"};
         const ModelOpcUa::NodeId_t NodeId_HasTypeDefinition = {ns0Uri, "i=40"};
+        const ModelOpcUa::NodeId_t NodeId_HasInterface = {ns0Uri, "i=17603"};
         const ModelOpcUa::NodeId_t NodeId_Organizes = {ns0Uri, "i=35"};
         const ModelOpcUa::NodeId_t NodeId_BaseVariableType = {ns0Uri, "i=63"};
         const ModelOpcUa::NodeId_t NodeId_BaseObjectType = {ns0Uri, "i=58"};

@@ -329,6 +329,7 @@ namespace Umati
 				std::list<std::shared_ptr<const ModelOpcUa::Node>>{});
 			auto browseResults = m_pDashboardDataClient->Browse(startNode, pStructurePlaceholder->ReferenceType,
 																pStructurePlaceholder->SpecifiedTypeNodeId);
+
 			preparePlaceholderNodesTypeId(pStructurePlaceholder, pPlaceholderNode, browseResults);
 
 			return pPlaceholderNode;
@@ -337,10 +338,17 @@ namespace Umati
 		void DashboardClient::preparePlaceholderNodesTypeId(
 			const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> & /*pStructurePlaceholder*/,
 			std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
-			const std::list<ModelOpcUa::BrowseResult_t> &browseResults)
+			std::list<ModelOpcUa::BrowseResult_t> &browseResults)
 		{
 			for (auto &browseResult : browseResults)
-			{
+			{	
+				if (browseResult.TypeDefinition.Id == NodeId_BaseObjectType.Id) {
+					auto ifs = m_pDashboardDataClient->Browse(browseResult.NodeId,
+						Dashboard::IDashboardDataClient::BrowseContext_t::HasInterface());
+						browseResult.TypeDefinition = ifs.front().NodeId;
+						LOG(INFO) << "Updated TypeDefinition of " << browseResult.BrowseName.Name << " to " << browseResult.TypeDefinition 
+								  << " because the node implements an interface";				
+				}
 				auto possibleType = m_pTypeReader->m_typeMap->find(browseResult.TypeDefinition);  // use subtype
 				if (possibleType != m_pTypeReader->m_typeMap->end())
 				{

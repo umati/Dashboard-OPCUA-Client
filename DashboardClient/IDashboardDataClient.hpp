@@ -79,6 +79,13 @@ namespace Umati
                     return ret;
                 }
 
+                inline static BrowseContext_t HasInterface()
+                {
+                    BrowseContext_t ret;
+                    ret.referenceTypeId = NodeId_HasInterface;
+                    return ret;
+                }
+
                 inline static BrowseContext_t Hierarchical()
                 {
                     BrowseContext_t ret;
