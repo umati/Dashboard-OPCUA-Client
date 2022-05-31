@@ -55,10 +55,6 @@ namespace Umati {
 							if (publishNullValues || json.dump(0) != "null") {
 								children[pChild->SpecifiedBrowseName.Name] = json;
 							}
-							if (pSimpleNode->SpecifiedBrowseName.Name == "Results") {
-								LOG(INFO) << "TODO: Fix Sample-Server? -> Here we have one child more than expected?";
-								break;
-							}
 						}
 						if (!children.empty()) {
 							if (nestAsChildren) {

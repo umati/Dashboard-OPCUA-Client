@@ -190,6 +190,13 @@ namespace Umati {
                             machine.TypeDefinition = subTypeToBaseType->second;
                         }
                     }
+					if(machine.TypeDefinition == Umati::Dashboard::NodeId_BaseObjectType) {
+                        auto ifs = m_pDataClient->Browse(machine.NodeId,
+						    Dashboard::IDashboardDataClient::BrowseContext_t::HasInterface());
+						machine.TypeDefinition = ifs.front().NodeId;
+						
+					}
+
                     auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
 					auto ident = m_pDataClient->BrowseWithResultTypeFilter(machine.NodeId, Dashboard::IDashboardDataClient::BrowseContext_t::Hierarchical(),
 																		   typeDefinitionNodeId);

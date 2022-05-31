@@ -33,6 +33,7 @@
 #include <ConfigurationJsonFile.hpp>
 #include <Exceptions/ConfigurationException.hpp>
 #include <chrono>
+#include <iomanip>
 
 
 std::atomic_bool running = {true};
@@ -51,7 +52,7 @@ static void issueReset()
 }
 
 int main(int argc, char *argv[])
-{
+{	
 	Umati::Util::ConfigureLogger("DashboardOpcUaClient");
 
 	signal(SIGINT, stopHandler);
