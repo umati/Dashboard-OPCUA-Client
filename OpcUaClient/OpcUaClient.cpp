@@ -21,6 +21,8 @@
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
 #include "Converter/CustomDataTypes/types_machinery_result_generated_handling.h"
+#include "Converter/CustomDataTypes/types_tightening_generated_handling.h"
+
 
 namespace Umati
 {
@@ -73,8 +75,9 @@ namespace Umati
 		    LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n";
 		}
 
+		UA_DataTypeArray TighteningSystemTypes = {NULL, 1, UA_TYPES_TIGHTENING};
 		static UA_DataTypeArray getMachineryResultTypes () {
-			return {NULL, 5, UA_TYPES_MACHINERY_RESULT};
+			return {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT};
 		}
 
 		OpcUaClient::OpcUaClient(std::string serverURI, std::function<void()> issueReset,
@@ -395,6 +398,15 @@ namespace Umati
 				}
 
 				m_dataTypeArray.types = UA_TYPES_MACHINERY_RESULT;
+			}
+
+			if (namespaceURI == "http://opcfoundation.org/UA/IJT/") {
+				uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
+
+				for(size_t j = 0; j < UA_TYPES_TIGHTENING_COUNT; j++) {
+					UA_TYPES_TIGHTENING[j].typeId.namespaceIndex = nsIdx;
+					UA_TYPES_TIGHTENING[j].binaryEncodingId.namespaceIndex = nsIdx;
+				}
 			}
 		}
 
