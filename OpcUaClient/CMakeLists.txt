@@ -18,6 +18,7 @@ set(CLIENT_SRC
         "Converter/UaQualifiedNameToModelQualifiedName.cpp"
         "Converter/UaDataValueToJsonValue.cpp"
         "Converter/CustomDataTypes/types_machinery_result_generated.c"
+        "Converter/CustomDataTypes/types_tightening_generated.c"
         "Exceptions/OpcUaNonGoodStatusCodeException.cpp"
         )
 message("### opcua_dashboardclient/OpcUaClient: collecting source file list for library: ${CLIENT_SRC}")

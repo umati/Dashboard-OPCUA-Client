@@ -12,6 +12,7 @@
 #include <easylogging++.h>
 #include <iomanip>
 #include "CustomDataTypes/types_machinery_result_generated_handling.h"
+#include "CustomDataTypes/types_tightening_generated_handling.h"
 #include "../deps/open62541/src/ua_types_encoding_binary.h"
 
 namespace Umati {
@@ -312,7 +313,26 @@ namespace Umati {
 					}
 
 					default: {
-						if (strcmp(variant.type->typeName, UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTDATATYPE].typeName) == 0) {
+						if(strcmp(variant.type->typeName, UA_TYPES_TIGHTENING[UA_TYPES_TIGHTENING_PROCESSINGTIMESDATATYPE].typeName) == 0) {
+							UA_IJT_ProcessingTimesDataType ptime(*(UA_IJT_ProcessingTimesDataType*)variant.data);
+							UA_DataValue dataVal;
+							UA_DataValue_init(&dataVal);
+							if(ptime.acquisitionDuration)(*jsonValue)["AcquisitionDuration"] = *ptime.acquisitionDuration;
+							if(ptime.processingDuration)(*jsonValue)["ProcessingDuration"] = *ptime.processingDuration;
+
+							UA_Variant_setScalar(&dataVal.value, &ptime.startTime, &UA_TYPES[UA_TYPES_DATETIME]);
+							(*jsonValue)["StartTime"] = UaDataValueToJsonValue(
+								dataVal,
+								serializeStatusInformation)
+								.getValue();
+							
+							UA_Variant_setScalar(&dataVal.value, &ptime.endTime, &UA_TYPES[UA_TYPES_DATETIME]);
+							(*jsonValue)["EndTime"] = UaDataValueToJsonValue(
+								dataVal,
+								serializeStatusInformation)
+								.getValue();
+						}
+						else if (strcmp(variant.type->typeName, UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTDATATYPE].typeName) == 0) {
 							UA_ResultDataType result(*(UA_ResultDataType*)variant.data);
 							UA_DataValue dataVal;
 							UA_DataValue_init(&dataVal);
