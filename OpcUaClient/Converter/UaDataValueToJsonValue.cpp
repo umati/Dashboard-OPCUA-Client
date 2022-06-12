@@ -208,6 +208,27 @@ namespace Umati {
 										.getValue();
 								}
 								(*jsonValue)["ResultMetaData"] = resultMetaDataJson;
+							} else if(exObj.content.encoded.typeId.identifier.numeric == 3002) {
+								size_t offset = 0;
+								UA_IJT_ProcessingTimesDataType ptime;
+								UA_StatusCode retval = UA_decodeBinaryInternal(&exObj.content.encoded.body, &offset, &ptime,
+											&UA_TYPES_TIGHTENING[UA_TYPES_TIGHTENING_PROCESSINGTIMESDATATYPE], NULL);
+								UA_DataValue dataVal;
+								UA_DataValue_init(&dataVal);
+								if(ptime.acquisitionDuration)(*jsonValue)["AcquisitionDuration"] = *ptime.acquisitionDuration;
+								if(ptime.processingDuration)(*jsonValue)["ProcessingDuration"] = *ptime.processingDuration;
+
+								UA_Variant_setScalar(&dataVal.value, &ptime.startTime, &UA_TYPES[UA_TYPES_DATETIME]);
+								(*jsonValue)["StartTime"] = UaDataValueToJsonValue(
+									dataVal,
+									serializeStatusInformation)
+									.getValue();
+								
+								UA_Variant_setScalar(&dataVal.value, &ptime.endTime, &UA_TYPES[UA_TYPES_DATETIME]);
+								(*jsonValue)["EndTime"] = UaDataValueToJsonValue(
+									dataVal,
+									serializeStatusInformation)
+									.getValue();
 							} else {
 								LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type.";
 							}
