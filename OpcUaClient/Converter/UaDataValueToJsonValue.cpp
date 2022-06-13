@@ -236,7 +236,7 @@ namespace Umati {
 			void UaDataValueToJsonValue::getValueFromDataValueArray(const UA_Variant *variant, UA_UInt32 dimensionNumber,
 																	nlohmann::json *j, T *variantData, bool serializeStatusInformation) {
 				if (dimensionNumber == variant->arrayDimensionsSize - 1) {
-					for(int i = 0; i < variant->arrayDimensions[dimensionNumber]; i++) {												
+					for(UA_UInt32 i = 0U; i < variant->arrayDimensions[dimensionNumber]; i++) {												
 						nlohmann::json jsonValue;
 						UA_Variant var = {
 							variant->type,  			/* The data type description */

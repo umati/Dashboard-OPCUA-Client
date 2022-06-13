@@ -650,10 +650,11 @@ namespace Umati
 			UA_NodeId_init(&nodeId);
 			UA_Variant_init(&v);
 
-			typedef struct {
+			struct XMLIterator{
 				size_t visitedElements;
 				tinyxml2::XMLElement *current;
-			} XMLIterator;
+				XMLIterator(size_t visitedElements, tinyxml2::XMLElement *current): visitedElements(visitedElements), current(current) {};
+			} ;
 
 			auto dictionaryResults = Browse(Dashboard::NodeId_OPC_Binary, Dashboard::IDashboardDataClient::BrowseContext_t::HasComponent());
 			for (auto &dict : dictionaryResults)
@@ -706,9 +707,9 @@ namespace Umati
 				td.TargetNamespace = std::string(buffer);
 
 				auto firstNode = xml_element->FirstChildElement("opc:StructuredType");
-				for (XMLIterator it = {.visitedElements = 0, .current = firstNode};
+				for (XMLIterator it{0, firstNode};
 					 it.current != nullptr || (it.current != firstNode && it.visitedElements != 0);
-					 it = {.visitedElements = it.visitedElements++, .current = it.current->NextSiblingElement("opc:StructuredType")})
+					 it = XMLIterator(it.visitedElements++, it.current->NextSiblingElement("opc:StructuredType")))
 				{
 					TypeDictionary::StructuredType stype;
 					eResult = it.current->QueryStringAttribute("BaseType", &buffer);
@@ -720,9 +721,9 @@ namespace Umati
 						continue;
 					stype.Name = std::string(buffer);
 					auto firstNodeInner = it.current->FirstChildElement("opc:Field");
-					for (XMLIterator it2 = {.visitedElements = 0, .current = firstNodeInner};
+					for (XMLIterator it2 = XMLIterator(0, firstNodeInner);
 						 it2.current != nullptr || (it2.current != firstNodeInner && it2.visitedElements != 0);
-						 it2 = {.visitedElements = it2.visitedElements++, .current = it2.current->NextSiblingElement("opc:Field")})
+						 it2 = XMLIterator(it2.visitedElements++, it2.current->NextSiblingElement("opc:Field")))
 					{
 						TypeDictionary::Field field{};
 						eResult = it2.current->QueryStringAttribute("TypeName", &buffer);
@@ -757,18 +758,18 @@ namespace Umati
 				}
 
 				firstNode = xml_element->FirstChildElement("opc:EnumeratedType");
-				for (XMLIterator it = {.visitedElements = 0, .current = firstNode};
+				for (XMLIterator it{0, firstNode};
 					 it.current != nullptr || (it.current != firstNode && it.visitedElements != 0);
-					 it = {.visitedElements = it.visitedElements++, .current = it.current->NextSiblingElement("opc:EnumeratedType")})
+					 it = XMLIterator(it.visitedElements++, it.current->NextSiblingElement("opc:EnumeratedType")))
 				{
 					TypeDictionary::EnumeratedType etype;
 					eResult = it.current->QueryStringAttribute("Name", &buffer);
 					if (eResult == tinyxml2::XML_SUCCESS) etype.Name = std::string(buffer);
 					eResult = it.current->QueryUnsigned64Attribute("LengthInBits", &etype.LengthInBits);
 					auto firstNodeInner = it.current->FirstChildElement("opc:EnumeratedValue");
-					for (XMLIterator it2 = {.visitedElements = 0, .current = firstNodeInner};
+					for (XMLIterator it2{0, firstNodeInner};
 						 it2.current != nullptr || (it2.current != firstNodeInner && it2.visitedElements != 0);
-						 it2 = {.visitedElements = it2.visitedElements++, .current = it2.current->NextSiblingElement("opc:EnumeratedValue")})
+						 it2 = XMLIterator(it2.visitedElements++, it2.current->NextSiblingElement("opc:EnumeratedValue")))
 					{
 						TypeDictionary::EnumeratedValue evalue{};
 						eResult = it2.current->QueryStringAttribute("Name", &buffer);
