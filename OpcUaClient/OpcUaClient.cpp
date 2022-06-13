@@ -105,7 +105,7 @@ namespace Umati
 				config->timeout = 2000;
 				config->inactivityCallback = inactivityCallback;
 				config->stateCallback = stateCallback;
-				config->customDataTypes = &m_dataTypeArray;
+				config->customDataTypes = m_dataTypeArray;
 			}
 
 			m_opcUaWrapper = std::move(opcUaWrapper);
@@ -387,7 +387,7 @@ namespace Umati
 				    m_uriToIndexCache[namespaceURI] = static_cast<uint16_t>(i);
 					m_indexToUriCache[static_cast<uint16_t>(i)] = namespaceURI;
 
-					updateCustomDataTypesNamespace(namespaceURI, i);
+//					updateCustomDataTypesNamespace(namespaceURI, i);
 				} else {
                     LOG(INFO) << "Namespace already in cache";
 				}
@@ -397,6 +397,7 @@ namespace Umati
 
 		}
 
+		/*
 		void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::size_t namespaceIndex)
 		{
 			if (namespaceURI == "http://opcfoundation.org/UA/Machinery/Result/") {
@@ -419,6 +420,7 @@ namespace Umati
 				}
 			}
 		}
+		*/
 
 		ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(const open62541Cpp::UA_NodeId &uaNodeId)
 		{
@@ -579,9 +581,13 @@ namespace Umati
 
 				TypeDictionary::DependecyGraph<UA_DataType> depGraph{};
 				for (auto &uns : withUnsatisfiedMemberType)	{
-					auto targetDataType = dataTypeNameToDataType.at(std::get<2>(uns)->TypeName);
-					std::get<1>(uns)->memberType = targetDataType;
-					depGraph.addEdge(targetDataType, std::get<0>(uns));
+					try {
+						auto targetDataType = dataTypeNameToDataType.at(std::get<2>(uns)->TypeName);
+						std::get<1>(uns)->memberType = targetDataType;
+						depGraph.addEdge(targetDataType, std::get<0>(uns));
+					} catch (std::exception &ex) {
+						LOG(ERROR) << "Error occured searching for " << std::get<2>(uns)->TypeName << ": " << ex.what();
+					}
 				}
 
 				depGraph.topologicalSort();
@@ -623,7 +629,7 @@ namespace Umati
 						else {
 							padding += types[i + noEnums].members[j].memberType->memSize;
 						}
-					}
+					}							
 					types[i + noEnums].memSize = padding;
 					types[i + noEnums].members[st.Fields.size() - 1].padding = 0;
 				}

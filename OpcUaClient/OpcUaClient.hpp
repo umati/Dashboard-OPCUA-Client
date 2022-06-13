@@ -145,6 +145,7 @@ namespace Umati
 				{ "opc:DateTime", UA_TYPES_DATETIME },
 				{ "opc:Guid", UA_TYPES_GUID },
 				{ "opc:ByteString", UA_TYPES_BYTESTRING },
+				{ "opc:String", UA_TYPES_STRING },
 				{ "ua:XmlElement", UA_TYPES_XMLELEMENT },
 				{ "ua:NodeId", UA_TYPES_NODEID },
 				{ "ua:ExpandedNodeId", UA_TYPES_EXPANDEDNODEID },
@@ -155,6 +156,10 @@ namespace Umati
 				{ "ua:DataValue", UA_TYPES_DATAVALUE },
 				{ "ua:Variant", UA_TYPES_VARIANT },
 				{ "ua:DiagnosticInfo", UA_TYPES_DIAGNOSTICINFO },
+				{ "ua:SimpleAttributeOperand", UA_TYPES_SIMPLEATTRIBUTEOPERAND},
+				{ "ua:ContentFilter", UA_TYPES_CONTENTFILTER},
+				{ "ua:Range", UA_TYPES_RANGE},
+				{ "ua:EUInformation", UA_TYPES_EUINFORMATION}
 
 				/* TODO ??? 
 				{ "", UA_TYPES_DECIMAL },
