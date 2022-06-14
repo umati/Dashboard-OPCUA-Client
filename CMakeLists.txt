@@ -69,6 +69,7 @@ if (DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
     target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher)
 endif ()
 
+message("### OpenSSL Library Found:" ${PAHO_WITH_SSL})
 
 if (PAHO_WITH_SSL)
     set(OPENSSL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})

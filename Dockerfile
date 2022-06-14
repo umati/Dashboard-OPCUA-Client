@@ -18,7 +18,7 @@ COPY . /src/DashboardOpcUaClient
 WORKDIR /build
 RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -DPAHO_WITH_SSL:BOOL=1 \
+      -DPAHO_WITH_SSL=1 \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
     cmake --build .
 
