@@ -505,7 +505,7 @@ namespace Umati
 		void OpcUaClient::buildCustomDataTypes()
 		{	
 			/* TODO: Handle Cross Referencing TypeDictionaries! */
-			m_dataTypeArray = (UA_DataTypeArray *)malloc(sizeof(UA_DataTypeArray) * 10);
+			m_dataTypeArray = (UA_DataTypeArray *)malloc(sizeof(UA_DataTypeArray) * 50);
 			UA_DataTypeArray *lastElement = nullptr;
 
 			for (auto &td : m_ptdv) {
@@ -1178,8 +1178,9 @@ namespace Umati
 			else
 			{
 				for(int i = 0; i < ret.resultsSize; i++){
-
-					auto valu = Converter::UaDataValueToJsonValue(ret.results[i], false);
+					UA_NodeId nid;
+					UA_NodeId_init(&nid);
+					auto valu = Converter::UaDataValueToJsonValue(ret.results[i], m_pClient.get(), nid,  false);
 					auto val = valu.getValue();
 					readValues.push_back(val);
 				}

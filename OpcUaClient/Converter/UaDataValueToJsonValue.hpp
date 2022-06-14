@@ -11,13 +11,14 @@
 
 #include <nlohmann/json.hpp>
 #include <open62541/client.h>
+#include <open62541/client_highlevel.h>
 
 namespace Umati {
 	namespace OpcUa {
 		namespace Converter {
 			class UaDataValueToJsonValue {
 			public:
-				explicit UaDataValueToJsonValue(const UA_DataValue &dataValue, bool serializeStatusInformation = false);
+				explicit UaDataValueToJsonValue(const UA_DataValue &dataValue, UA_Client *c, UA_NodeId nid, bool serializeStatusInformation = false);
 
 				nlohmann::json getValue() {
 					return m_value;
@@ -36,6 +37,9 @@ namespace Umati {
 				void setStatusCodeFromDataValue(const UA_DataValue &dataValue);
 
 				nlohmann::json m_value;
+
+				UA_Client *m_pClient;
+				UA_NodeId nodeId;
 			};
 		}
 	}

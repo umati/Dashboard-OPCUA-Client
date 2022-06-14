@@ -1,7 +1,7 @@
  /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
+ * 
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
@@ -10,17 +10,18 @@
 #include "UaDataValueToJsonValue.hpp"
 
 #include <easylogging++.h>
-#include <iomanip>
-#include "CustomDataTypes/types_machinery_result_generated_handling.h"
-#include "CustomDataTypes/types_tightening_generated_handling.h"
-#include "../deps/open62541/src/ua_types_encoding_binary.h"
+#include "../../deps/open62541/src/ua_types_encoding_json.h"
 
 namespace Umati {
 	namespace OpcUa {
 		namespace Converter {
 
 			UaDataValueToJsonValue::UaDataValueToJsonValue(const UA_DataValue &dataValue,
+														   UA_Client *c,
+														   UA_NodeId nid,
 														   bool serializeStatusInformation) {
+				m_pClient = c;
+				nodeId = nid;
 				setValueFromDataValue(dataValue, serializeStatusInformation);
 				if (serializeStatusInformation) {
 					setStatusCodeFromDataValue(dataValue);
@@ -184,6 +185,86 @@ namespace Umati {
 						break;
 					}
 
+					case UA_DATATYPEKIND_EXTENSIONOBJECT: {
+						UA_ExtensionObject exObj(*(UA_ExtensionObject*)variant.data);
+						if(exObj.encoding == UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_DECODED) {
+							LOG(INFO) << "Known conversion from OpcUaType_ExtensionObject with DataTypeEncodingType: ns="
+								<< exObj.content.encoded.typeId.namespaceIndex << "; i=" << exObj.content.encoded.typeId.identifier.numeric;
+							
+
+							void *data = exObj.content.decoded.data;
+							for (size_t i = 0; i < exObj.content.decoded.type->membersSize; i++) {
+								UA_DataValue dataVal;
+								UA_DataValue_init(&dataVal);
+								if (exObj.content.decoded.type->members[i].isArray) {
+									size_t arraySize = *((size_t*) data);
+									void **pointerToArrayPointer = (void**)((UA_Byte*) data + sizeof(size_t));
+									void *pointerToArray = *(pointerToArrayPointer);
+									
+									if (arraySize > 0) {
+										UA_Variant_setArray(&dataVal.value,  
+															(UA_Byte*) pointerToArray + exObj.content.decoded.type->members[i].padding, 
+															arraySize,
+															exObj.content.decoded.type->members[i].memberType);
+										(*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] = UaDataValueToJsonValue(
+											dataVal,
+											m_pClient,
+											nodeId,
+											serializeStatusInformation)
+											.getValue();
+									}
+								} 
+								else {
+									void *dataPointer = (UA_Byte*) data + exObj.content.decoded.type->members[i].padding;
+									UA_Variant_setScalar(&dataVal.value, 
+										dataPointer, 
+										exObj.content.decoded.type->members[i].memberType);
+									auto json = UaDataValueToJsonValue(
+										dataVal,
+										m_pClient,
+										nodeId,
+										serializeStatusInformation)
+										.getValue();
+									if(!json.is_null()) {
+										(*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] = json;
+									}
+								}
+								if (exObj.content.decoded.type->members[i].isArray) {
+									data = (UA_Byte*) data + sizeof(void*) + sizeof(size_t);
+								} else if (exObj.content.decoded.type->members[i].isOptional) {
+									data = (UA_Byte*) data + sizeof(void*);
+								} else {
+									data = (UA_Byte*) data + exObj.content.decoded.type->members[i].memberType->memSize;
+								}
+								data = (UA_Byte*) data + exObj.content.decoded.type->members[i].padding;
+							}
+						} else {
+							LOG(ERROR) << "Unknow conversion from OpcUaType_ExtensionObject with DataTypeEncodingType: ns="
+								<< exObj.content.encoded.typeId.namespaceIndex << "; i=" << exObj.content.encoded.typeId.identifier.numeric;
+							switch(nodeId.identifierType) {
+								case UA_NodeIdType::UA_NODEIDTYPE_STRING:
+								LOG(ERROR) << "The erroc originates from ns=" << nodeId.namespaceIndex << "; s=" << std::string((char *)nodeId.identifier.string.data, nodeId.identifier.string.length);
+								break;
+								case UA_NodeIdType::UA_NODEIDTYPE_NUMERIC:
+								LOG(ERROR) << "The erroc originates from ns=" << nodeId.namespaceIndex << "; s=" << nodeId.identifier.numeric;
+							}
+
+							UA_NodeId dataTypeNodeId;
+							UA_NodeId_init(&dataTypeNodeId);
+							UA_Client_readDataTypeAttribute(m_pClient, nodeId, &dataTypeNodeId);
+							UA_Variant v;
+							UA_Variant_init(&v);
+							UA_Client_readValueAttribute(m_pClient, nodeId, &v);
+							
+							// auto dataType = UA_Client_findDataType(m_pClient, &dataTypeNodeId);
+							auto dataType = v.type;
+							auto clientConfig = UA_Client_getConfig(m_pClient);
+							auto res = UA_decodeBinaryInternal(&exObj.content.encoded.body, NULL, exObj.content.decoded.data, dataType, clientConfig->customDataTypes);
+							LOG(ERROR) << "Found the Datatype=" << dataType->typeName << "And the decoding was success?: " << res;
+						}
+						break;
+					}
+
 					default: {
 						void *data = variant.data;
 						for (size_t i = 0; i < variant.type->membersSize; i++) {
@@ -200,6 +281,8 @@ namespace Umati {
 										UA_Variant_setArray(&dataVal.value,  (UA_Byte*) pointerToArray + variant.type->members[i].padding, arraySize,variant.type->members[i].memberType);
 										(*jsonValue)[std::string(variant.type->members[i].memberName)] = UaDataValueToJsonValue(
 											dataVal,
+											m_pClient,
+											nodeId,
 											serializeStatusInformation)
 											.getValue();
 									}
@@ -209,6 +292,8 @@ namespace Umati {
 									UA_Variant_setScalar(&dataVal.value, dataPointer, variant.type->members[i].memberType);
 									auto json = UaDataValueToJsonValue(
 										dataVal,
+										m_pClient,
+										nodeId,
 										serializeStatusInformation)
 										.getValue();
 									if(!json.is_null()) {

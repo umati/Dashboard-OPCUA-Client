@@ -33,7 +33,7 @@ namespace Umati {
 			void subscriptionStatusChanged(UA_Client *client,UA_Int32 clientSubscriptionHandle, const UA_StatusCode &status);
 
 			void dataChange(UA_Int32 clientSubscriptionHandle, const UA_DataChangeNotification &dataNotifications,
-							const UA_DiagnosticInfo &diagnosticInfos);
+							const UA_DiagnosticInfo &diagnosticInfos, UA_Client *client, UA_NodeId nid);
 
 			void newEvents(UA_Int32 clientSubscriptionHandle, UA_EventFieldList &eventFieldList); 
 
@@ -48,12 +48,14 @@ namespace Umati {
 
 			void setSubscriptionWrapper(Umati::OpcUa::OpcUaSubscriptionInterface *pSubscriptionWrapper);
 
+			std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> valueSubscriptionHandle;
+			const std::map<std::string, uint16_t> &m_uriToIndexCache;
+
 		protected:
 			std::shared_ptr<UA_SessionState> _pSession;
 
 			friend class ValueSubscriptionHandle;
-
-			const std::map<std::string, uint16_t> &m_uriToIndexCache;
+			
 			const std::map<uint16_t, std::string> &m_indexToUriCache;
 			static std::atomic_uint nextId;
 			UA_Int32 m_pSubscriptionID;
