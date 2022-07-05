@@ -26,3 +26,6 @@
 	path = deps/open62541Cpp
 	url = https://github.com/umati/open62541Cpp.git
 	branch = master
+[submodule "deps/tinyxml2"]
+	path = deps/tinyxml2
+	url = https://github.com/leethomason/tinyxml2
