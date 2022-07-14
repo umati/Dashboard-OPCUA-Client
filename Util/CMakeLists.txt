@@ -4,11 +4,7 @@ message("### opcua_dashboardclient/Util: loading util")
 
 find_package(nlohmann_json 3.6.1 REQUIRED)
 
-set(UTIL_SRC
-        ConfigurationJsonFile.cpp
-        ConfigureLogger.cpp
-        Configuration.cpp
-        IdEncode.cpp)
+set(UTIL_SRC ConfigurationJsonFile.cpp ConfigureLogger.cpp Configuration.cpp IdEncode.cpp)
 
 message("### opcua_dashboardclient/Util: collecting source file list for library: ${UTIL_SRC}")
 add_library(Util ${UTIL_SRC})
