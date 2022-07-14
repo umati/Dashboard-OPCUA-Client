@@ -276,6 +276,14 @@ namespace Umati {
 								(*jsonValue) = str.str();
 								break;
 							}
+
+							case UA_TYPES_TIMEZONEDATATYPE: {
+								UA_TimeZoneDataType tz(*(UA_TimeZoneDataType*)exObj.content.decoded.data);
+								(*jsonValue)["daylightSavingInOffset"] = tz.daylightSavingInOffset;
+								(*jsonValue)["offset"] = tz.offset;
+								break;
+							}
+
 							default: {
 								LOG(ERROR) << "Not implemented conversion from type: "
 										<< exObj.content.encoded.body.data;
