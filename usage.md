@@ -3,7 +3,7 @@
 Requirements:
 
 -   Admin privileges
--   Open channel to the OPC UA Server
+-   Open port to the OPC UA Server
 
 ## Installing a MQTT Broker:
 
@@ -14,7 +14,7 @@ Example with Eclipse Mosquitto
 2.  [https://mosquitto.org/download/](https://mosquitto.org/download/)
 
 3.  Install Mosquitto
-4.  Change the content of "mosquitto.conf" (Use any text editor):
+4.  Change the content of "mosquitto.conf" (Use any text editor) to:
 
 	1.  [https://github.com/umati/infrastructure-Dashboard/blob/main/config-templates/mosquitto/mosquitto.conf.jinja2](https://github.com/umati/infrastructure-Dashboard/blob/main/config-templates/mosquitto/mosquitto.conf.jinja2)
 	2.  "{{MQTT_WS_PORT}}" change for "1884"
@@ -40,8 +40,8 @@ Example with MQTTX
 
 4.  Press Button "Connect"
 5.  Press Button "New Subscription"
-	6.  Topic: "umati/#"
-	7.  Press "Confirm"
+	1.  Topic: "umati/#"
+	2.  Press "Confirm"
 
 ## Installing OPCUA Client:
 
@@ -49,12 +49,12 @@ Example with MQTTX
 
 	1.  Two Options:
 
-		2.  [https://github.com/umati/Dashboard-OPCUA-Client/releases](https://github.com/umati/Dashboard-OPCUA-Client/releases)
+		1.  [https://github.com/umati/Dashboard-OPCUA-Client/releases](https://github.com/umati/Dashboard-OPCUA-Client/releases)
 
 			1.  Select newest release and download
-			2.  If older than 4 weeks use alternative option
+			2.  If older than 4 weeks use alternative option:
 
-		3.  [https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml)
+		2.  [https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml)
 
 			1.  Select newest workflow run:
 ![Client_findBinaryFiles](https://user-images.githubusercontent.com/105195460/178679784-acf99801-94e2-44e0-a0b2-0a8378ffba05.png)
@@ -73,8 +73,8 @@ Example with MQTTX
 
 	1.  If browser was used a console comes up. The output should look like this:
 ![Client_Output](https://user-images.githubusercontent.com/105195460/178679686-8a3fc388-ef05-45cd-aeaf-da880036e526.png)
-	3.  This start up phase can last for up to 10 minutes
-	4.  While this phase a "1" is transmittet to the MQTT Client.
+	2.  This start up phase can last for up to 10 minutes
+	3.  While this phase a "1" is transmittet to the MQTT Client
 
 5.  After the start up a JSON containing all machine values is transmitted to the client
 
