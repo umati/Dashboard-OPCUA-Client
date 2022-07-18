@@ -1,4 +1,4 @@
-# Usage as an instance control
+# Usage as an information model instantiation according to companion specifications
 
 Requirements:
 
@@ -43,7 +43,7 @@ Example with MQTTX
 	1.  Topic: "umati/#"
 	2.  Press "Confirm"
 
-## Installing OPCUA Client:
+## Executing of Dashboard-OPCUA-Client:
 
 1.  Get OPC UA Client Binaries:
 
