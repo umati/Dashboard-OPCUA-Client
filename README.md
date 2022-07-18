@@ -82,6 +82,11 @@ cmake --build .
 - Robotics  :heavy_check_mark:
 - Surface Technology :waning_gibbous_moon:
 
+## Usage for instance testing
+
+Follow these instructions to use the client as a testing tool for your implementation:
+[usage.md](usage.md)
+
 ## License
 
 ![GitHub](https://img.shields.io/github/license/umati/Dashboard-OPCUA-Client)
