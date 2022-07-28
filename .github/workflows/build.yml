@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
           cmake --build . ${{env.CMAKE_BUILD_ARGS}}
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
