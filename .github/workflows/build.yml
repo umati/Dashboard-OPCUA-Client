@@ -9,6 +9,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022]
         build_type: [Debug, Release]
+        arch: ["386", "amd64"]
     runs-on: ${{matrix.os}}
     env:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -31,15 +32,23 @@ jobs:
           echo "CMAKE_GENERATOR=Visual Studio 17 2022">> "$env:GITHUB_ENV"
           echo "CMAKE_BUILD_ARGS=--config ${{matrix.build_type}}">> $env:GITHUB_ENV
       - name: Build server with dependencies
+        if: matrix.arch == 'amd64'
         run: |
           mkdir -p build
           cd build
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
           cmake --build . ${{env.CMAKE_BUILD_ARGS}}
+      - name: Build server with dependencies 32bit
+        if: matrix.arch == '386' && matrix.os == 'windows-2022'
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../UmatiDashboardOpcUaClient/.github/ -A Win32 -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
+          cmake --build . ${{env.CMAKE_BUILD_ARGS}}
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
         with:
-          name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}
+          name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/bin
             ${{ env.CMAKE_INSTALL_PREFIX }}/lib/*.so*
