@@ -29,7 +29,8 @@ namespace Umati
 			DashboardMachineObserver(
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
 				std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
-				std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader);
+				std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReaderm,
+				std::vector<ModelOpcUa::NodeId_t> machinesFilter);
 
 			~DashboardMachineObserver() override;
 

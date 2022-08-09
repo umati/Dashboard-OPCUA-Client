@@ -34,4 +34,5 @@ protected:
     std::shared_ptr<Umati::MachineObserver::DashboardMachineObserver> m_pMachineObserver;
     std::chrono::time_point<std::chrono::steady_clock> m_lastPublish;
     std::chrono::time_point<std::chrono::steady_clock> m_lastConnectionVerify;
+    std::vector<ModelOpcUa::NodeId_t> m_machinesFilter;
 };

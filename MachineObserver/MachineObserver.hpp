@@ -21,7 +21,8 @@ namespace Umati {
 		public:
 			MachineObserver(
 					std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
-					std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pTypeReader
+					std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pTypeReader,
+					std::vector<ModelOpcUa::NodeId_t> machinesFilter
 			);
 
 			virtual ~MachineObserver() = 0;
@@ -66,6 +67,7 @@ namespace Umati {
 			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> m_pOpcUaTypeReader;
 			std::mutex m_machineIdentificationsCache_mutex;
 			std::map<ModelOpcUa::NodeId_t, nlohmann::json> m_machineIdentificationsCache;
+			std::set<ModelOpcUa::NodeId_t> m_machinesFilter;
 
 			/// Blacklist of invalid machines, that will not be checked periodically
 			/// The value is decremented each time the machine would be checked and will only be added, when it reaches 0 again.
@@ -76,7 +78,7 @@ namespace Umati {
 			static void logMachinesChanging(const std::string &text,
 											const std::set<ModelOpcUa::NodeId_t> &newMachines);
 
-			std::list<ModelOpcUa::BrowseResult_t> browseForMachines(ModelOpcUa::NodeId_t nodeid = Umati::Dashboard::NodeId_MachinesFolder, ModelOpcUa::NodeId_t parentId = Umati::Dashboard::NodeId_MachinesFolder);
+			std::list<ModelOpcUa::BrowseResult_t> browseForMachines(ModelOpcUa::NodeId_t nodeid = Umati::Dashboard::NodeId_MachinesFolder, ModelOpcUa::NodeId_t parentId = Umati::Dashboard::NodeId_MachinesFolder, std::function<bool(ModelOpcUa::NodeId_t)> filter = nullptr);
 			std::list<ModelOpcUa::BrowseResult_t> findComponentsFolder(ModelOpcUa::NodeId_t nodeid);
 
 		};
