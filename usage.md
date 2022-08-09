@@ -38,7 +38,7 @@ Use one of the possibilities:
         2. Press `Confirm`
 2. MQTT Explorer
     1. Download MQTT Explorer:
-        1.  [http://mqtt-explorer.com/](http://mqtt-explorer.com/)
+        1. [http://mqtt-explorer.com/](http://mqtt-explorer.com/)
 
     2. Install and start MQTT Explorer
     3. Create a new connection:
