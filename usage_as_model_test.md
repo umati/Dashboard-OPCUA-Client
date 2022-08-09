@@ -1,4 +1,4 @@
-# Usage as an information model instantiation according to companion specifications
+# Usage as an testing tool for information model instantiation according to companion specifications
 
 Requirements:
 
