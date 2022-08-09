@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  */
@@ -42,7 +42,7 @@ namespace Umati {
 		 */
 		struct NamespaceInformation {
 			std::string Namespace; /**< Namespace, e.g. https://opcfoundation.org/SurfaceTechnology */
-			std::vector<ModelOpcUa::NodeId_t> Types; /**< Types, this Namespace introduces */ 
+			std::vector<ModelOpcUa::NodeId_t> Types; /**< Types, this Namespace introduces */
 			ModelOpcUa::NodeId_t IdentificationType; /**< IdentificationType, child of types */
 		};
 
@@ -57,6 +57,10 @@ namespace Umati {
 			virtual MqttConfig getMqtt() = 0;
 
 			virtual OpcUaConfig getOpcUa() = 0;
+
+			virtual bool hasMachinesFilter() = 0;
+
+			virtual std::vector<ModelOpcUa::NodeId_t> getMachinesFilter() = 0;
 		};
 	}
 }

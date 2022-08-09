@@ -26,8 +26,10 @@ namespace Umati
 		DashboardMachineObserver::DashboardMachineObserver(
 			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
 			std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
-			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader) : MachineObserver(std::move(pDataClient), std::move(pOpcUaTypeReader)),
-																				   m_pPublisher(std::move(pPublisher))
+			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader,
+			std::vector<ModelOpcUa::NodeId_t> machinesFilter)
+			:MachineObserver(std::move(pDataClient), std::move(pOpcUaTypeReader), std::move(machinesFilter)),
+								m_pPublisher(std::move(pPublisher))
 		{
 			startUpdateMachineThread();
 		}

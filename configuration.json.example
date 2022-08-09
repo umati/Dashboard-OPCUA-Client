@@ -1,5 +1,12 @@
 {
   "MachineCacheFile": "MachineCache_datahub.json",
+  "MachinesFilter": [
+    {
+      "Uri": "http://example.com/BasicMachineTool/",
+      "Id": "i=66382",
+      "$comment": "BasicMachineTool"
+    }
+  ],
   "ObjectTypeNamespaces": [
     "http://opcfoundation.org/UA/",
     "http://opcfoundation.org/UA/IA/",

@@ -27,14 +27,17 @@ namespace Umati {
 			// Inherit from Configuration
 			OpcUaConfig getOpcUa() override;
 			MqttConfig getMqtt() override;
+			bool hasMachinesFilter() override;
+			std::vector<ModelOpcUa::NodeId_t> getMachinesFilter() override;
 			std::vector<NamespaceInformation> getNamespaceInformations() override;
 			std::vector<std::string> getObjectTypeNamespaces() override;
-			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigurationJsonFile, OpcUa, ObjectTypeNamespaces, NamespaceInformations, Mqtt)
+			NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigurationJsonFile, OpcUa, ObjectTypeNamespaces, NamespaceInformations, Mqtt, MachinesFilter)
 		protected:
 			nlohmann::json getValueOrException(nlohmann::json json, std::string key);
 			ConfigurationJsonFile() = default;
 			OpcUaConfig OpcUa;
 			std::vector<std::string> ObjectTypeNamespaces;
+			std::vector<ModelOpcUa::NodeId_t> MachinesFilter;
 			std::vector<NamespaceInformation> NamespaceInformations;
 			MqttConfig Mqtt;
 		};

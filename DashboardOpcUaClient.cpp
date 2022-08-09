@@ -31,7 +31,8 @@ m_pPublisher(std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
 m_pOpcUaTypeReader(std::make_shared<Umati::Dashboard::OpcUaTypeReader>(
         m_pClient,
         configuration->getObjectTypeNamespaces(),
-        configuration->getNamespaceInformations()))
+        configuration->getNamespaceInformations())),
+    m_machinesFilter(configuration->getMachinesFilter())
 {
 
 }
@@ -55,13 +56,13 @@ void DashboardOpcUaClient::StartMachineObserver() {
     m_pMachineObserver = std::make_shared<Umati::MachineObserver::DashboardMachineObserver>(
         m_pClient,
         m_pPublisher,
-        m_pOpcUaTypeReader);
+        m_pOpcUaTypeReader,
+        m_machinesFilter);
     m_lastPublish = std::chrono::steady_clock::now();
     m_lastConnectionVerify = std::chrono::steady_clock::now();
 }
 
 void DashboardOpcUaClient::Iterate() {
-    
     {
         std::lock_guard<std::recursive_mutex> l(m_pClient->m_clientMutex);
         auto retval = UA_Client_run_iterate(m_pClient->m_pClient.get(), 100);

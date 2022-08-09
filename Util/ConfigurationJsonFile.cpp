@@ -42,5 +42,13 @@ namespace Umati {
 		std::vector<std::string> ConfigurationJsonFile::getObjectTypeNamespaces() {
 			return ObjectTypeNamespaces;
 		}
+
+		bool ConfigurationJsonFile::hasMachinesFilter() {
+			return MachinesFilter.size() != 0;
+		}
+
+		std::vector<ModelOpcUa::NodeId_t> ConfigurationJsonFile::getMachinesFilter() {
+			return MachinesFilter;
+		}
 	}
 }
