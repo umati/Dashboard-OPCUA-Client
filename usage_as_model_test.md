@@ -1,4 +1,4 @@
-# Usage as an testing tool for information model instantiation according to companion specifications
+# Usage as a testing tool for information model instantiation according to companion specifications
 
 Requirements:
 
@@ -62,7 +62,7 @@ Use one of the possibilities:
 
             1. Select newest workflow run:
 ![Client_findBinaryFiles](https://user-images.githubusercontent.com/105195460/178679784-acf99801-94e2-44e0-a0b2-0a8378ffba05.png)
-            2. Download artifact for your operating system
+            2. Download artefact for your operating system
 
 2. Unzip Folder
 3. Create configuration for Client
@@ -78,7 +78,7 @@ Use one of the possibilities:
     1. If browser was used a console comes up. The output should look like this:
 ![Client_Output](https://user-images.githubusercontent.com/105195460/178679686-8a3fc388-ef05-45cd-aeaf-da880036e526.png)
     2. This start up phase can last for up to 10 minutes
-    3. While this phase a `1` is transmittet to the MQTT Client
+    3. While this phase a `1` is transmitted to the MQTT Client
 
 5. After the start up a JSON containing all machine values is transmitted to the client
 
