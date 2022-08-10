@@ -31,10 +31,10 @@ Requirements:
 
         1. [https://github.com/umati/Dashboard-OPCUA-Client/blob/development/configuration.json.example](https://github.com/umati/Dashboard-OPCUA-Client/blob/development/configuration.json.example)
         2. Explanation of the JSON:
-          1. ObjectTypeNamespaces: Need to contain all Namespaces, which are also present in your OPC UA Server
-          2. NamespaceInformation: Contains the Type Definitions the Client will be looking for and he will continously monitor.
-          3. OpcUa: Need to contain the endpoint information of your OPC UA Server and if required the logging credentials
-          4. Mqtt: The Content of these keypair values will be provided by the umati team and describe the endpoint of an Mqtt Broker which relays the information to the dashboard.
+            1. ObjectTypeNamespaces: Need to contain all Namespaces, which are also present in your OPC UA Server
+            2. NamespaceInformation: Contains the Type Definitions the Client will be looking for and he will continously monitor.
+            3. OpcUa: Need to contain the endpoint information of your OPC UA Server and if required the logging credentials
+            4. Mqtt: The Content of these keypair values will be provided by the umati team and describe the endpoint of an Mqtt Broker which relays the information to the dashboard.
 
 4. Start `DashboardOpcUaClient.exe`
 
