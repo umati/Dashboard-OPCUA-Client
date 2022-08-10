@@ -71,7 +71,7 @@ cmake --build .
 - [MqttPublisher Paho](MqttPublisher_Paho) An implementation of a publisher for MQTT using Eclipse Paho.
 - [OpcUaClient](OpcUaClient) Implementation of an OPC UA client for the Dashboard using Unified Automation C++ SDK
 - [Tests](Tests) Some basic test, mainly for debugging past errors.
-- [Util](Util) General purpose code, e.g. Encoding of machine Ids
+- [Util](Util) General purpose code, e.g. Encoding of machine IDs
 
 ## Tested Companion Specifications
 
