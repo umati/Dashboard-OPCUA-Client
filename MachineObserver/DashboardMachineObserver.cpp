@@ -165,7 +165,8 @@ namespace Umati
                 pDashClient->addDataSet(
 					{machineInformation.NamespaceURI, machine.NodeId.Id},
 					p_type,
-					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)));
+					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)),
+					Topics::OnlineStatus(static_cast<std::string>(machine.NodeId)));
 
 				LOG(INFO) << "Read model finished";
 

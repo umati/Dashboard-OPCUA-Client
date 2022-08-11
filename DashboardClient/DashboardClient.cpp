@@ -36,12 +36,17 @@ namespace Umati
 		void DashboardClient::addDataSet(
 			const ModelOpcUa::NodeId_t &startNodeId,
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
-			const std::string &channel)
+			const std::string &channel,
+			const std::string &onlineChannel
+			)
 		{
 			try
 			{
-				std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition,
-																						  channel);
+				std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(
+					startNodeId,
+					pTypeDefinition,
+					channel,
+					onlineChannel);
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
 				subscribeValues(pDataSetStorage->node, pDataSetStorage->values, pDataSetStorage->values_mutex);
 				LOG(INFO) << "Values subscribed for  " << channel;
@@ -67,11 +72,13 @@ namespace Umati
 		std::shared_ptr<DashboardClient::DataSetStorage_t>
 		DashboardClient::prepareDataSetStorage(const ModelOpcUa::NodeId_t &startNodeId,
 											   const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
-											   const std::string &channel)
+											   const std::string &channel,
+											   const std::string &onlineChannel)
 		{
 			auto pDataSetStorage = std::make_shared<DataSetStorage_t>();
 			pDataSetStorage->startNodeId = startNodeId;
 			pDataSetStorage->channel = channel;
+			pDataSetStorage->onlineChannel = onlineChannel;
 			pDataSetStorage->node = TransformToNodeIds(startNodeId, pTypeDefinition);
 			return pDataSetStorage;
 		}
@@ -95,6 +102,7 @@ namespace Umati
 						lastMessage.payload = jsonPayload;
 						lastMessage.lastSent = now;
 					}
+					m_pPublisher->Publish(pDataSetStorage->onlineChannel, "1");
 				}
 				else
 				{

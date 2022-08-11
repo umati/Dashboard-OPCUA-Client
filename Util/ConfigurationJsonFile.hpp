@@ -17,7 +17,7 @@ namespace ModelOpcUa
 }
 namespace Umati {
 	namespace Util {
-		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MqttConfig, Hostname, Port, Username, Password, Prefix, Protocol);
+		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MqttConfig, Hostname, Port, Username, Password, Prefix, ClientId, Protocol);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(OpcUaConfig, Endpoint, Username, Password, Security, ByPassCertVerification);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NamespaceInformation, Namespace, Types, IdentificationType);
 

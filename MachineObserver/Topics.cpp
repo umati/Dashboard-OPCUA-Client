@@ -14,28 +14,35 @@ namespace Umati
     namespace MachineObserver
     {
         std::string Topics::Prefix = "umati";
+        std::string Topics::ClientId = "umati";
         std::string Topics::Machine(
             const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
-            const std::string &namespaceUri)
+            const std::string &machineId)
         {
             std::string specification = p_type->SpecifiedBrowseName.Name;
             std::stringstream topic;
-            topic << Topics::Prefix << "/" << specification << "/" << Umati::Util::IdEncode(namespaceUri);
+            topic << Topics::Prefix << "/" << Topics::ClientId << "/" << specification << "/" << Umati::Util::IdEncode(machineId);
             return topic.str();
         }
 
         std::string Topics::List(const std::string &specType)
         {
             std::stringstream topic;
-            topic << Topics::Prefix << "/list/" << specType;
+            topic << Topics::Prefix << "/" << Topics::ClientId << "/list/" << specType;
             return topic.str();
         }
 
         std::string Topics::ErrorList(const std::string &specType)
         {
             std::stringstream topic;
-            topic << Topics::Prefix << "/bad_list/" << specType;
+            topic << Topics::Prefix << "/" << Topics::ClientId << "/bad_list/" << specType;
             return  topic.str();
+        }
+
+        std::string Topics::OnlineStatus(const std::string &machineId) {
+            std::stringstream topic;
+            topic << Topics::Prefix << "/" << Topics::ClientId << "/online/" << Umati::Util::IdEncode(machineId);
+            return topic.str();
         }
     } // namespace MachineObserver
 } // namespace Umati

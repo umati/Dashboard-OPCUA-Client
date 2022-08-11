@@ -24,6 +24,7 @@ namespace Umati {
 			/// Might be empty if no authentification required
 			std::string Password;
 			std::string Prefix = "umati";
+			std::string ClientId = "umati";
 			std::string Protocol = "tcp";
 		};
 
@@ -31,7 +32,8 @@ namespace Umati {
 			/// OPC UA Endpoint
 			std::string Endpoint;
 			std::string Username;
-			std::string Password;			/// 1 = None, 2 Sign, 3 = Sign&Encrypt
+			std::string Password;
+			/// 1 = None, 2 Sign, 3 = Sign&Encrypt
 			std::uint8_t Security = 1;
 			bool ByPassCertVerification = false;
 		};
