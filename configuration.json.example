@@ -121,6 +121,7 @@
     "Username": "opcua_client",
     "Password": "",
     "Prefix": "umati",
+    "ClientId": "umati",
     "Protocol": "tcp"
   }
 }

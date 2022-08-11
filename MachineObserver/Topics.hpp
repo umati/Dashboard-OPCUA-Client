@@ -17,11 +17,13 @@ namespace Umati
         {
         public:
             static std::string Prefix;
+            static std::string ClientId;
             static std::string Machine(
                 const std::shared_ptr<ModelOpcUa::StructureNode> &p_type,
-                const std::string &namespaceUri);
+                const std::string &machineId);
             static std::string List(const std::string &specType);
             static std::string ErrorList(const std::string &specType);
+            static std::string OnlineStatus(const std::string &machineId);
         };
     } // namespace MachineObserver
 } // namespace Umati

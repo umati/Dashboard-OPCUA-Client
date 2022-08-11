@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 	{
 		config = std::make_shared<Umati::Util::ConfigurationJsonFile>(configFilename);
 		Umati::MachineObserver::Topics::Prefix = config->getMqtt().Prefix; 
+		Umati::MachineObserver::Topics::ClientId = config->getMqtt().ClientId; 
 	}
 	catch (Umati::Util::Exception::ConfigurationException &ex)
 	{

@@ -45,7 +45,8 @@ namespace Umati {
 			void addDataSet(
 					const ModelOpcUa::NodeId_t &startNodeId,
 					const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
-					const std::string &channel);
+					const std::string &channel,
+					const std::string &onlineChannel);
 
 			void Publish();
 
@@ -62,6 +63,7 @@ namespace Umati {
 			struct DataSetStorage_t {
 				ModelOpcUa::NodeId_t startNodeId;
 				std::string channel;
+				std::string onlineChannel;
 				std::shared_ptr<const ModelOpcUa::SimpleNode> node;
 				std::mutex values_mutex;
 				std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> values;
@@ -119,7 +121,8 @@ namespace Umati {
 
 			std::shared_ptr<DataSetStorage_t> prepareDataSetStorage(const ModelOpcUa::NodeId_t &startNodeId,
 																	const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
-																	const std::string &channel);
+																	const std::string &channel,
+																	const std::string &onlineChannel);
 
 			bool OptionalAndMandatoryTransformToNodeId(const ModelOpcUa::NodeId_t &startNode,
 													   std::list<std::shared_ptr<const ModelOpcUa::Node>> &foundChildNodes,
