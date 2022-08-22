@@ -19,14 +19,15 @@ This project uses [cmake](https://cmake.org/) for building.
 ### Ubuntu or Debian
 
 The following packages are necessary for building:
-- git 
-- build-essential 
-- gcc 
-- g++ 
-- cmake 
+
+- git
+- build-essential
+- gcc
+- g++
+- cmake
 - python3
 
-```
+```shell
 # Clone the repository and initialize the submodules
 git clone git@github.com:umati/Dashboard-OPCUA-Client.git
 cd Dashboard-OPCUA-Client
@@ -73,10 +74,18 @@ cmake --build .
 
 ## Tested Companion Specifications
 
+- Flatglass :waning_gibbous_moon:
+- Geometrical Measuring Systems :waning_gibbous_moon:
 - MachineTools :heavy_check_mark:
+- PlasticsRubber :heavy_check_mark:
 - WoodWorking :heavy_check_mark:
-- Robotics  :first_quarter_moon:
+- Robotics  :heavy_check_mark:
 - Surface Technology :waning_gibbous_moon:
+
+## Usage for instance testing
+
+Follow these instructions to use the client as a testing tool for your implementation:
+[usage.md](usage.md)
 
 ## License
 

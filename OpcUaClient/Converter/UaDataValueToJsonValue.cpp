@@ -276,6 +276,14 @@ namespace Umati {
 								(*jsonValue) = str.str();
 								break;
 							}
+
+							case UA_TYPES_TIMEZONEDATATYPE: {
+								UA_TimeZoneDataType tz(*(UA_TimeZoneDataType*)exObj.content.decoded.data);
+								(*jsonValue)["daylightSavingInOffset"] = tz.daylightSavingInOffset;
+								(*jsonValue)["offset"] = tz.offset;
+								break;
+							}
+
 							default: {
 								LOG(ERROR) << "Not implemented conversion from type: "
 										<< exObj.content.encoded.body.data;
@@ -322,10 +330,15 @@ namespace Umati {
 										.getValue();
 								}
 								break;
-							}else if (strcmp(variant.type->typeName, "Range")== 0){
+						}else if (strcmp(variant.type->typeName, "Range")== 0){
 								UA_Range range(*(UA_Range*)variant.data);
 								(*jsonValue)["low"] = range.low;
 								(*jsonValue)["high"] = range.high;
+								break;
+						}else if (strcmp(variant.type->typeName, "TimeZoneDataType")== 0){
+								UA_TimeZoneDataType tz(*(UA_TimeZoneDataType*)variant.data);
+								(*jsonValue)["daylightSavingInOffset"] = tz.daylightSavingInOffset;
+								(*jsonValue)["offset"] = tz.offset;
 								break;
 						}else{
 							LOG(ERROR) << "Unknown data type. ";

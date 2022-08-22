@@ -21,14 +21,18 @@ namespace Umati {
 
 	 		mqtt::connect_options opts_conn = getOptions(username, password);
 
-#ifndef WIN32
 			if (protocol == "wss") {
 				mqtt::ssl_options ssl_opts;
+#ifndef WIN32
 				ssl_opts.ca_path("/etc/ssl/certs/");
+#else
+				ssl_opts.set_ca_path("./certs");
+				ssl_opts.set_trust_store("./certs/ca-certificates.crt");
+#endif
 				ssl_opts.set_verify(true);
 				opts_conn.set_ssl(ssl_opts);
 			}
-#endif
+		
 			mqtt::will_options opts_will = getLastWill();
 			opts_conn.set_will(opts_will);
 

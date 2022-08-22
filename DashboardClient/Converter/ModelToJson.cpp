@@ -109,7 +109,9 @@ namespace Umati {
 						&& (pSimpleNode->SpecifiedTypeNodeId.Id == "i=63" || pSimpleNode->SpecifiedTypeNodeId.Id == "i=17570"
                                                                           || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2755"
                                                                           || pSimpleNode->SpecifiedTypeNodeId.Id == "i=17497"
-                                                                          || pSimpleNode->SpecifiedTypeNodeId.Id == "i=15318"))
+                                                                          || pSimpleNode->SpecifiedTypeNodeId.Id == "i=15318"
+									  || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2368"
+									  || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2760"))
 					   	|| pSimpleNode->ofBaseDataVariableType;
 			}
 

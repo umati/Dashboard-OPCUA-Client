@@ -1,3 +1,31 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 4c06409..c023910 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -234,6 +234,11 @@ IF (PAHO_WITH_SSL)
+             TARGET_LINK_LIBRARIES(${TARGET}
+                 PUBLIC
+                     OpenSSL::SSL OpenSSL::Crypto ${LIBS_SYSTEM})
++            IF (WIN32)
++                TARGET_LINK_LIBRARIES(${TARGET}
++                    PUBLIC
++                        bcrypt)
++            ENDIF()
+         ENDFOREACH()
+         INSTALL(TARGETS paho-mqtt3cs paho-mqtt3as
+             EXPORT eclipse-paho-mqtt-cTargets
+@@ -300,6 +305,11 @@ IF (PAHO_WITH_SSL)
+             TARGET_LINK_LIBRARIES(${TARGET}
+                 PUBLIC
+                     OpenSSL::SSL OpenSSL::Crypto ${LIBS_SYSTEM})
++            IF (WIN32)
++                TARGET_LINK_LIBRARIES(${TARGET}
++                    PUBLIC
++                        bcrypt)
++            ENDIF()
+         ENDFOREACH()
+     ENDIF()
+ ENDIF()
 diff --git a/src/SSLSocket.c b/src/SSLSocket.c
 index fd80c72..1dbd03b 100644
 --- a/src/SSLSocket.c

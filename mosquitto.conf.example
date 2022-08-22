@@ -1,0 +1,22 @@
+#pid_file /var/run/mosquitto.pid
+pid_file /tmp/mosquitto.pid
+
+persistence true
+persistence_location /mqtt/data/
+
+user mosquitto
+
+# Port to use for the default listener.
+listener 1883
+protocol mqtt
+
+# log_dest file /mqtt/log/mosquitto.log
+log_dest stdout
+
+allow_anonymous true
+
+acl_file /mosquitto/config/acl
+password_file /mosquitto/config/passwd
+
+listener 1884 127.0.0.1
+protocol websockets

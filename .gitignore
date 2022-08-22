@@ -1,2 +1,4 @@
 pki/
 *.log
+build/
+install/

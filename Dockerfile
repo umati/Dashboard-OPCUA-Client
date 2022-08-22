@@ -1,13 +1,13 @@
-FROM alpine:3.16.0 as build-env
+FROM alpine:3.16.1 as build-env
 
 RUN apk --no-cache add \
       bash=5.1.16-r2 \
       cmake=3.23.1-r0 \
       gcc=11.2.1_git20220219-r2 \
       g++=11.2.1_git20220219-r2 \
-      git=2.36.1-r0 \
+      git=2.36.2-r0 \
       make=4.3-r0 \
-      python3=3.10.4-r0 \
+      python3=3.10.5-r0 \
       patch=2.7.6-r7 && \
     mkdir /install
 
@@ -22,10 +22,10 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
     cmake --build .
 
-FROM alpine:3.16.0 as runtime
+FROM alpine:3.16.1 as runtime
 RUN apk --no-cache add \
       libstdc++=11.2.1_git20220219-r2 \
-      ca-certificates=20211220-r0
+      ca-certificates=20220614-r0
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
