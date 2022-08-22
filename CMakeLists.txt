@@ -90,14 +90,14 @@ if (DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
     target_compile_definitions(DashboardOpcUaClient PUBLIC NOMINMAX)
 endif ()
 
-message("### opcua_dashboardclient: Adding custom command to copy the example config")
-add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        configuration.json.example
-        $<TARGET_FILE_DIR:DashboardOpcUaClient>
-        COMMENT "Copy Example Configuration"
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        )
+#message("### opcua_dashboardclient: Adding custom command to copy the example config")
+#add_custom_command(TARGET DashboardOpcUaClient POST_BUILD
+#       COMMAND ${CMAKE_COMMAND} -E copy
+#        configuration.json.example
+#       $<TARGET_FILE_DIR:DashboardOpcUaClient>
+#        COMMENT "Copy Example Configuration"
+#        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#        )
 
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(TARGETS DashboardOpcUaClient EXPORT DashboardOpcUaClient RUNTIME DESTINATION bin)
