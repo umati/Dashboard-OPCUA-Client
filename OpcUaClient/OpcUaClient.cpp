@@ -925,6 +925,10 @@ namespace Umati
 
 			return true;
 		}
+		std::shared_ptr<UA_Client> OpcUaClient::getUaClient()
+		{
+			return m_pClient;
+		}
 
 	} // namespace OpcUa
 } // namespace Umati

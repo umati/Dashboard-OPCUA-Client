@@ -27,8 +27,6 @@ namespace Umati
 			: m_pDashboardDataClient(pDashboardDataClient), m_pPublisher(pPublisher), m_pTypeReader(pTypeReader)
 		{
 		}
-
-
 		/**
 		* Receives a nodeId, a typeDefinition and an mqtt topic to hold for a machine. Available types are
 		* Identification, JobCurrentStateNumber, ProductionJobList, Stacklight, StateModelList, ToolList
@@ -40,6 +38,10 @@ namespace Umati
 		{
 			try
 			{
+				browsedNodes.clear();
+				m_startNodeId = startNodeId;
+				m_pTypeDefinition = pTypeDefinition;
+				m_channel = channel;
 				std::shared_ptr<DataSetStorage_t> pDataSetStorage = prepareDataSetStorage(startNodeId, pTypeDefinition,
 																						  channel);
 				LOG(INFO) << "DataSetStorage prepared for " << channel;
@@ -127,6 +129,19 @@ namespace Umati
 			std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 			m_dataSets.clear();
 			
+		}
+		bool DashboardClient::containsNodeId(ModelOpcUa::NodeId_t nodeId) {
+			if(browsedNodes.find(nodeId) != browsedNodes.end()) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		void DashboardClient::refreshDataSet(ModelOpcUa::NodeId_t nodeId) {
+			/*if(!m_dataSets.empyt) {
+				std::shared_ptr<DataSetStorage_t> pDataSetStorage = m_dataSets.first();
+				pDataSetStorage.
+			}*/
 		}
 
 		std::string DashboardClient::getJson(const std::shared_ptr<DataSetStorage_t> &pDataSetStorage)
@@ -467,7 +482,7 @@ namespace Umati
                                              * the input parameters of the lambda function is the nlohmann::json value and the body updates the value
                                              * at position pNode with the received json value.
                                              */
-			// LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+			LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
 			auto callback = [pNode, &valueMap, &valueMap_mutex](nlohmann::json value) {
 					std::unique_lock<std::remove_reference<decltype(valueMap_mutex)>::type>(valueMap_mutex);

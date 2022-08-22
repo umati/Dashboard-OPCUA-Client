@@ -51,6 +51,13 @@ namespace Umati {
 
 			void Unsubscribe(ModelOpcUa::NodeId_t nodeId);
 
+			bool containsNodeId(ModelOpcUa::NodeId_t nodeId);
+
+			void refreshDataSet(ModelOpcUa::NodeId_t nodeId);
+
+			ModelOpcUa::NodeId_t m_startNodeId;
+			std::shared_ptr<ModelOpcUa::StructureNode> m_pTypeDefinition;
+			std::string m_channel;
 
 		protected:
 
@@ -93,6 +100,8 @@ namespace Umati {
 			std::recursive_mutex m_dataSetMutex;
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
 			std::map<std::string, LastMessage_t> m_latestMessages;
+
+			
 
 			bool isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 

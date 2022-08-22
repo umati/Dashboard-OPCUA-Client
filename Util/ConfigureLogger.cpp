@@ -37,6 +37,8 @@ namespace Umati {
   TO_STANDARD_OUTPUT = false
 * VERBOSE:
   TO_STANDARD_OUTPUT = false
+* INFO:
+  TO_STANDARD_OUTPUT = true
 )LOG_CONFIG");
 			conf.setGlobally(el::ConfigurationType::Filename, name + "-%datetime{%Y%M%d}.log");
 
