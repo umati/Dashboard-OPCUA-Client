@@ -9,3 +9,4 @@ BinPackArguments: false
 AlignAfterOpenBracket: AlwaysBreak
 ContinuationIndentWidth: 2
 ConstructorInitializerIndentWidth: 2
+SortIncludes: false
