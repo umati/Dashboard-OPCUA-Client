@@ -73,6 +73,19 @@ namespace Umati
 			std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader) : MachineObserver(std::move(pDataClient), std::move(pOpcUaTypeReader)),
 																				   m_pPublisher(std::move(pPublisher))
 		{
+			std::shared_ptr<UA_Client> client = m_pDataClient->getUaClient();
+			UA_Variant value;
+			UA_Variant_init(&value);
+			const UA_NodeId nodeIdNameSpaceArray = UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER_NAMESPACEARRAY);
+			UA_Client_readValueAttribute(client.get(), nodeIdNameSpaceArray, &value);
+			UA_String* strValues = (UA_String*)value.data;
+			for(unsigned int i = 0; i < value.arrayLength; i++) {
+				UA_String strValue = strValues[i];
+				char* convert = (char*)UA_malloc(sizeof(char)*(strValue.length+1));
+				memcpy(convert, strValue.data, strValue.length );
+				convert[strValue.length] = '\0';
+				namespaces[i] = std::string(convert);
+			}
 			AddSubscription();
 			startUpdateMachineThread();
 		}
@@ -81,37 +94,37 @@ namespace Umati
 		{
 			stopMachineUpdateThread();
 		}
+		
 		void DashboardMachineObserver::updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes)
 		{
-			//LOG(INFO) << "######################################### Update ####################################";
+			bool nodeAdded = false;
+			bool nodeDeleted = false;
+			bool referenceAdded = false;
+			bool referenceDeleted = false;
+			bool dataTypeChanged = false;
+			std::list<std::shared_ptr<Umati::Dashboard::DashboardClient>> changedDbcs = std::list<std::shared_ptr<Umati::Dashboard::DashboardClient>>();
 			for(int i = 0; i < nModelChangeStructureDataTypes; i++) {
 				UA_ModelChangeStructureDataType modelChangeStructureDataType = modelChangeStructureDataTypes[i];
 				UA_NodeId affectedNode = modelChangeStructureDataType.affected;
 				UA_NodeId affectedType = modelChangeStructureDataType.affectedType;
 				UA_Byte verb = modelChangeStructureDataType.verb;
-				LOG(INFO) << "affectedNode: " << affectedNode.identifier.numeric;
+				/*LOG(INFO) << "affectedNode: " << affectedNode.identifier.numeric;
 				LOG(INFO) << "affectedType: " << affectedType.identifier.numeric;
-				LOG(INFO) << "verb: " << verb;
+				LOG(INFO) << "verb: " << verb;*/
 
-				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) {
-					LOG(INFO) << "NODEADDED";
-				}
-				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) {
-					LOG(INFO) << "NODEDELETED";
-				}
-				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) {
-					LOG(INFO) << "REFERENCEADDE";
-				}
-				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) {
-					LOG(INFO) << "REFERENCEDELETED";
-				}
-				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) == UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) {
-					LOG(INFO) << "DATATYPECHANGED";
-				}
-				/* Find the Dashboardclient for the event. Check uris with naespaces.*/
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) {nodeAdded = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) {nodeDeleted = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) {referenceAdded = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) {referenceDeleted = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) == UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) {dataTypeChanged = true;}
+				/* Find the Dashboardclient for the event. Check uris with namespaces.*/
 				ModelOpcUa::NodeId_t typeId = ModelOpcUa::NodeId_t();
 				typeId.Id = "i=" + std::to_string(affectedType.identifier.numeric);
-				typeId.Uri = "http://opcfoundation.org/UA/Glass/Flat/";
+				
+
+				affectedType.namespaceIndex;
+				typeId.Uri = namespaces[affectedType.namespaceIndex];
+				//typeId.Uri = "http://opcfoundation.org/UA/Glass/Flat/";
 				ModelOpcUa::NodeId_t nodeId = ModelOpcUa::NodeId_t();
 				nodeId.Id = "i=" + std::to_string(affectedNode.identifier.numeric);
 				
@@ -120,25 +133,16 @@ namespace Umati
 					nodeId.Uri = (it -> first).Uri;
 					//typeId.Uri = (it -> first).Uri;
 					if(dbc->containsNodeId(nodeId)) {
-						std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
-						dbc->Unsubscribe(dbc->m_startNodeId);
-						dbc->addDataSet(dbc->m_startNodeId,dbc->m_pTypeDefinition, dbc->m_channel);
-						dbc->Publish();
-						/*LOG(INFO) << "Publish Now";
-						std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
-						if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) {
-							std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(typeId);
-							dbc->refreshDataSet(nodeId);
-							dbc->Publish();
-						}
-						if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) {
-							std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(typeId);
-							dbc->refreshDataSet(nodeId);
-							dbc->Publish();
-						}*/
-
+						changedDbcs.push_back(dbc);
+						if(nodeAdded || referenceAdded) {dbc->updateAddDataSet(nodeId);}
+						if(nodeDeleted || referenceDeleted) {dbc->updateDeleteDataSet(nodeId);}
 					}	
 				}
+			}
+			//Publish DataboardClients that have changes
+			for(std::shared_ptr<Umati::Dashboard::DashboardClient> dbc : changedDbcs) {
+				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
+				dbc->Publish();
 			}
 		}
 		
@@ -350,64 +354,64 @@ namespace Umati
 		{
 			std::string InputMachine = static_cast<std::string>(machine.NodeId);
 			LOG(INFO) << "############################## InputMachine: " << InputMachine;
-			std::string myMachine = "nsu=de.uni-stuttgart.isw.glas.sampleserver;i=58192";
-			//std::string myMachine = "irgendwas";
-			if(myMachine.compare(InputMachine) == 0) {
-			try
-			{
-				LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
-						  << static_cast<std::string>(machine.NodeId);
-				auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher, m_pOpcUaTypeReader);
-				MachineInformation_t machineInformation;
-				machineInformation.NamespaceURI = machine.NodeId.Uri;
-				machineInformation.StartNodeId = machine.NodeId;
-				machineInformation.MachineName = machine.BrowseName.Name;
-				machineInformation.TypeDefinition = machine.TypeDefinition;
-
+			//std::string myMachine = "nsu=de.uni-stuttgart.isw.glas.sampleserver;i=55091";
+			//std::string myMachine = "nsu=de.uni-stuttgart.isw.glas.sampleserver;i=58192";
+			//if(myMachine.compare(InputMachine) == 0) {
+				try
 				{
-					auto it = m_parentOfMachine.find(machine.NodeId);
-					if(it != m_parentOfMachine.end())
+					LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
+							<< static_cast<std::string>(machine.NodeId);
+					auto pDashClient = std::make_shared<Umati::Dashboard::DashboardClient>(m_pDataClient, m_pPublisher, m_pOpcUaTypeReader);
+					MachineInformation_t machineInformation;
+					machineInformation.NamespaceURI = machine.NodeId.Uri;
+					machineInformation.StartNodeId = machine.NodeId;
+					machineInformation.MachineName = machine.BrowseName.Name;
+					machineInformation.TypeDefinition = machine.TypeDefinition;
+
 					{
-						machineInformation.Parent = it->second;
+						auto it = m_parentOfMachine.find(machine.NodeId);
+						if(it != m_parentOfMachine.end())
+						{
+							machineInformation.Parent = it->second;
+						}
 					}
+
+					std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(machine.TypeDefinition);
+					machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
+					auto it = m_dashboardClients.find(machine.NodeId);
+					if (it != m_dashboardClients.end())
+					{
+						it->second->Unsubscribe(machine.NodeId);
+						m_dashboardClients.erase(it);
+						LOG(INFO) << "Removed Machine with duplicated reference to parent with NodeId:"
+								<< static_cast<std::string>(machine.NodeId);
+					}
+					std::time_t t= std::time(0);
+					LOG(INFO) << "Read Machines";
+					pDashClient->addDataSet(
+						{machineInformation.NamespaceURI, machine.NodeId.Id},
+						p_type,
+						Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)));
+
+					LOG(INFO) << "Read model finished";
+					LOG(INFO) << "Time: " << std::time(0) - t;
+
+					{
+						std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
+						m_dashboardClients.insert(std::make_pair(machine.NodeId, pDashClient));
+						m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
+						m_machineNames.insert(std::make_pair(machine.NodeId, machine.BrowseName.Name));
+					}
+
 				}
-
-				std::shared_ptr<ModelOpcUa::StructureNode> p_type = m_pOpcUaTypeReader->typeDefinitionToStructureNode(machine.TypeDefinition);
-				machineInformation.Specification = p_type->SpecifiedBrowseName.Name;
-                auto it = m_dashboardClients.find(machine.NodeId);
-                if (it != m_dashboardClients.end())
-                {
-                    it->second->Unsubscribe(machine.NodeId);
-                    m_dashboardClients.erase(it);
-                    LOG(INFO) << "Removed Machine with duplicated reference to parent with NodeId:"
-                              << static_cast<std::string>(machine.NodeId);
-                }
-				std::time_t t= std::time(0);
-				LOG(INFO) << "Read Machines";
-                pDashClient->addDataSet(
-					{machineInformation.NamespaceURI, machine.NodeId.Id},
-					p_type,
-					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)));
-
-				LOG(INFO) << "Read model finished";
-				LOG(INFO) << "Time: " << std::time(0) - t;
-
+				catch (const Umati::Exceptions::OpcUaException &ex)
 				{
-					std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
-					m_dashboardClients.insert(std::make_pair(machine.NodeId, pDashClient));
-					m_onlineMachines.insert(std::make_pair(machine.NodeId, machineInformation));
-					m_machineNames.insert(std::make_pair(machine.NodeId, machine.BrowseName.Name));
+					LOG(ERROR) << "Could not add Machine " << machine.BrowseName.Name
+							<< " NodeId:" << static_cast<std::string>(machine.NodeId) << "OpcUa Error: " << ex.what();
+
+					throw Exceptions::MachineInvalidException(ex.what());
 				}
-
-			}
-			catch (const Umati::Exceptions::OpcUaException &ex)
-			{
-				LOG(ERROR) << "Could not add Machine " << machine.BrowseName.Name
-						   << " NodeId:" << static_cast<std::string>(machine.NodeId) << "OpcUa Error: " << ex.what();
-
-				throw Exceptions::MachineInvalidException(ex.what());
-			}
-			}
+			//}
 		}
 
 		void DashboardMachineObserver::removeMachine(ModelOpcUa::NodeId_t machineNodeId)

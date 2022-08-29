@@ -17,6 +17,14 @@ namespace ModelOpcUa {
 	void PlaceholderNode::addInstance(const PlaceholderElement &instance) {
 		this->Instances.push_back(instance);
 	}
+	void PlaceholderNode::removeInstance(const PlaceholderElement &instance) {
+		for(std::list<PlaceholderElement>::iterator it = this->Instances.begin(); it != this->Instances.end(); it++ ) {
+			if(it->pNode->TypeNodeId == instance.pNode->TypeNodeId) {
+				this->Instances.erase(it);
+				break;
+			}
+		}
+	}
 
 	std::list<PlaceholderElement> PlaceholderNode::getInstances() const {
 		return this->Instances;

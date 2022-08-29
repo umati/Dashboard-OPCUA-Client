@@ -30,10 +30,18 @@ namespace Umati
 				std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
 				std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
 				std::shared_ptr<Umati::Dashboard::OpcUaTypeReader> pOpcUaTypeReader);
-
 			~DashboardMachineObserver() override;
-
+			/** Publishes the data of all DashboardClients to Mqtt.
+			 * @brief Publishes the data of all DashboardClients to Mqtt.
+			 * 
+			 */
 			void PublishAll();
+			/** This method is called after a GeneralModelChangeEvent occured. It updates the node structure accordingly.
+		 	* @brief This method is called after a GeneralModelChangeEvent occured. It updates the node structure accordingly.
+		 	* 
+		 	* @param modelChangeStructureDataTypes An array of storing the changes of the nodestructure.
+		 	* @param nModelChangeStructureDataTypes The number of elements in the array.
+		 	*/
 			void updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes);
 		protected:
 			
@@ -66,7 +74,7 @@ namespace Umati
 			};
 
 			int m_publishMachinesOnline = 0;
-
+			std::map<uint, std::string> namespaces;
 			std::atomic_bool m_running = {false};
 			std::thread m_updateMachineThread;
 
