@@ -52,6 +52,10 @@ namespace Umati {
 
 			void Unsubscribe(ModelOpcUa::NodeId_t nodeId);
 
+			bool containsNodeId(ModelOpcUa::NodeId_t nodeId);
+			void updateAddDataSet(ModelOpcUa::NodeId_t nodeId);
+			void updateDeleteDataSet(ModelOpcUa::NodeId_t nodeId);
+
 
 		protected:
 
@@ -92,6 +96,7 @@ namespace Umati {
 			std::shared_ptr<OpcUaTypeReader> m_pTypeReader;
 
 			std::set<ModelOpcUa::NodeId_t> browsedNodes;
+			std::map<const ModelOpcUa::NodeId_t, std::shared_ptr<const ModelOpcUa::SimpleNode>> browsedSimpleNodes;
 			std::recursive_mutex m_dataSetMutex;
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
 			std::map<std::string, LastMessage_t> m_latestMessages;
@@ -134,6 +139,8 @@ namespace Umati {
 
 			void TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
 												  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const;
+
+			void deleteAndUnsubscribeNode(std::shared_ptr<const ModelOpcUa::Node> node);
 		};
 	}
 }

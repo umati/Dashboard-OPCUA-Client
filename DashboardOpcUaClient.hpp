@@ -24,8 +24,12 @@ public:
     bool connect(std::atomic_bool &running);
     void ReadTypes();
     void ReadTypeDictionaries();
+    void readNamespaceArray();
+    void addSubscriptionToModelChangeEvent();
     void StartMachineObserver();
     void Iterate();
+    std::map<uint, std::string> m_namespaces;
+
 protected:
     std::function<void()> m_issueReset;
     std::shared_ptr<Umati::OpcUa::OpcUaInterface> m_opcUaWrapper;

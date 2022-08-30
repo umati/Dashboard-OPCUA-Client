@@ -13,6 +13,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <open62541/client_subscriptions.h>
 
 namespace Umati
 {
@@ -35,11 +36,14 @@ namespace Umati
 			~DashboardMachineObserver() override;
 
 			void PublishAll();
+			void updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes);
 
 		protected:
 			void startUpdateMachineThread();
 
 			void stopMachineUpdateThread();
+
+			void AddSubscription();
 
 			void publishMachinesList();
 

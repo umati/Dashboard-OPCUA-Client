@@ -18,9 +18,9 @@
   },
   "MachinesFilter": [
     {
-      "Uri": "http://example.com/BasicMachineTool/",
-      "Id": "i=66382",
-      "$comment": "BasicMachineTool"
+      "Uri": "de.uni-stuttgart.isw.glas.sampleserver",
+      "Id": "i=58192",
+      "$comment": "GlassMachineType"
     }
   ],
   "ObjectTypeNamespaces": [
@@ -124,9 +124,9 @@
       "Namespace": "http://opcfoundation.org/UA/MachineTool/",
       "Types": [
         {
-          "Uri": "http://opcfoundation.org/UA/MachineTool/",
-          "Id": "i=13",
-          "$comment": "MachineToolType"
+          "Uri": "http://opcfoundation.org/UA/Glass/Flat/",
+          "Id": "i=1015",
+          "$comment": "GlassMachineType"
         }
       ],
       "IdentificationType": {

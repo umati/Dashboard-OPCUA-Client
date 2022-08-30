@@ -65,7 +65,7 @@ namespace ModelOpcUa {
 		using Node::Node;
 
 		void addInstance(const PlaceholderElement &instance);
-
+		void removeInstance(const PlaceholderElement &instance);
 		std::list<PlaceholderElement> getInstances() const;
 
 	protected:

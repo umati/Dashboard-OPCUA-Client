@@ -18,10 +18,155 @@
 #include <IdEncode.hpp>
 #include "PublishMachinesList.hpp"
 
+
 namespace Umati
 {
 	namespace MachineObserver
 	{
+		static DashboardMachineObserver* dbmo;
+
+		static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext, UA_UInt32 monId, void *monContext, size_t nEventFields, UA_Variant *eventFields) {
+			UA_NodeId* sourceNodeId;
+			UA_NodeId affectedNode;
+			UA_NodeId affectedType;
+			UA_Byte verb;
+			for(size_t i = 0; i < nEventFields; ++i) {
+				UA_Variant eventField = eventFields[i];
+        		if(UA_Variant_hasScalarType(&eventField, &UA_TYPES[UA_TYPES_NODEID])) {
+					UA_NodeId* nodeId = (UA_NodeId *)eventField.data;
+					if(i == 1) {
+						sourceNodeId = nodeId;
+					}
+				}  else {
+					UA_ExtensionObject* extensionObjects = (UA_ExtensionObject*)eventField.data;
+					UA_ModelChangeStructureDataType modelChangeStructureDataTypes[eventField.arrayLength];
+					for(int j = 0; j < eventField.arrayLength; j ++) {
+						UA_ExtensionObject extensionObject = extensionObjects[j];
+						UA_ModelChangeStructureDataType* modelChangeStructureDataType =(UA_ModelChangeStructureDataType*)extensionObject.content.decoded.data;
+						modelChangeStructureDataTypes[j] = *modelChangeStructureDataType;
+					}
+
+					dbmo -> updateAfterModelChangeEvent(modelChangeStructureDataTypes, eventField.arrayLength);
+				}
+			}
+			
+
+		}
+	
+		void DashboardMachineObserver::AddSubscription()
+		{
+			dbmo = this;
+			std::shared_ptr<UA_Client> client = m_pDataClient->getUaClient();
+			UA_CreateSubscriptionRequest request = UA_CreateSubscriptionRequest_default();
+    		UA_CreateSubscriptionResponse response = UA_Client_Subscriptions_create(client.get(), request,NULL, NULL, NULL);
+			if(response.responseHeader.serviceResult == UA_STATUSCODE_GOOD) 
+			{
+				LOG(INFO) << "###################################### Created Subscription #####################################";
+				UA_UInt32 subId = response.subscriptionId;
+				UA_MonitoredItemCreateRequest item;
+    			UA_MonitoredItemCreateRequest_init(&item);
+				item.itemToMonitor.attributeId = UA_ATTRIBUTEID_EVENTNOTIFIER;
+				item.monitoringMode = UA_MONITORINGMODE_REPORTING;
+				//Allways Subscribe to the Serer object
+    			item.itemToMonitor.nodeId = UA_NODEID_NUMERIC(0, 2253); // Root->Objects->Server
+    			
+    			
+
+				UA_EventFilter filter;
+    			UA_EventFilter_init(&filter);
+				//Setup selection Clauses for Filter
+				int nSelectClauses = 3;
+				UA_SimpleAttributeOperand *selectClauses = (UA_SimpleAttributeOperand*)
+        		UA_Array_new(nSelectClauses, &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]);
+
+    			
+
+				for(size_t i =0; i<nSelectClauses; ++i) {
+        			UA_SimpleAttributeOperand_init(&selectClauses[i]);
+    			}
+
+				selectClauses[0].typeDefinitionId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
+				selectClauses[0].attributeId = UA_ATTRIBUTEID_VALUE;
+    			selectClauses[0].browsePathSize = 1;
+    			selectClauses[0].browsePath = (UA_QualifiedName*)
+       			UA_Array_new(selectClauses[0].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]);
+    			if(!selectClauses[0].browsePath) {
+        			UA_SimpleAttributeOperand_delete(selectClauses);
+    			}
+
+    			selectClauses[0].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "EventType");
+
+				selectClauses[1].typeDefinitionId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
+				selectClauses[1].attributeId = UA_ATTRIBUTEID_VALUE;
+    			selectClauses[1].browsePathSize = 1;
+    			selectClauses[1].browsePath = (UA_QualifiedName*)
+       			UA_Array_new(selectClauses[1].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]);
+    			if(!selectClauses[1].browsePath) {
+        			UA_SimpleAttributeOperand_delete(selectClauses);
+    			}
+
+    			selectClauses[1].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "SourceNode");
+
+				selectClauses[2].typeDefinitionId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
+				selectClauses[2].attributeId = UA_ATTRIBUTEID_VALUE;
+    			selectClauses[2].browsePathSize = 1;
+    			selectClauses[2].browsePath = (UA_QualifiedName*)
+       			UA_Array_new(selectClauses[2].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]);
+    			if(!selectClauses[2].browsePath) {
+        			UA_SimpleAttributeOperand_delete(selectClauses);
+    			}
+
+    			selectClauses[2].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "Changes");    
+
+				filter.selectClauses = selectClauses;
+    			filter.selectClausesSize = 3;
+
+				// Content Filter
+				UA_ContentFilter contentFilter;
+				UA_ContentFilter_init(&contentFilter);
+
+				UA_ContentFilterElement contentFilterElement;
+				UA_ContentFilterElement_init(&contentFilterElement);
+
+				UA_LiteralOperand literalOperand;
+				UA_LiteralOperand_init(&literalOperand);
+				UA_Variant v;
+				UA_NodeId generalModelChangeEventNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_GENERALMODELCHANGEEVENTTYPE);
+				UA_Variant_setScalar(&v, &generalModelChangeEventNodeId, &UA_TYPES[UA_TYPES_NODEID]);
+				literalOperand.value = v;
+
+				contentFilterElement.filterOperator = UA_FILTEROPERATOR_OFTYPE;
+				contentFilterElement.filterOperandsSize = 1;
+				contentFilterElement.filterOperands = (UA_ExtensionObject*)
+				UA_Array_new(contentFilterElement.filterOperandsSize, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+				UA_ExtensionObject extensionObject;
+				UA_ExtensionObject_setValue(&extensionObject, &literalOperand, &UA_TYPES[UA_TYPES_LITERALOPERAND]);
+				contentFilterElement.filterOperands[0] = extensionObject;
+
+				contentFilter.elementsSize = 1;
+				contentFilter.elements = (UA_ContentFilterElement* ) UA_Array_new(contentFilter.elementsSize, &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT]);
+				contentFilter.elements[0] = contentFilterElement;
+				filter.whereClause = contentFilter;
+
+
+    			item.requestedParameters.filter.encoding = UA_EXTENSIONOBJECT_DECODED;
+    			item.requestedParameters.filter.content.decoded.data = &filter;
+    			item.requestedParameters.filter.content.decoded.type = &UA_TYPES[UA_TYPES_EVENTFILTER];
+
+				UA_UInt32 monId = 0;
+
+    			UA_MonitoredItemCreateResult result = UA_Client_MonitoredItems_createEvent(client.get(), subId, UA_TIMESTAMPSTORETURN_BOTH, item, &monId, handler_events, NULL);
+				if(result.statusCode == UA_STATUSCODE_GOOD) {
+       				 LOG(INFO) << "###################################### Created MonitoredItem #####################################";
+				} else {
+					LOG(INFO) << "###################################### Error Error Error #####################################";
+				}
+				monId = result.monitoredItemId; 
+    		} else {
+				UA_Client_disconnect(client.get());
+        		UA_Client_delete(client.get());
+			}		
+		}
 
 		DashboardMachineObserver::DashboardMachineObserver(
 			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
@@ -31,12 +176,59 @@ namespace Umati
 			:MachineObserver(std::move(pDataClient), std::move(pOpcUaTypeReader), std::move(machinesFilter)),
 								m_pPublisher(std::move(pPublisher))
 		{
+			AddSubscription();
 			startUpdateMachineThread();
 		}
 
 		DashboardMachineObserver::~DashboardMachineObserver()
 		{
 			stopMachineUpdateThread();
+		}
+
+		void DashboardMachineObserver::updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes) {
+			bool nodeAdded = false;
+			bool nodeDeleted = false;
+			bool referenceAdded = false;
+			bool referenceDeleted = false;
+			bool dataTypeChanged = false;
+			std::list<std::shared_ptr<Umati::Dashboard::DashboardClient>> changedDbcs = std::list<std::shared_ptr<Umati::Dashboard::DashboardClient>>();
+			for(int i = 0; i < nModelChangeStructureDataTypes; i++) {
+				UA_ModelChangeStructureDataType modelChangeStructureDataType = modelChangeStructureDataTypes[i];
+				UA_NodeId affectedNode = modelChangeStructureDataType.affected;
+				UA_NodeId affectedType = modelChangeStructureDataType.affectedType;
+				UA_Byte verb = modelChangeStructureDataType.verb;
+
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) {nodeAdded = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) {nodeDeleted = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) {referenceAdded = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) {referenceDeleted = true;}
+				if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) == UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) {dataTypeChanged = true;}
+
+				/* Find the Dashboardclient for the event. Check uris with namespaces.*/
+				ModelOpcUa::NodeId_t typeId = ModelOpcUa::NodeId_t();
+				typeId.Id = "i=" + std::to_string(affectedType.identifier.numeric);
+				affectedType.namespaceIndex;
+				std::vector<std::string> namespaces = m_pDataClient->Namespaces();
+				if(affectedType.namespaceIndex < namespaces.size()) {
+					typeId.Uri = namespaces[affectedType.namespaceIndex];
+					ModelOpcUa::NodeId_t nodeId = ModelOpcUa::NodeId_t();
+					nodeId.Id = "i=" + std::to_string(affectedNode.identifier.numeric);
+					for(auto it = m_dashboardClients.begin(); it != m_dashboardClients.end(); it++) {
+						std::shared_ptr<Umati::Dashboard::DashboardClient> dbc = it -> second;
+						nodeId.Uri = (it -> first).Uri;
+						if(dbc->containsNodeId(nodeId)) {
+							changedDbcs.push_back(dbc);
+							if(nodeAdded || referenceAdded) {dbc->updateAddDataSet(nodeId);}
+							if(nodeDeleted || referenceDeleted) {dbc->updateDeleteDataSet(nodeId);}
+						}	
+					}
+				}
+			}
+			//Publish DataboardClients that have changes
+			for(std::shared_ptr<Umati::Dashboard::DashboardClient> dbc : changedDbcs) {
+				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
+				dbc->Publish();
+			}
 		}
 
 		void DashboardMachineObserver::PublishAll()

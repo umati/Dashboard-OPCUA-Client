@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <open62541/client_highlevel.h>
 #include <nlohmann/json.hpp>
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <functional>
@@ -249,6 +250,9 @@ namespace Umati
 
             /// Verify that the connection and session are ok
             virtual bool VerifyConnection() = 0;
+
+            virtual std::shared_ptr<UA_Client> getUaClient() = 0;
+
         };
     } // namespace Dashboard
 } // namespace Umati

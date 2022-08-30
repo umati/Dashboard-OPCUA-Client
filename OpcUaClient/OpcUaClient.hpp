@@ -74,16 +74,18 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   bool VerifyConnection() override;
 
-  bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType, size_t maxDepth) override;
-
+            bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType,
+                                 size_t maxDepth) override;
+								 
   void buildCustomDataTypes() override;
 
   void readTypeDictionaries() override;
 
   void updateCustomTypes() override;
 
- protected:
-  void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
+			std::shared_ptr<UA_Client> getUaClient() override;
+		protected:
+			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
 
   bool connect();
 
