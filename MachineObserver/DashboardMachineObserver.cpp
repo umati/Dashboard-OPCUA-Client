@@ -45,7 +45,6 @@ namespace Umati
 						UA_ModelChangeStructureDataType* modelChangeStructureDataType =(UA_ModelChangeStructureDataType*)extensionObject.content.decoded.data;
 						modelChangeStructureDataTypes[j] = *modelChangeStructureDataType;
 					}
-
 					dbmo -> updateAfterModelChangeEvent(modelChangeStructureDataTypes, eventField.arrayLength);
 				}
 			}
@@ -176,6 +175,7 @@ namespace Umati
 			:MachineObserver(std::move(pDataClient), std::move(pOpcUaTypeReader), std::move(machinesFilter)),
 								m_pPublisher(std::move(pPublisher))
 		{
+			startEventThread();
 			AddSubscription();
 			startUpdateMachineThread();
 		}
@@ -218,17 +218,24 @@ namespace Umati
 						nodeId.Uri = (it -> first).Uri;
 						if(dbc->containsNodeId(nodeId)) {
 							changedDbcs.push_back(dbc);
-							if(nodeAdded || referenceAdded) {dbc->updateAddDataSet(nodeId);}
-							if(nodeDeleted || referenceDeleted) {dbc->updateDeleteDataSet(nodeId);}
+							StructureChangeEvent stc;
+							stc.dbc = dbc;
+							stc.refreshNode = nodeId;
+							stc.nodeAdded = nodeAdded;
+							stc.nodeDeleted = nodeDeleted;
+							stc.referenceAdded = referenceAdded;
+							stc.referenceDeleted = referenceDeleted;
+							stc.dataTypeChanged = dataTypeChanged;
+							this->modelStructureChangeEvents.push(stc);
 						}	
 					}
 				}
 			}
 			//Publish DataboardClients that have changes
-			for(std::shared_ptr<Umati::Dashboard::DashboardClient> dbc : changedDbcs) {
+			/*for(std::shared_ptr<Umati::Dashboard::DashboardClient> dbc : changedDbcs) {
 				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
 				dbc->Publish();
-			}
+			}*/
 		}
 
 		void DashboardMachineObserver::PublishAll()
@@ -273,6 +280,28 @@ namespace Umati
 			};
 			m_running = true;
 			m_updateMachineThread = std::thread(func);
+		}
+		void DashboardMachineObserver::startEventThread()
+		{
+			std::thread func1 ([this]() {
+				while (true)
+				{
+					if(!this->modelStructureChangeEvents.empty()) {
+						StructureChangeEvent sce = this->modelStructureChangeEvents.front();
+						if(sce.nodeAdded || sce.referenceAdded) {
+							sce.dbc->updateAddDataSet(sce.refreshNode);
+							sce.dbc->Publish();
+						}
+						if(sce.nodeDeleted || sce.referenceDeleted) {
+							sce.dbc->updateDeleteDataSet(sce.refreshNode);
+							sce.dbc->Publish();
+						}
+						this->modelStructureChangeEvents.pop();
+					}
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				}
+			});
+			func1.detach();
 		}
 
 		void DashboardMachineObserver::stopMachineUpdateThread()

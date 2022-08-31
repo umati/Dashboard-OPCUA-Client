@@ -14,6 +14,7 @@
 #include <thread>
 #include <mutex>
 #include <open62541/client_subscriptions.h>
+#include <queue>
 
 namespace Umati
 {
@@ -37,6 +38,17 @@ namespace Umati
 
 			void PublishAll();
 			void updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes);
+			struct StructureChangeEvent{
+				std::shared_ptr<Umati::Dashboard::DashboardClient> dbc;
+				ModelOpcUa::NodeId_t refreshNode;
+				bool nodeAdded = false;
+				bool nodeDeleted = false;
+				bool referenceAdded = false;
+				bool referenceDeleted = false;
+				bool dataTypeChanged = false;
+			};
+			std::queue<StructureChangeEvent> modelStructureChangeEvents;
+			
 
 		protected:
 			void startUpdateMachineThread();
@@ -66,9 +78,11 @@ namespace Umati
 				ModelOpcUa::NodeId_t TypeDefinition;
 				ModelOpcUa::NodeId_t Parent;
 			};
+			
 
 			int m_publishMachinesOnline = 0;
-
+			
+			void startEventThread();
 			std::atomic_bool m_running = {false};
 			std::thread m_updateMachineThread;
 

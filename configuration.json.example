@@ -19,7 +19,7 @@
   "MachinesFilter": [
     {
       "Uri": "de.uni-stuttgart.isw.glas.sampleserver",
-      "Id": "i=58192",
+      "Id": "i=55091",
       "$comment": "GlassMachineType"
     }
   ],
