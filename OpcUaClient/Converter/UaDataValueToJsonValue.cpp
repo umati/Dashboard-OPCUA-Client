@@ -285,8 +285,11 @@ namespace Umati {
 							}
 
 							default: {
-								LOG(ERROR) << "Not implemented conversion from type: "
-										<< exObj.content.encoded.body.data;
+								if (exObj.encoding == UA_EXTENSIONOBJECT_ENCODED_NOBODY) {
+									LOG(ERROR) << "Internal decoding error in open62541, might be a unknown custom datatype";
+								} else {
+									LOG(ERROR) << "Not implemented conversion from type: " << exObj.content.encoded.body.data;
+								}
 							}
 						}
 						break;
