@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(BuildWithDependencies VERSION 0.1)
+project(BuildWithDependencies VERSION 1.2.0)
 
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
