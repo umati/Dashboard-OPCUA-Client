@@ -299,7 +299,7 @@ namespace Umati
 						this->modelStructureChangeEvents.pop();
 					}
 					//LOG(INFO) << "Thread Loop";
-					std::this_thread::sleep_for(std::chrono::milliseconds(250));
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				}
 			});
 			func1.detach();

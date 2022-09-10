@@ -36,7 +36,6 @@ namespace Umati
 					auto child = childNodes.front();
 					std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
 					if(placeholderNode == nullptr) {
-						LOG(INFO) << "Not a Placeholder";
 					} else {
 						auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType, child->SpecifiedTypeNodeId);
 						//Check if Instances are still in browsresult
@@ -104,12 +103,9 @@ namespace Umati
 						auto child = childNodes.front();
 						std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
 						if(placeholderNode == nullptr) {
-							LOG(INFO) << "Not a Placeholder";
 						} else {
-							LOG(INFO) << "Placeholder";
 							auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType,
 																child->SpecifiedTypeNodeId);
-							LOG(INFO) << "browsed";
 							for (auto &browseResult : browseResults) {	
 								if (browseResult.TypeDefinition.Id == NodeId_BaseObjectType.Id) {
 								auto ifs = m_pDashboardDataClient->Browse(browseResult.NodeId,
@@ -137,7 +133,7 @@ namespace Umati
 										std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 									}
 									else {
-										LOG(INFO) << "Allready found";
+										//LOG(INFO) << "Allready found";
 									}
 								}
 							}
