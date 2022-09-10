@@ -156,9 +156,9 @@ namespace Umati
 
     			UA_MonitoredItemCreateResult result = UA_Client_MonitoredItems_createEvent(client.get(), subId, UA_TIMESTAMPSTORETURN_BOTH, item, &monId, handler_events, NULL);
 				if(result.statusCode == UA_STATUSCODE_GOOD) {
-       				 LOG(INFO) << "###################################### Created MonitoredItem #####################################";
+       				 LOG(INFO) << "Created MonitoredItem";
 				} else {
-					LOG(INFO) << "###################################### Error Error Error #####################################";
+					LOG(ERROR) << "Unable to create MonitoredItem";
 				}
 				monId = result.monitoredItemId; 
     		} else {
@@ -298,7 +298,8 @@ namespace Umati
 						}
 						this->modelStructureChangeEvents.pop();
 					}
-					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					//LOG(INFO) << "Thread Loop";
+					std::this_thread::sleep_for(std::chrono::milliseconds(250));
 				}
 			});
 			func1.detach();

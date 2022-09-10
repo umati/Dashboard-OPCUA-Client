@@ -23,7 +23,7 @@ namespace ModelOpcUa {
 	}
 	void PlaceholderNode::removeInstance(const PlaceholderElement &instance) {
 		for(std::list<PlaceholderElement>::iterator it = this->Instances.begin(); it != this->Instances.end(); it++ ) {
-			if(it->pNode->TypeNodeId == instance.pNode->TypeNodeId) {
+			if(it->pNode->NodeId == instance.pNode->NodeId) {
 				this->Instances.erase(it);
 				break;
 			}

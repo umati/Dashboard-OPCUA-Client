@@ -140,7 +140,8 @@ namespace Umati {
 			void TransformToNodeIdNodeNotFoundLog(const ModelOpcUa::NodeId_t &startNode,
 												  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const;
 
-			void deleteAndUnsubscribeNode(std::shared_ptr<const ModelOpcUa::Node> node);
+			void deleteAndUnsubscribeNode(ModelOpcUa::PlaceholderElement placeHolderElement);
+			void deleteAndUnsubscribeNode(const ModelOpcUa::NodeId_t nodeId);
 		};
 	}
 }
