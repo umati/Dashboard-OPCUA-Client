@@ -462,8 +462,8 @@ std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
 
 		UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId)
 		{
-			//LOG(INFO) << "NodeId: " <<  nodeId.NodeId->identifier.numeric;
-			//LOG(INFO) << "Uri"         << nodeId.NodeId->namespaceIndex;
+			LOG(INFO) << "NodeId: " <<  nodeId.NodeId->identifier.numeric;
+			LOG(INFO) << "Uri"         << nodeId.NodeId->namespaceIndex;
 			checkConnection();
 
   UA_NodeClass returnClass;

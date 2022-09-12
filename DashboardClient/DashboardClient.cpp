@@ -133,7 +133,7 @@ namespace Umati
 										placeholderNodeUnconst->addInstance(plElement);
 										LOG(INFO) << "Start Subscription";
 										subscribeValues(plElement.pNode, dataSet->values, dataSet->values_mutex);
-										std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
+										//std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
 										LOG(INFO) << "End Subcription";
 									}
 									else {

@@ -289,7 +289,7 @@ namespace Umati
 				while (true)
 				{
 					if(!this->modelStructureChangeEvents.empty()) {
-						LOG(INFO) << "Process ModelChnageEvent";
+						LOG(INFO) << "Process ModelChangeEvent";
 						StructureChangeEvent sce = this->modelStructureChangeEvents.front();
 						if(sce.nodeAdded || sce.referenceAdded) {
 							sce.dbc->updateAddDataSet(sce.refreshNode);
