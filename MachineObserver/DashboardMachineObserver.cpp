@@ -217,6 +217,7 @@ namespace Umati
 						std::shared_ptr<Umati::Dashboard::DashboardClient> dbc = it -> second;
 						nodeId.Uri = (it -> first).Uri;
 						if(dbc->containsNodeId(nodeId)) {
+							LOG(INFO) << "ModelChangeEvent";
 							changedDbcs.push_back(dbc);
 							StructureChangeEvent stc;
 							stc.dbc = dbc;
@@ -240,6 +241,7 @@ namespace Umati
 
 		void DashboardMachineObserver::PublishAll()
 		{
+			LOG(INFO) << "Publish";
 			{
 				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
 				for (const auto &pDashClient : m_dashboardClients)
@@ -287,6 +289,7 @@ namespace Umati
 				while (true)
 				{
 					if(!this->modelStructureChangeEvents.empty()) {
+						LOG(INFO) << "Process ModelChnageEvent";
 						StructureChangeEvent sce = this->modelStructureChangeEvents.front();
 						if(sce.nodeAdded || sce.referenceAdded) {
 							sce.dbc->updateAddDataSet(sce.refreshNode);

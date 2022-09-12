@@ -93,6 +93,7 @@ namespace Umati
 			browsedSimpleNodes.erase(nodeId);
 		}
 		void DashboardClient::updateAddDataSet(ModelOpcUa::NodeId_t refreshNodeId) {
+			LOG(INFO) << "Update Add DataSet";
 			if(!m_dataSets.empty()) {
 				std::shared_ptr<Umati::Dashboard::DashboardClient::DataSetStorage_t> dataSet = m_dataSets.front();
 				auto search = browsedSimpleNodes.find(refreshNodeId);
@@ -104,8 +105,10 @@ namespace Umati
 						std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
 						if(placeholderNode == nullptr) {
 						} else {
+							LOG(INFO) << "Start Browsing Jobs";
 							auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType,
 																child->SpecifiedTypeNodeId);
+							LOG(INFO) << "End Browsing Jobs";
 							for (auto &browseResult : browseResults) {	
 								if (browseResult.TypeDefinition.Id == NodeId_BaseObjectType.Id) {
 								auto ifs = m_pDashboardDataClient->Browse(browseResult.NodeId,
@@ -118,9 +121,8 @@ namespace Umati
 								auto possibleType = m_pTypeReader->m_typeMap->find(browseResult.TypeDefinition);  // use subtype
 								if (possibleType != m_pTypeReader->m_typeMap->end())
 								{
-									// LOG(INFO) << "Found type for " << typeName;
 									if(browsedNodes.find(browseResult.NodeId) == browsedNodes.end()) {
-										LOG(INFO) << "Added" << browseResult.NodeId;
+										LOG(INFO) << "Added Job:" << browseResult.NodeId;
 										auto sharedPossibleType = possibleType->second;
 										ModelOpcUa::PlaceholderElement plElement;
 										plElement.BrowseName = browseResult.BrowseName;
@@ -129,11 +131,13 @@ namespace Umati
 										//Const cast
 										std::shared_ptr<ModelOpcUa::PlaceholderNode> placeholderNodeUnconst = std::const_pointer_cast<ModelOpcUa::PlaceholderNode>(placeholderNode);
 										placeholderNodeUnconst->addInstance(plElement);
+										LOG(INFO) << "Start Subscription";
 										subscribeValues(plElement.pNode, dataSet->values, dataSet->values_mutex);
 										std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
+										LOG(INFO) << "End Subcription";
 									}
 									else {
-										//LOG(INFO) << "Allready found";
+										LOG(INFO) << "Allready found Job";
 									}
 								}
 							}
