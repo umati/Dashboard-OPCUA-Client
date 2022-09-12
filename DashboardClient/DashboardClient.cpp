@@ -123,6 +123,7 @@ namespace Umati
 								{
 									if(browsedNodes.find(browseResult.NodeId) == browsedNodes.end()) {
 										LOG(INFO) << "Added Job:" << browseResult.NodeId;
+										std::lock_guard<std::recursive_mutex> l(*(m_pDashboardDataClient->getClientMutex()));
 										auto sharedPossibleType = possibleType->second;
 										ModelOpcUa::PlaceholderElement plElement;
 										plElement.BrowseName = browseResult.BrowseName;

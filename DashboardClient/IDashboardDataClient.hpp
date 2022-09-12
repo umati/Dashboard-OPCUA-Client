@@ -12,6 +12,7 @@
 #include <nlohmann/json.hpp>
 #include <ModelOpcUa/ModelDefinition.hpp>
 #include <functional>
+#include <mutex>
 #include "NodeIdsWellKnown.hpp"
 
 namespace Umati
@@ -252,6 +253,8 @@ namespace Umati
             virtual bool VerifyConnection() = 0;
 
             virtual std::shared_ptr<UA_Client> getUaClient() = 0;
+
+            virtual std::recursive_mutex* getClientMutex() = 0;
 
         };
     } // namespace Dashboard
