@@ -141,7 +141,7 @@ namespace Umati {
 												  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const;
 
 			void deleteAndUnsubscribeNode(ModelOpcUa::PlaceholderElement placeHolderElement);
-			void deleteAndUnsubscribeNode(const ModelOpcUa::NodeId_t nodeId);
+			void deleteAndUnsubscribeNode(const ModelOpcUa::SimpleNode nodeId);
 		};
 	}
 }
