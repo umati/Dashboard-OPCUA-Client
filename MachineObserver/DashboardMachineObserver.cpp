@@ -271,7 +271,7 @@ namespace Umati
 				int cnt = 0;
 				while (this->m_running)
 				{
-					if ((cnt % 10) == 0)
+					if ((cnt % 100) == 0 || cnt == 0)
 					{
 						this->UpdateMachines();
 					}
