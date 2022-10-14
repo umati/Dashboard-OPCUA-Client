@@ -133,6 +133,12 @@ namespace Umati
 		{
 			try
 			{
+				if(machine.NodeId == ModelOpcUa::NodeId_t{"10.80.0.113_4840_http://samplemanufacturer.com/umati_OPC40077_sample_instance/","i=5002"} ||
+				   machine.NodeId == ModelOpcUa::NodeId_t{"10.80.0.113_4840_http://samplemanufacturer.com/umati_OPC40077_sample_instance","i=6013"})
+				{
+					LOG(INFO) << "Ignoring Machine: " << machine.BrowseName.Name;
+					return;
+				}
 				LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
 						  << static_cast<std::string>(machine.NodeId);
 
