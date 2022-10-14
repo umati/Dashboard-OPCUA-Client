@@ -9,6 +9,7 @@
 
 #include "ModelNodeIdToUaNodeId.hpp"
 
+#include <stdexcept>
 #include <iostream>
 #include <easylogging++.h>
 
@@ -46,7 +47,7 @@ namespace Umati {
 
 				case NODEID_BYTESTRING:
 					LOG(ERROR) << "Conversion to ByteString not implemented.";
-					throw "Conversion to ByteString not implemented.";
+					throw std::invalid_argument("Conversion to ByteString not implemented.");
 					break;
 				
 				default:

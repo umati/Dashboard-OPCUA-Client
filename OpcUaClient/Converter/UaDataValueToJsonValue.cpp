@@ -127,6 +127,13 @@ namespace Umati {
 					}
 
 					case UA_DATATYPEKIND_BYTESTRING: {
+						UA_ByteString bstring(*(UA_ByteString*) variant.data);
+						std::stringstream str;
+						for(int i = 0; i < bstring.length; i++) {
+							str << bstring.data[i];
+						}
+						*jsonValue = str.str();
+
 						LOG(ERROR) << "Not implemented conversion to OpcUaType_ByteString. ";
 						break;
 					}
