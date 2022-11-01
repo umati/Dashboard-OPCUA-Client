@@ -11,9 +11,13 @@
     "http://opcfoundation.org/UA/",
     "http://opcfoundation.org/UA/IA/",
     "http://opcfoundation.org/UA/DI/",
+    "http://opcfoundation.org/UA/Dictionary/IRDI",
     "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/Machinery/ProcessValues/",
     "http://opcfoundation.org/UA/Machinery/Result/",
     "http://opcfoundation.org/UA/MachineTool/",
+    "http://opcfoundation.org/UA/PADIM/",
+    "http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/"
     "http://opcfoundation.org/UA/SurfaceTechnology/",
     "http://opcfoundation.org/UA/SurfaceTechnology/Example",
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/ConveyorGunsAxes/",
@@ -313,9 +317,9 @@
          "Uri":"http://opcfoundation.org/UA/Machinery/",
          "Id":"i=1012",
          "$comment":"MachineIdentificationType"
-		}
+		   }
     },
-	{
+	  {
        "Namespace":"http://opcfoundation.org/UA/Glass/Flat/",
        "Types":[
          {
@@ -328,6 +332,21 @@
          "Uri":"http://opcfoundation.org/UA/Glass/Flat/",
          "Id":"i=1020",
          "$comment":"GlassMachineIdentificationType"
+       }
+    },
+    {
+       "Namespace":"http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
+       "Types":[
+         {
+           "Uri":"http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
+           "Id":"i=1031",
+           "$comment":"AdditiveManufacturingType"
+         },
+       ],
+       "IdentificationType":{
+         "Uri":"http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
+         "Id":"i=1028",
+         "$comment":"MachineIdentificationAMType"
        }
     }
   ],
