@@ -1,8 +1,8 @@
- /* This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
  */
@@ -32,147 +32,132 @@
 #include "OpcUaInterface.hpp"
 #include <functional>
 
-namespace Umati
-{
+namespace Umati {
 
-	namespace OpcUa
-	{
-		class OpcUaClient : public Dashboard::IDashboardDataClient
-		{
+namespace OpcUa {
+class OpcUaClient : public Dashboard::IDashboardDataClient {
+ public:
+  explicit OpcUaClient(
+    std::string serverURI,
+    std::function<void()> issueReset,
+    std::string Username = std::string(),
+    std::string Password = std::string(),
+    std::uint8_t security = 1,
+    std::vector<std::string> expectedObjectTypeNamespaces = std::vector<std::string>(),
+    std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>(),
+    bool bypassCertVerification = false);
+  ~OpcUaClient();
 
-		public:
-			explicit OpcUaClient(std::string serverURI, std::function<void()> issueReset, std::string Username = std::string(),
-								 std::string Password = std::string(), std::uint8_t security = 1,
-								 std::vector<std::string> expectedObjectTypeNamespaces = std::vector<std::string>(),
-								 std::shared_ptr<Umati::OpcUa::OpcUaInterface> opcUaWrapper = std::make_shared<Umati::OpcUa::OpcUaWrapper>(),
-								 bool bypassCertVerification = false);
-			~OpcUaClient() ;
+  bool disconnect();
+  bool isConnected() { return m_isConnected; }
 
-			bool disconnect();
-			bool isConnected() { return m_isConnected; }
+  // Inherit from IDashboardClient
+  std::list<ModelOpcUa::BrowseResult_t> Browse(ModelOpcUa::NodeId_t startNode, BrowseContext_t browseContext) override;
 
-			// Inherit from IDashboardClient
-			std::list<ModelOpcUa::BrowseResult_t> Browse(
-				ModelOpcUa::NodeId_t startNode,
-				BrowseContext_t browseContext) override;
+  std::list<ModelOpcUa::BrowseResult_t> BrowseWithResultTypeFilter(
+    ModelOpcUa::NodeId_t startNode, BrowseContext_t browseContext, ModelOpcUa::NodeId_t typeDefinition) override;
 
-			std::list<ModelOpcUa::BrowseResult_t>
-			BrowseWithResultTypeFilter(
-				ModelOpcUa::NodeId_t startNode,
-				BrowseContext_t browseContext,
-				ModelOpcUa::NodeId_t typeDefinition) override;
+  ModelOpcUa::NodeId_t TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode, ModelOpcUa::QualifiedName_t browseName) override;
 
-			ModelOpcUa::NodeId_t
-			TranslateBrowsePathToNodeId(ModelOpcUa::NodeId_t startNode,
-												 ModelOpcUa::QualifiedName_t browseName) override;
+  std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
 
-			std::shared_ptr<ValueSubscriptionHandle>
-			Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
+  void Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandle) override;
 
-			void Unsubscribe(std::vector<int32_t>monItemIds, std::vector<int32_t> clientHandle) override;
+  std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
 
-			std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
+  std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId) override;
 
-			std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId) override;
+  std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) override;
 
-			std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) override;
+  std::vector<std::string> Namespaces() override;
 
-			std::vector<std::string> Namespaces() override;
+  bool VerifyConnection() override;
 
-			bool VerifyConnection() override;
+  bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType, size_t maxDepth) override;
 
-            bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType,
-                                 size_t maxDepth) override;
-		protected:
-			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
+ protected:
+  void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
 
-			bool connect();
+  bool connect();
 
-			UA_NodeClass readNodeClass(const open62541Cpp::UA_NodeId &nodeId);
+  UA_NodeClass readNodeClass(const open62541Cpp::UA_NodeId &nodeId);
 
-			void checkConnection();
+  void checkConnection();
 
-			open62541Cpp::UA_NodeId browseSuperType(const open62541Cpp::UA_NodeId &typeNodeId);
+  open62541Cpp::UA_NodeId browseSuperType(const open62541Cpp::UA_NodeId &typeNodeId);
 
-			// Max search depth
-			bool isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth = 100);
+  // Max search depth
+  bool isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth = 100);
 
-			double m_maxAgeRead_ms = 100.0;
+  double m_maxAgeRead_ms = 100.0;
 
-			void updateNamespaceCache();
-			/// Ensure that the new namespace chache is compatible to the current class state.
-			/// Verifies, that no namespace has been removed, or reordered.
-			bool verifyCompatibleNamespaceCache(std::map<uint16_t, std::string> oldIndexToUriCache);
+  void updateNamespaceCache();
+  /// Ensure that the new namespace chache is compatible to the current class state.
+  /// Verifies, that no namespace has been removed, or reordered.
+  bool verifyCompatibleNamespaceCache(std::map<uint16_t, std::string> oldIndexToUriCache);
 
-			void threadConnectExecution();
+  void threadConnectExecution();
 
-			std::function<void()> m_issueReset;
-			std::map<uint16_t, std::string> m_indexToUriCache;
-			std::string m_serverUri;
-			std::string m_username;
-			std::string m_password;
-			UA_MessageSecurityMode m_security = UA_MESSAGESECURITYMODE_NONE;
-			UA_DataTypeArray m_dataTypeArray;
+  std::function<void()> m_issueReset;
+  std::map<uint16_t, std::string> m_indexToUriCache;
+  std::string m_serverUri;
+  std::string m_username;
+  std::string m_password;
+  UA_DataTypeArray m_dataTypeArray;
 
-			std::shared_ptr<std::thread> m_connectThread;
-			std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
-			std::atomic_bool m_isConnected = {false};
-			std::atomic_bool m_tryConnecting = {false};
+  std::shared_ptr<std::thread> m_connectThread;
+  std::shared_ptr<OpcUaInterface> m_opcUaWrapper;
+  std::atomic_bool m_isConnected = {false};
+  std::atomic_bool m_tryConnecting = {false};
 
-			Subscription m_subscr;
+  Subscription m_subscr;
 
-			struct UaNodeId_Compare
-			{
-				bool operator()(const open62541Cpp::UA_NodeId &left, const open62541Cpp::UA_NodeId &right) const
-				{
-						   return left < right;
-				}
-			};
+  struct UaNodeId_Compare {
+    bool operator()(const open62541Cpp::UA_NodeId &left, const open62541Cpp::UA_NodeId &right) const { return left < right; }
+  };
 
-			/// Map for chaching super types. Key = Type, Value = Supertype
-			std::map<open62541Cpp::UA_NodeId, open62541Cpp::UA_NodeId, UaNodeId_Compare> m_superTypes;
+  /// Map for chaching super types. Key = Type, Value = Supertype
+  std::map<open62541Cpp::UA_NodeId, open62541Cpp::UA_NodeId, UaNodeId_Compare> m_superTypes;
 
-        public:
-			std::shared_ptr<UA_Client> m_pClient; // Zugriff aus dem ConnectThread, dem PublisherThread
-            std::recursive_mutex m_clientMutex;
-		private:
-			void on_connected();
+ public:
+  std::shared_ptr<UA_Client> m_pClient;  // Zugriff aus dem ConnectThread, dem PublisherThread
+  std::recursive_mutex m_clientMutex;
 
-			std::vector<nlohmann::json> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);
+ private:
+  void on_connected();
 
-			UA_ApplicationDescription &
-			prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo);
-			void initializeNamespaceCache();
+  std::vector<nlohmann::json> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);
 
-			UA_BrowseDescription prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);
+  UA_ApplicationDescription &prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo);
+  void initializeNamespaceCache();
 
-			static void handleContinuationPoint(const UA_ByteString & /*continuationPoint*/);
+  UA_BrowseDescription prepareBrowseContext(ModelOpcUa::NodeId_t referenceTypeId);
 
-			void ReferenceDescriptionsToBrowseResults(const std::vector<UA_ReferenceDescription> &referenceDescriptions,
-			std::list<ModelOpcUa::BrowseResult_t> &browseResult,
-			std::function<bool(const UA_ReferenceDescription &)> filter = [] (const UA_ReferenceDescription&) {return true;});
+  static void handleContinuationPoint(const UA_ByteString & /*continuationPoint*/);
 
-			std::list<ModelOpcUa::BrowseResult_t>
-			BrowseWithContextAndFilter(
-				const ModelOpcUa::NodeId_t &startNode,
-				UA_BrowseDescription &browseContext,
-				std::function<bool(const UA_ReferenceDescription&)> filter = [] (const UA_ReferenceDescription&) {return true;});
+  void ReferenceDescriptionsToBrowseResults(
+    const std::vector<UA_ReferenceDescription> &referenceDescriptions,
+    std::list<ModelOpcUa::BrowseResult_t> &browseResult,
+    std::function<bool(const UA_ReferenceDescription &)> filter = [](const UA_ReferenceDescription &) { return true; });
 
-			static Umati::Dashboard::IDashboardDataClient::BrowseContext_t prepareObjectAndVariableTypeBrowseContext();
-			UA_BrowseDescription getUaBrowseContext(const IDashboardDataClient::BrowseContext_t &browseContext);
+  std::list<ModelOpcUa::BrowseResult_t> BrowseWithContextAndFilter(
+    const ModelOpcUa::NodeId_t &startNode,
+    UA_BrowseDescription &browseContext,
+    std::function<bool(const UA_ReferenceDescription &)> filter = [](const UA_ReferenceDescription &) { return true; });
 
-			UA_NodeClass nodeClassFromNodeId(const open62541Cpp::UA_NodeId &typeDefinitionUaNodeId);
+  static Umati::Dashboard::IDashboardDataClient::BrowseContext_t prepareObjectAndVariableTypeBrowseContext();
+  UA_BrowseDescription getUaBrowseContext(const IDashboardDataClient::BrowseContext_t &browseContext);
 
-			ModelOpcUa::BrowseResult_t
-			ReferenceDescriptionToBrowseResult(const UA_ReferenceDescription &referenceDescription);
+  UA_NodeClass nodeClassFromNodeId(const open62541Cpp::UA_NodeId &typeDefinitionUaNodeId);
 
-			ModelOpcUa::ModellingRule_t browseModellingRule(const open62541Cpp::UA_NodeId &uaNodeId);
+  ModelOpcUa::BrowseResult_t ReferenceDescriptionToBrowseResult(const UA_ReferenceDescription &referenceDescription);
 
-			static void
-			updateResultContainer();
+  ModelOpcUa::ModellingRule_t browseModellingRule(const open62541Cpp::UA_NodeId &uaNodeId);
 
-			void fillNamespaceCache(const std::vector<std::string> &uaNamespaces);
-			void updateCustomDataTypesNamespace(const std::string namespaceURI, const std::size_t namespaceIndex);
-        };
-	} // namespace OpcUa
-} // namespace Umati
+  static void updateResultContainer();
+
+  void fillNamespaceCache(const std::vector<std::string> &uaNamespaces);
+  void updateCustomDataTypesNamespace(const std::string namespaceURI, const std::size_t namespaceIndex);
+};
+}  // namespace OpcUa
+}  // namespace Umati
