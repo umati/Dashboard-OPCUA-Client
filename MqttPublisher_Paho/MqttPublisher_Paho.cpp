@@ -16,7 +16,7 @@ namespace Umati {
 
 		MqttPublisher_Paho::MqttPublisher_Paho(const std::string &protocol, const std::string &host, std::uint16_t port, const std::string &username,
 											   const std::string &password)
-				: m_cli(getUri(protocol, host, port), getClientId(), 100, nullptr), m_callbacks(this) {
+				: m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr), m_callbacks(this) {
 			m_cli.set_callback(m_callbacks);
 
 	 		mqtt::connect_options opts_conn = getOptions(username, password);
