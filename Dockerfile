@@ -26,7 +26,7 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
 FROM alpine:3.17.1 as runtime
 RUN apk --no-cache add \
       libstdc++=12.2.1_git20220924-r4 \
-      ca-certificates=20220614-r3
+      ca-certificates=20220614-r4
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
