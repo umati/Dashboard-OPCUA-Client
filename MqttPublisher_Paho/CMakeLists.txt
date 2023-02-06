@@ -12,7 +12,7 @@ message(
 add_library(MqttPublisher_Paho ${MQTTPUBLISHER_PAHO_SRC})
 
 target_link_libraries(MqttPublisher_Paho PUBLIC DashboardClient)
-target_link_libraries(MqttPublisher_Paho PUBLIC PahoMqttCpp::paho-mqttpp3)
+target_link_libraries(MqttPublisher_Paho PUBLIC PahoMqttCpp::paho-mqttpp3-static)
 
 target_include_directories(
     MqttPublisher_Paho PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include>
