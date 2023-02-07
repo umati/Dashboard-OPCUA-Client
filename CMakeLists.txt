@@ -108,8 +108,8 @@ install(
     RUNTIME DESTINATION bin
 )
 
-set(CERTGEN_INSTALL_FILES Tools/certGen/createCertificate.py Tools/certGen/openssl.cnf.jinja2 Tools/certGen/pki.json
-                          Tools/certGen/README.md Tools/certGen/requirements.txt Tools/certGen/settings.template.json
+set(CERTGEN_INSTALL_FILES Tools/certGen/createCertificate.bat Tools/certGen/createCertificate.sh Tools/certGen/openssl.cnf.template 
+                          Tools/certGen/README.md Tools/certGen/settings.template.conf
 )
 
 install(FILES ${CERTGEN_INSTALL_FILES} DESTINATION bin/Tools/certGen)

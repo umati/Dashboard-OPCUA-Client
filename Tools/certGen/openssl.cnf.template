@@ -223,10 +223,11 @@ keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
 [ alt_names ]
-{% for hostname in Hostnames %}DNS.{{loop.index}} = {{hostname}}
-{% endfor %}
-{% for ip in IPs %}IP.{{loop.index}} = {{ip}}
-{% endfor %}
+
+{{HOSTNAME}}
+
+{{IP}}
+
 URI.1 = {{URI}}
 
 [ v3_ca ]
