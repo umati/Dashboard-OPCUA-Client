@@ -124,7 +124,6 @@ OpcUaClient::OpcUaClient(
     if (bypassCertVerification) {
       config->certificateVerification.verifyCertificate = &bypassVerify;
     }
-    prepareSessionConnectInfo(config->clientDescription);
     SetupSecurity::setupSecurity(config, m_pClient.get());
     config->securityMode = UA_MessageSecurityMode(security);
     config->timeout = 2000;
@@ -167,14 +166,6 @@ bool OpcUaClient::connect() {
   connectionStatusChanged(0, UA_SERVERSTATE_RUNNING);
 
   return true;
-}
-UA_ApplicationDescription &OpcUaClient::prepareSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo) {
-  UA_ApplicationDescription_clear(&sessionConnectInfo);
-  sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT_ALLOC("en-US", "KonI4.0 OPC UA Data Client");
-  sessionConnectInfo.applicationUri = UA_STRING_ALLOC("http://dashboard.umati.app/OPCUA_DataClient");
-  sessionConnectInfo.productUri = UA_STRING_ALLOC("KonI40OpcUaClient_Product");
-  sessionConnectInfo.applicationType = UA_APPLICATIONTYPE_CLIENT;
-  return sessionConnectInfo;
 }
 
 void OpcUaClient::on_connected() {

@@ -28,6 +28,11 @@
 
 namespace Umati {
 namespace OpcUa {
+
+const std::string SetupSecurity::m_applicationName = std::string("KonI4.0 OPC UA Data Client");
+const std::string SetupSecurity::m_applicationUri = std::string("http://dashboard.umati.app/OPCUA_DataClient");
+const std::string SetupSecurity::m_productUri = std::string("KonI40OpcUaClient_Product");
+
 UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert) { return UA_STATUSCODE_GOOD; }
 
 SetupSecurity::paths_t SetupSecurity::paths = {
@@ -146,7 +151,7 @@ bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
   UA_ByteString certificate = loadFile(paths.ClientPubCert.c_str());
   UA_ByteString privateKey = loadFile(paths.ClientPrivCert.c_str());
   if (certificate.length == 0 || privateKey.length == 0) {
-    createNewClientCert(config);
+    createNewClientCert();
     certificate = loadFile(paths.ClientPubCert.c_str());
     privateKey = loadFile(paths.ClientPrivCert.c_str());
     if (certificate.length == 0 || privateKey.length == 0) {
@@ -162,21 +167,29 @@ bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
   size_t revocationListSize = 0;
 
   UA_ClientConfig_setDefaultEncryption(config, certificate, privateKey, trustList, trustListSize, revocationList, revocationListSize);
-
+  setSessionConnectInfo(config->clientDescription);
   UA_ByteString_clear(&certificate);
   UA_ByteString_clear(&privateKey);
 
   return true;
 }
 
-void SetupSecurity::createNewClientCert(UA_ClientConfig *config) {
+void SetupSecurity::setSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo) {
+  UA_LocalizedText_clear(&sessionConnectInfo.applicationName);
+  sessionConnectInfo.applicationName = UA_LOCALIZEDTEXT_ALLOC("en-US", m_applicationName.c_str());
+  UA_String_clear(&sessionConnectInfo.applicationUri);
+  sessionConnectInfo.applicationUri = UA_STRING_ALLOC(m_applicationUri.c_str());
+  UA_String_clear(&sessionConnectInfo.productUri);
+  sessionConnectInfo.productUri = UA_STRING_ALLOC(m_productUri.c_str());
+}
+
+void SetupSecurity::createNewClientCert() {
   LOG(INFO) << "Creating new client certificate";
   UA_String subject[3] = {UA_STRING_STATIC("C=DE"), UA_STRING_STATIC("O=SampleOrganization"), UA_STRING_STATIC("CN=UmatiDashboardClient@localhost")};
 
   UA_UInt32 lenSubject = 3;
   std::stringstream ssSubAltNameUri;
-  open62541Cpp::UA_String uri(&config->clientDescription.applicationUri, false);
-  ssSubAltNameUri << "URI:" << static_cast<std::string>(uri);
+  ssSubAltNameUri << "URI:" << m_applicationUri;
 
   open62541Cpp::UA_String altNameUri(ssSubAltNameUri.str());
   UA_String subjectAltName[2] = {UA_STRING_STATIC("DNS:localhost"), *altNameUri.String};

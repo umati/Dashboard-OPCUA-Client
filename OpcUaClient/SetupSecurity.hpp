@@ -40,10 +40,14 @@ class SetupSecurity {
 
   static UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert);
 
-  static void createNewClientCert(UA_ClientConfig *config);
+  static void createNewClientCert();
 
  protected:
   static paths_t paths;
+  const static std::string m_applicationName;
+  const static std::string m_applicationUri;
+  const static std::string m_productUri;
+  static void setSessionConnectInfo(UA_ApplicationDescription &sessionConnectInfo);
 };
 }  // namespace OpcUa
 }  // namespace Umati
