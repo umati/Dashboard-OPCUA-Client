@@ -101,7 +101,7 @@ set(CERTGEN_INSTALL_FILES Tools/certGen/createCertificate.bat Tools/certGen/crea
                           Tools/certGen/README.md Tools/certGen/settings.template.conf
 )
 
-install(FILES ${CERTGEN_INSTALL_FILES} DESTINATION bin/Tools/certGen)
+install(FILES ${CERTGEN_INSTALL_FILES} DESTINATION share/DashboardOpcUaClient/Tools/certGen)
 
 target_link_libraries(DashboardOpcUaClient PUBLIC Threads::Threads Open62541Cpp::Open62541Cpp)
 message("### opcua_dashboardclient: Exporting DashboardOpcUaClient")
