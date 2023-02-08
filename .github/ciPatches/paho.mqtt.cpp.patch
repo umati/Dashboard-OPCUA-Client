@@ -1,8 +1,19 @@
-diff --git a/cmake/modules/FindLibreSSL.cmake b/cmake/modules/FindLibreSSL.cmake
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index a9f8908..b55c211 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -18,5 +18,6 @@ install(EXPORT ${package_name} DESTINATION lib/cmake/${package_name}
+ install(FILES
+     "${CMAKE_CURRENT_BINARY_DIR}/${package_name}Config.cmake"
+     FindPahoMqttC.cmake
++    FindLibreSSL.cmake
+     "${CMAKE_CURRENT_BINARY_DIR}/${package_name}ConfigVersion.cmake"
+     DESTINATION lib/cmake/${package_name})
+diff --git a/cmake/FindLibreSSL.cmake b/cmake/FindLibreSSL.cmake
 new file mode 100644
 index 0000000..6bdc069
 --- /dev/null
-+++ b/cmake/modules/FindLibreSSL.cmake
++++ b/cmake/FindLibreSSL.cmake
 @@ -0,0 +1,227 @@
 +#[=======================================================================[
 +
@@ -231,76 +242,25 @@ index 0000000..6bdc069
 +    endif() # LibreSSL::TLS
 +
 +endif(LIBRESSL_FOUND)
-diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 4c06409..de84c19 100644
---- a/src/CMakeLists.txt
-+++ b/src/CMakeLists.txt
-@@ -187,9 +187,7 @@ INSTALL(FILES MQTTAsync.h MQTTClient.h MQTTClientPersistence.h MQTTProperties.h
-     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
- 
- IF (PAHO_WITH_SSL)
--    SET(OPENSSL_ROOT_DIR "" CACHE PATH "Directory containing OpenSSL libraries and includes")
+diff --git a/cmake/FindPahoMqttC.cmake b/cmake/FindPahoMqttC.cmake
+index b3e7ec3..4a0e64f 100644
+--- a/cmake/FindPahoMqttC.cmake
++++ b/cmake/FindPahoMqttC.cmake
+@@ -1,7 +1,7 @@
+ # find the Paho MQTT C library
+ if(PAHO_WITH_SSL)
+     set(_PAHO_MQTT_C_LIB_NAME paho-mqtt3as)
 -    find_package(OpenSSL REQUIRED)
--
-+    find_package(LibreSSL  REQUIRED)
-     IF (PAHO_BUILD_SHARED)
-         ## common compilation for libpaho-mqtt3cs and libpaho-mqtt3as
-     	## Note: SSL libraries must be recompiled due ifdefs
-@@ -233,7 +231,12 @@ IF (PAHO_WITH_SSL)
-                     ${CMAKE_BINARY_DIR})
-             TARGET_LINK_LIBRARIES(${TARGET}
-                 PUBLIC
--                    OpenSSL::SSL OpenSSL::Crypto ${LIBS_SYSTEM})
-+                    LibreSSL::SSL LibreSSL::Crypto ${LIBS_SYSTEM})
-+            IF (WIN32)
-+                TARGET_LINK_LIBRARIES(${TARGET}
-+                    PUBLIC
-+                        bcrypt)
-+            ENDIF()
-         ENDFOREACH()
-         INSTALL(TARGETS paho-mqtt3cs paho-mqtt3as
-             EXPORT eclipse-paho-mqtt-cTargets
-@@ -299,7 +302,12 @@ IF (PAHO_WITH_SSL)
-                     ${CMAKE_BINARY_DIR})
-             TARGET_LINK_LIBRARIES(${TARGET}
-                 PUBLIC
--                    OpenSSL::SSL OpenSSL::Crypto ${LIBS_SYSTEM})
-+                    LibreSSL::SSL LibreSSL::Crypto ${LIBS_SYSTEM})
-+            IF (WIN32)
-+                TARGET_LINK_LIBRARIES(${TARGET}
-+                    PUBLIC
-+                        bcrypt)
-+            ENDIF()
-         ENDFOREACH()
-     ENDIF()
- ENDIF()
-@@ -322,7 +330,7 @@ ADD_EXECUTABLE( Base64Test EXCLUDE_FROM_ALL Base64.c Base64.h )
- TARGET_COMPILE_DEFINITIONS( Base64Test PUBLIC "-DBASE64_TEST" )
- IF (PAHO_WITH_SSL)
- 	ADD_EXECUTABLE( Base64TestOpenSSL EXCLUDE_FROM_ALL Base64.c Base64.h )
--	TARGET_LINK_LIBRARIES( Base64TestOpenSSL OpenSSL::SSL OpenSSL::Crypto)
-+	TARGET_LINK_LIBRARIES( Base64TestOpenSSL LibreSSL::SSL LibreSSL::Crypto)
- 	TARGET_COMPILE_DEFINITIONS( Base64TestOpenSSL PUBLIC "-DBASE64_TEST -DOPENSSL=1" )
- ENDIF (PAHO_WITH_SSL)
++    find_package(LibreSSL REQUIRED)
+ else()
+     set(_PAHO_MQTT_C_LIB_NAME paho-mqtt3a)
+ endif()
+@@ -26,7 +26,7 @@ set_target_properties(PahoMqttC::PahoMqttC PROPERTIES
+ if(PAHO_WITH_SSL)
+     set_target_properties(PahoMqttC::PahoMqttC PROPERTIES
+             INTERFACE_COMPILE_DEFINITIONS "OPENSSL=1"
+-            INTERFACE_LINK_LIBRARIES "OpenSSL::SSL;OpenSSL::Crypto")
++            INTERFACE_LINK_LIBRARIES "LibreSSL::SSL;LibreSSL::Crypto")
+ endif()
  
-@@ -331,6 +339,6 @@ ADD_EXECUTABLE( Sha1Test EXCLUDE_FROM_ALL SHA1.c SHA1.h )
- TARGET_COMPILE_DEFINITIONS( Sha1Test PUBLIC "-DSHA1_TEST" )
- IF (PAHO_WITH_SSL)
- 	ADD_EXECUTABLE( Sha1TestOpenSSL EXCLUDE_FROM_ALL SHA1.c SHA1.h )
--	TARGET_LINK_LIBRARIES( Sha1TestOpenSSL OpenSSL::SSL OpenSSL::Crypto)
-+	TARGET_LINK_LIBRARIES( Sha1TestOpenSSL LibreSSL::SSL LibreSSL::Crypto)
- 	TARGET_COMPILE_DEFINITIONS( Sha1TestOpenSSL PUBLIC "-DSHA1_TEST -DOPENSSL=1" )
- ENDIF (PAHO_WITH_SSL)
-diff --git a/src/SSLSocket.c b/src/SSLSocket.c
-index fd80c72..1dbd03b 100644
---- a/src/SSLSocket.c
-+++ b/src/SSLSocket.c
-@@ -593,7 +593,7 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
- 		}
- 	}
- 
--#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
-+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER))
- 	SSL_CTX_set_security_level(net->ctx, 1);
- #endif
- 
+ include(FindPackageHandleStandardArgs)

@@ -71,17 +71,6 @@ if(DASHBOARD_PUBLISHER STREQUAL "MQTT_MOSQUITTO")
     target_link_libraries(DashboardOpcUaClient PUBLIC MqttPublisher)
 endif()
 
-message("### OpenSSL Library Found:" ${PAHO_WITH_SSL})
-
-if(PAHO_WITH_SSL)
-    set(OPENSSL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
-    find_package(OpenSSL REQUIRED)
-    message("### OpenSSL Library Found: " ${OPENSSL_FOUND})
-    message("### OpenSSL Library Path: " ${OPENSSL_SSL_LIBRARY})
-    message("### OpenSSL Crypto Library Path: " ${OPENSSL_CRYPTO_LIBRARY})
-    message("### OpelSSL Include Dir: " ${OPENSSL_INCLUDE_DIR})
-endif()
-
 if(DASHBOARD_PUBLISHER STREQUAL "MQTT_PAHO")
     # Promote target PahoMqttC::PahoMqttC for dll copy
     message("### opcua_dashboardclient: Adding Publisher paho")
