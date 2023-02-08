@@ -4,6 +4,12 @@ project(BuildWithDependencies VERSION 1.2.0)
 
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
+## build options
+set(BUILD_DEB_PACKAGE FALSE CACHE BOOL "Flag that defines whether to build a debian package")
+set(DEB_PACKAGE_LIBCPP_VERSION "8.4.0" CACHE STRING "The debian package libstdc++6 dependency version")
+set(PAHO_WITH_SSL TRUE CACHE BOOL "Flag that defines whether to build paho.mqtt with SSL")
+
+
 externalproject_add(
     JsonExternal
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../deps/json
@@ -100,3 +106,23 @@ externalproject_add(
     DEPENDS open62541CppExternal EasyloggingppExternal JsonExternal PahoCppExternal
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/Dashboard-Client-build
 )
+
+
+if(${BUILD_DEB_PACKAGE})
+    unset(BINARY_DIR)
+    ExternalProject_Get_property(Dashboard-Client BINARY_DIR) 
+    set(BINARY_DIR_Dashboard-Client ${BINARY_DIR})   
+    set(CPACK_INSTALL_CMAKE_PROJECTS  ${BINARY_DIR_Dashboard-Client} "Dashboard-Client" "ALL" "/")
+    set(CPACK_PACKAGE_NAME "DashboardOpcUaClient")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OPC UA client based on open62541 to subscribe to servers implementing umati endorsed companion specification and publish via MQTT to the demo dashboard https://umati.app")
+    set(CPACK_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
+    set(CPACK_PACKAGE_DIRECTORY ${CMAKE_INSTALL_PREFIX})
+    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/../LICENSE")
+    set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/../README.md")
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marc Fischer")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6 (>= ${DEB_PACKAGE_LIBCPP_VERSION}), openssl(>= 1.1.1)")
+    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+    set(CPACK_DEB_COMPONENT_INSTALL YES)
+    INCLUDE(CPack)
+endif()
