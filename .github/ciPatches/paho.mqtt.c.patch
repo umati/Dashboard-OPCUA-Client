@@ -232,10 +232,10 @@ index 0000000..6bdc069
 +
 +endif(LIBRESSL_FOUND)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 4c06409..de84c19 100644
+index 4c06409..143106b 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -187,9 +187,7 @@ INSTALL(FILES MQTTAsync.h MQTTClient.h MQTTClientPersistence.h MQTTProperties.h
+@@ -187,14 +187,12 @@ INSTALL(FILES MQTTAsync.h MQTTClient.h MQTTClientPersistence.h MQTTProperties.h
      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
  
  IF (PAHO_WITH_SSL)
@@ -246,6 +246,12 @@ index 4c06409..de84c19 100644
      IF (PAHO_BUILD_SHARED)
          ## common compilation for libpaho-mqtt3cs and libpaho-mqtt3as
      	## Note: SSL libraries must be recompiled due ifdefs
+     	ADD_LIBRARY(common_ssl_obj OBJECT ${common_src})
+-    	TARGET_INCLUDE_DIRECTORIES(common_ssl_obj PUBLIC ${OPENSSL_INCLUDE_DIR})
++    	TARGET_INCLUDE_DIRECTORIES(common_ssl_obj PUBLIC ${LIBRESSL_INCLUDE_DIR})
+     	SET_PROPERTY(TARGET common_ssl_obj PROPERTY	POSITION_INDEPENDENT_CODE ON)
+     	SET_PROPERTY(TARGET common_ssl_obj PROPERTY COMPILE_DEFINITIONS "OPENSSL=1;PAHO_MQTT_EXPORTS=1")
+     
 @@ -233,7 +231,12 @@ IF (PAHO_WITH_SSL)
                      ${CMAKE_BINARY_DIR})
              TARGET_LINK_LIBRARIES(${TARGET}
@@ -260,6 +266,15 @@ index 4c06409..de84c19 100644
          ENDFOREACH()
          INSTALL(TARGETS paho-mqtt3cs paho-mqtt3as
              EXPORT eclipse-paho-mqtt-cTargets
+@@ -246,7 +249,7 @@ IF (PAHO_WITH_SSL)
+         ## common compilation for libpaho-mqtt3cs and libpaho-mqtt3as
+     	## Note: SSL libraries must be recompiled due ifdefs
+     	ADD_LIBRARY(common_ssl_obj_static OBJECT ${common_src})
+-    	TARGET_INCLUDE_DIRECTORIES(common_ssl_obj_static PUBLIC ${OPENSSL_INCLUDE_DIR})
++    	TARGET_INCLUDE_DIRECTORIES(common_ssl_obj_static PUBLIC ${LIBRESSL_INCLUDE_DIR})
+     	SET_PROPERTY(TARGET common_ssl_obj_static PROPERTY POSITION_INDEPENDENT_CODE ON)
+     	SET_PROPERTY(TARGET common_ssl_obj_static PROPERTY COMPILE_DEFINITIONS "OPENSSL=1;PAHO_MQTT_STATIC=1")
+     
 @@ -299,7 +302,12 @@ IF (PAHO_WITH_SSL)
                      ${CMAKE_BINARY_DIR})
              TARGET_LINK_LIBRARIES(${TARGET}
