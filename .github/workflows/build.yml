@@ -4,10 +4,10 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-linux:
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022]
+        os: [ubuntu-20.04, ubuntu-22.04]
         build_type: [Debug, Release]
         arch: ["386", "amd64"]
     runs-on: ${{matrix.os}}
@@ -19,40 +19,56 @@ jobs:
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
-      - name: Set Windows CMAKE_GENERATOR 2019
-        if: matrix.os == 'windows-2019'
+      - name: Build UmatiDashboardOpcUaClient with dependencies
         run: |
-          #shellcheck  disable=SC2154
-          echo "CMAKE_GENERATOR=Visual Studio 16 2019">> $env:GITHUB_ENV
-          echo "CMAKE_BUILD_ARGS=--config ${{matrix.build_type}}">> $env:GITHUB_ENV
-      - name: Set Windows CMAKE_GENERATOR 2022
-        if: matrix.os == 'windows-2022'
-        run: |
-          #shellcheck  disable=SC2154
-          echo "CMAKE_GENERATOR=Visual Studio 17 2022">> "$env:GITHUB_ENV"
-          echo "CMAKE_BUILD_ARGS=--config ${{matrix.build_type}}">> $env:GITHUB_ENV
-      - name: Build server with dependencies
-        if: matrix.arch == 'amd64'
-        run: |
+          LIBCPP_VERSION=$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
-          cmake --build . ${{env.CMAKE_BUILD_ARGS}}
-      - name: Build server with dependencies 32bit
-        if: matrix.arch == '386' && matrix.os == 'windows-2022'
-        run: |
-          mkdir -p build
-          cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -A Win32 -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
-          cmake --build . ${{env.CMAKE_BUILD_ARGS}}
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} \
+            -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION=$LIBCPP_VERSION
+          cmake --build . -j
+          make package
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
         with:
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/bin
-            ${{ env.CMAKE_INSTALL_PREFIX }}/lib/*.so*
-            ${{ env.CMAKE_INSTALL_PREFIX }}/lib64/*.so*
+            ${{ env.CMAKE_INSTALL_PREFIX }}/share/DashboardOpcUaClient
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v3
+        with:
+          name: dashboardopcuaclient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}.deb
+          path: |
+            ${{ env.CMAKE_INSTALL_PREFIX }}/*.deb
+  build-windows:
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+        build_type: [Debug, Release]
+        arch: ["386", "amd64"]
+    runs-on: ${{matrix.os}}
+    env:
+      CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3.3.0
+        with:
+          path: UmatiDashboardOpcUaClient
+          submodules: recursive
+      - name: Build UmatiDashboardOpcUaClient with dependencies
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
+          cmake --build . -j --config ${{matrix.build_type}}
+      - name: Upload Artefacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
+          path: |
+            ${{ env.CMAKE_INSTALL_PREFIX }}/bin
+            ${{ env.CMAKE_INSTALL_PREFIX }}/share/DashboardOpcUaClient
   docker:
     runs-on: ubuntu-20.04
     env:
