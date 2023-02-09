@@ -29,8 +29,8 @@
 namespace Umati {
 namespace OpcUa {
 
-const std::string SetupSecurity::m_applicationName = std::string("KonI4.0 OPC UA Data Client");
-const std::string SetupSecurity::m_applicationUri = std::string("http://dashboard.umati.app/OPCUA_DataClient");
+const std::string SetupSecurity::m_applicationName = std::string("umati Dashboard Gateway");
+const std::string SetupSecurity::m_applicationUri = std::string("http://umati.app/OPCUA_Gateway");
 const std::string SetupSecurity::m_productUri = std::string("KonI40OpcUaClient_Product");
 
 UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert) { return UA_STATUSCODE_GOOD; }
@@ -185,7 +185,7 @@ void SetupSecurity::setSessionConnectInfo(UA_ApplicationDescription &sessionConn
 
 void SetupSecurity::createNewClientCert() {
   LOG(INFO) << "Creating new client certificate";
-  UA_String subject[3] = {UA_STRING_STATIC("C=DE"), UA_STRING_STATIC("O=SampleOrganization"), UA_STRING_STATIC("CN=UmatiDashboardClient@localhost")};
+  UA_String subject[3] = {UA_STRING_STATIC("C=DE"), UA_STRING_STATIC("O=UmatiApp"), UA_STRING_STATIC("CN=UmatiDashboardGateway@localhost")};
 
   UA_UInt32 lenSubject = 3;
   std::stringstream ssSubAltNameUri;

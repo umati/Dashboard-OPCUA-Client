@@ -53,7 +53,7 @@ cp $TEMPLATE_OPENSSL_CONF "$TARGET_OPENSSL_CONF"
 ## Load Settings
 #default settings
 
-declare -A SETTINGS=(["Hostnames"]="localhost" ["IPs"]="127.0.0.1" ["URI"]="http://dashboard.umati.app/OPCUA_DataClient" ["Keysize"]=2048 ["Days"]=365 ["Subject"]="/C=DE/O=SampleOrganization/CN=UmatiDashboardClient@localhost")
+declare -A SETTINGS=(["Hostnames"]="localhost" ["IPs"]="127.0.0.1" ["URI"]="http://umati.app/OPCUA_Gateway" ["Keysize"]=2048 ["Days"]=365 ["Subject"]="/C=DE/O=UmatiApp/CN=UmatiDashboardGateway@localhost")
 CONF_FILE=${ENV}.conf
 if test -f "$CONF_FILE"; then
     echo "Load config file $CONF_FILE"

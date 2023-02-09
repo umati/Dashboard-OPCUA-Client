@@ -42,10 +42,10 @@ if not exist "%TARGET_DIR%" mkdir "%TARGET_DIR%"
 
 set Hostnames=localhost
 set IPs=127.0.0.1
-set URI=http://dashboard.umati.app/OPCUA_DataClient
+set URI=http://umati.app/OPCUA_Gateway
 set Keysize=2048
 set Days=365
-set Subject=/C=DE/O=SampleOrganization/CN=UmatiDashboardClient@localhost
+set Subject=/C=DE/O=UmatiApp/CN=UmatiDashboardGateway@localhost
 set CONF_FILE=%ENV%.conf
 if exist "%CONF_FILE%" (
     echo Load config file %CONF_FILE%
