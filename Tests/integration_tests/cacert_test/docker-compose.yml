@@ -1,0 +1,19 @@
+---
+version: '3.1'
+services:
+  mqtt:
+    image: eclipse-mosquitto
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./certs_server:/mosquitto/certs
+  test:
+    image: ubuntu:22.04
+    depends_on:
+      - mqtt
+    volumes:
+      - ./TestCaCertificate:/app/TestCaCertificate
+      - ./ConfigurationCa.json:/app/ConfigurationCa.json
+      - ./ConfigurationCa2.json:/app/ConfigurationCa2.json
+      - ./test_entrypoint.sh:/app/test_entrypoint.sh
+      - ./certs/ca.crt:/app/ca.crt
+    entrypoint: ["/app/test_entrypoint.sh"]

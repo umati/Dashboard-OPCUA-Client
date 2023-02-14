@@ -21,17 +21,24 @@ jobs:
           submodules: recursive
       - name: Build UmatiDashboardOpcUaClient with dependencies
         run: |
-          LIBCPP_VERSION=$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')
+          LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')"
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} \
-            -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION=$LIBCPP_VERSION
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH="${{ env.CMAKE_INSTALL_PREFIX }}" \
+            -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
           cmake --build . -j
           make package
       - name: Run Tests
         run: |
           cd build/Dashboard-Client-build
-          ctest -V -C ${{matrix.build_type}}
+          ctest -V -C "${{matrix.build_type}}"
+      - name: Run integration test cacert_test
+        run : |
+          cd UmatiDashboardOpcUaClient/Tests/integration_tests/cacert_test
+          ./genCerts.sh
+          cp "${{ github.workspace }}/build/Dashboard-Client-build/Tests/TestCaCertificate" .
+          docker-compose up -d
+          ./evaluateTest.sh
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
         with:

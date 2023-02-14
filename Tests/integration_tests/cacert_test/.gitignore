@@ -1,0 +1,9 @@
+*
+!.gitignore
+!ConfigureCa.json
+!ConfigureCa2.json
+!docker-compose.yml
+!genCerts.sh
+!mosquitto.conf
+!test_entrypoint.sh
+!evaluateTest.sh

@@ -1,0 +1,15 @@
+{
+  "Mqtt": {
+    "Hostname": "mqtt",
+    "Protocol": "wss",
+    "Port": 1884,
+    "Username": "",
+    "Password": "",
+    "CaCertPath":"/etc/ssl/certs",
+    "CaTrustStorePath": ""
+  },
+  "OpcUa": {},
+  "ObjectTypeNamespaces": [],
+  "NamespaceInformations": [],
+  "MachinesFilter": []
+}

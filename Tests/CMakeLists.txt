@@ -45,3 +45,7 @@ foreach(file_iterator ${CONFIG_TESTFILES})
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endforeach(file_iterator)
+
+
+add_executable(TestCaCertificate TestCaCertificate.cpp)
+target_link_libraries(TestCaCertificate Util GTest::gtest_main MqttPublisher_Paho MachineObserver)
