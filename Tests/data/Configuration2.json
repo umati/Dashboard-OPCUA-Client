@@ -1,7 +1,7 @@
 {
   "OpcUa": {
     "Endpoint": "opc.tcp://localhost:4840",
-    "User": "User",
+    "Username": "User",
     "Password": "Password",
     "Security": 1
   },
@@ -10,5 +10,8 @@
     "Port": 1883,
     "Username": "MyUser",
     "Password": "MyPassword"
-  }
+  },
+  "NamespaceInformations": [],
+  "ObjectTypeNamespaces": [],
+  "MachinesFilter":[]
 }

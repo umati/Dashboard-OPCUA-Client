@@ -28,6 +28,10 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION=$LIBCPP_VERSION
           cmake --build . -j
           make package
+      - name: Run Tests
+        run: |
+          cd build/Dashboard-Client-build
+          ctest -V -C ${{matrix.build_type}}
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
         with:
@@ -62,6 +66,10 @@ jobs:
           cd build
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
           cmake --build . -j --config ${{matrix.build_type}}
+      - name: Run Tests
+        run: |
+          cd build/Dashboard-Client-build
+          ctest -V -C ${{matrix.build_type}}
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
         with:

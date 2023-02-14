@@ -221,7 +221,7 @@ TEST(BasicUsage, SimpleTranslateToNodeId) {
 
 TEST(BasicUsage, SimplePlaceholder) {
 	auto obj = ExampleModels::getSimpleObjectWithPlaceholder();
-	std::cout << toString(obj) << std::endl;
+	// std::cout << toString(obj) << std::endl;
 
 	EXPECT_TRUE(true);
 }
