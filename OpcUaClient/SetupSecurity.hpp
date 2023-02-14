@@ -20,11 +20,11 @@
 namespace Umati {
 namespace OpcUa {
 
-		UA_StatusCode bypassVerify(const UA_CertificateVerification *verificationContext, const UA_ByteString *cert);
-		class SetupSecurity {
-		public:
-			struct paths_t {
-				std::string PkiRoot;
+UA_StatusCode bypassVerify(const UA_CertificateVerification *verificationContext, const UA_ByteString *cert);
+class SetupSecurity {
+ public:
+  struct paths_t {
+    std::string PkiRoot;
 
     std::string ServerTrustedCerts;
     std::string ServerRevokedCerts;
@@ -38,7 +38,7 @@ namespace OpcUa {
 
   static bool setupSecurity(UA_ClientConfig *config, UA_Client *client);
 
-			static void createNewClientCert();
+  static void createNewClientCert();
 
  protected:
   static paths_t paths;
