@@ -77,6 +77,11 @@ jobs:
         run: |
           cd build/Dashboard-Client-build
           ctest -V -C ${{matrix.build_type}}
+      - name: Download CA Certs
+        run: |
+          cd ${{ env.CMAKE_INSTALL_PREFIX }}
+          mkdir -p  bin/certs
+          curl https://curl.se/ca/cacert.pem -o bin/certs/cacert.pem -s
       - name: Upload Artefacts
         uses: actions/upload-artifact@v3
         with:
