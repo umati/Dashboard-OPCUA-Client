@@ -6,8 +6,8 @@ usage()
   exit 2;
 }
 ## Read args
-getopt -o e:o: --long environment:,outdir: -- "$@"
-if [[ $? -ne 0 ]]; then
+if ! getopt -o e:o: --long environment:,outdir: -- "$@";
+then
     echo 'Error in command line parsing' >&2
     usage
 fi
