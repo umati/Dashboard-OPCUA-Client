@@ -4,6 +4,7 @@
  * 
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #include "MqttPublisher_Paho.hpp"
@@ -14,8 +15,8 @@
 namespace Umati {
 	namespace MqttPublisher_Paho {
 
-		MqttPublisher_Paho::MqttPublisher_Paho(const std::string &protocol, const std::string &host, std::uint16_t port, const std::string &username,
-											   const std::string &password)
+		MqttPublisher_Paho::MqttPublisher_Paho(const std::string &protocol, const std::string &host, std::uint16_t port, const std::string &CaCertPath,
+											   const std::string &CaTrustStorePath, const std::string &username, const std::string &password)
 				: m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr), m_callbacks(this) {
 			m_cli.set_callback(m_callbacks);
 
@@ -23,12 +24,8 @@ namespace Umati {
 
 			if (protocol == "wss") {
 				mqtt::ssl_options ssl_opts;
-#ifndef WIN32
-				ssl_opts.ca_path("/etc/ssl/certs/");
-#else
-				ssl_opts.set_ca_path("./certs");
-				ssl_opts.set_trust_store("./certs/ca-certificates.crt");
-#endif
+				ssl_opts.ca_path(CaCertPath);
+				ssl_opts.set_trust_store(CaTrustStorePath);
 				ssl_opts.set_verify(true);
 				opts_conn.set_ssl(ssl_opts);
 			}

@@ -4,6 +4,7 @@
  *
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #pragma once
@@ -26,6 +27,12 @@ namespace Umati {
 			std::string Prefix = "umati";
 			std::string ClientId = "umati";
 			std::string Protocol = "tcp";
+			std::string CaTrustStorePath = "./certs/cacert.pem";
+#ifndef WIN32
+			std::string CaCertPath = "/etc/ssl/certs/";
+#else
+			std::string CaCertPath = "./certs";
+#endif
 		};
 
 		struct OpcUaConfig {

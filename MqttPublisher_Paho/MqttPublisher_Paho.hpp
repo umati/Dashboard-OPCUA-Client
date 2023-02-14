@@ -4,6 +4,7 @@
  * 
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #pragma once
@@ -29,6 +30,8 @@ namespace Umati {
 					const std::string &protocol,
 					const std::string &host,
 					std::uint16_t port,
+					const std::string &CaCertPath,
+					const std::string &CaTrustStorePath,
 					const std::string &username = std::string(),
 					const std::string &password = std::string()
 			);

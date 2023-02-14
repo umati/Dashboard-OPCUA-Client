@@ -5,6 +5,7 @@
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #include "DashboardOpcUaClient.hpp"
@@ -26,8 +27,11 @@ m_pPublisher(std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
         configuration->getMqtt().Protocol,
         configuration->getMqtt().Hostname,
         configuration->getMqtt().Port,
+        configuration->getMqtt().CaCertPath,
+        configuration->getMqtt().CaTrustStorePath,
         configuration->getMqtt().Username,
-        configuration->getMqtt().Password)),
+        configuration->getMqtt().Password
+        )),
 m_pOpcUaTypeReader(std::make_shared<Umati::Dashboard::OpcUaTypeReader>(
         m_pClient,
         configuration->getObjectTypeNamespaces(),

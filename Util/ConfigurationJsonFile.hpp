@@ -4,6 +4,7 @@
  * 
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 #pragma once
 
@@ -17,7 +18,7 @@ namespace ModelOpcUa
 }
 namespace Umati {
 	namespace Util {
-		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MqttConfig, Hostname, Port, Username, Password, Prefix, ClientId, Protocol);
+		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MqttConfig, Hostname, Port, Username, Password, Prefix, ClientId, Protocol, CaCertPath, CaTrustStorePath);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(OpcUaConfig, Endpoint, Username, Password, Security, ByPassCertVerification);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NamespaceInformation, Namespace, Types, IdentificationType);
 
