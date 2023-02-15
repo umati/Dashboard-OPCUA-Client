@@ -28,6 +28,7 @@
 
 namespace Umati {
 namespace OpcUa {
+UA_StatusCode bypassVerify(const UA_CertificateVerification *verificationContext, const UA_ByteString *cert) { return UA_STATUSCODE_GOOD; }
 
 const std::string SetupSecurity::m_applicationName = std::string("umati Dashboard Gateway");
 const std::string SetupSecurity::m_applicationUri = std::string("http://umati.app/OPCUA_Gateway");

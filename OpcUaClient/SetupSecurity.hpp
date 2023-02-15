@@ -20,7 +20,7 @@
 namespace Umati {
 namespace OpcUa {
 
-UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert);
+UA_StatusCode bypassVerify(const UA_CertificateVerification *verificationContext, const UA_ByteString *cert);
 class SetupSecurity {
  public:
   struct paths_t {
@@ -37,8 +37,6 @@ class SetupSecurity {
   };
 
   static bool setupSecurity(UA_ClientConfig *config, UA_Client *client);
-
-  static UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert);
 
   static void createNewClientCert();
 
