@@ -69,9 +69,12 @@ jobs:
           submodules: recursive
       - name: Build UmatiDashboardOpcUaClient with dependencies
         run: |
+          $matrixarch = "${{matrix.arch}}"
+          if($matrixarch = "386"){$arch="Win32"}
+          if($matrixarch = "amd64"){$arch="x64"}
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DPAHO_WITH_SSL=1
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -A "$arch" -DPAHO_WITH_SSL=1
           cmake --build . -j --config ${{matrix.build_type}}
       - name: Run Tests
         run: |
