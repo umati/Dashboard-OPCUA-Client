@@ -109,6 +109,7 @@ externalproject_add(
 
 
 if(${BUILD_DEB_PACKAGE})
+    message("### Build debian package")
     unset(BINARY_DIR)
     ExternalProject_Get_property(Dashboard-Client BINARY_DIR) 
     set(BINARY_DIR_Dashboard-Client ${BINARY_DIR})   
@@ -121,7 +122,7 @@ if(${BUILD_DEB_PACKAGE})
     set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/../README.md")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marc Fischer")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6 (>= ${DEB_PACKAGE_LIBCPP_VERSION}), openssl(>= 1.1.1)")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6 (>= ${DEB_PACKAGE_LIBCPP_VERSION}), openssl(>= 1.1.1), ca-certificates")
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
     set(CPACK_DEB_COMPONENT_INSTALL YES)
     INCLUDE(CPack)
