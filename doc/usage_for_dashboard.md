@@ -18,10 +18,10 @@ Requirements:
             2. Download artefact for your operating system.
             3. If older than 4 weeks use alternative option.
 
-		2. Development version ([https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml))
+        2. Development version ([https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml))
 
-			1. Select newest workflow run.
-			2. Download artifact for your operating system.
+            1. Select newest workflow run.
+            2. Download artifact for your operating system.
 
 2. Unzip Folder
 3. Create configuration for Client
