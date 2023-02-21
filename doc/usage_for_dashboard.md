@@ -6,22 +6,22 @@ Requirements:
 - Admin privileges
 - Internet connection for the Dashboard-OPCUA-Client and a open Port between the Client and the OPC UA Server
 
-## Executing of Dashboard-OPCUA-Client:
+## Executing of Dashboard-OPCUA-Client
 
 1. Get OPC UA Client Binaries:
 
-	1.  Two Possibilities:
+    1. Two Possibilities:
 
-		1.  Stable version ([https://github.com/umati/Dashboard-OPCUA-Client/releases](https://github.com/umati/Dashboard-OPCUA-Client/releases))
+        1. Stable version ([https://github.com/umati/Dashboard-OPCUA-Client/releases](https://github.com/umati/Dashboard-OPCUA-Client/releases))
 
             1. Select newest release.
             2. Download artefact for your operating system.
             3. If older than 4 weeks use alternative option.
 
-		2.  Development version ([https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml))
+		2. Development version ([https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml))
 
-			1.  Select newest workflow run.
-			2.  Download artifact for your operating system.
+			1. Select newest workflow run.
+			2. Download artifact for your operating system.
 
 2. Unzip Folder
 3. Create configuration for Client
@@ -46,10 +46,10 @@ Requirements:
 5. After the start up a JSON containing all machine values is transmitted to the client
 
 <details>
-	<summary>Troubleshooting</summary>
+    <summary>Troubleshooting</summary>
 
 Common errors:
 1. Missing DLLs
-	In case DLLs are missing, those are most likely from the Visual C++ Redistributable package. Those can be downloaded [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
+    In case DLLs are missing, those are most likely from the Visual C++ Redistributable package. Those can be downloaded [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
 
 </details>
