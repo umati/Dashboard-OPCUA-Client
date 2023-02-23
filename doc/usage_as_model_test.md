@@ -2,10 +2,11 @@
 
 Content:
 The following documentation describes a use case in which a local server with a companion specification shall be tested
-by using a locally deployed getaway and a MQTT Broker.
+by using a locally deployed gateway and a MQTT Broker.
 
 Requirements:
-- A local OPC UA Server with an instance model according to a companion specification, which is supported by the Dashboard-OPCUA-Client. You can find an overview of all supported specification here: [README](https://github.com/umati/Dashboard-OPCUA-Client/blob/development/README.md)
+
+- A local OPC UA Server with an instance model according to a companion specification, which is supported by the Dashboard-OPCUA-Client. You can find an overview of all supported specification here: [README](../README.md)
 - Admin privileges
 - Open port between OPC UA Server, Getaway and MQTT Broker.
 
@@ -13,7 +14,7 @@ Requirements:
 
 Deploying a MQTT Broker locally. Example with Eclipse Mosquitto:
 
-1. Download Mosquitto ([https://mosquitto.org/download/](https://mosquitto.org/download/)).
+1. [Download Mosquitto](https://mosquitto.org/download/).
 2. Install Mosquitto.
 3. Change the content of "mosquitto.conf" (Use any text editor) to:
 
@@ -28,7 +29,7 @@ Deploying a MQTT Broker locally. Example with Eclipse Mosquitto:
 
 The MQTT Client is used to read the values on the MQTT Broker. This Example uses MQTTX:
 
-1. Download MQTTX ([https://mqttx.app/](https://mqttx.app/)).
+1. [Download MQTTX](https://mqttx.app/).
 2. Install and start MQTTX.
 3. Create new connection via + button with these parameters.
     1. Name: "OPCUA Client"
@@ -41,46 +42,45 @@ The MQTT Client is used to read the values on the MQTT Broker. This Example uses
 
 ## Executing OPCUA Dashboard-OPCUA-Client
 
-1. Get OPC UA Client Binaries:
+1. Get OPC UA Client Binaries for Windows:
 
-    1. Two Possibilities:
+    Two Possibilities:
+    1. Stable version from [Releases](https://github.com/umati/Dashboard-OPCUA-Client/releases)
 
-        1. Stable version ([https://github.com/umati/Dashboard-OPCUA-Client/releases](https://github.com/umati/Dashboard-OPCUA-Client/releases))
+        1. Select latest  release.
+        2. Download artefact for your operating system.
+        3. If older than 4 weeks use alternative option.
 
-    1. Select newest release.
-    2. Download artefact for your operating system.
-    3. If older than 4 weeks use alternative option.
-
-    2. Development version ([https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml))
+    2. Development version from latest [CI](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml) run
 
         1. Select newest workflow run.
         2. Download artifact for your operating system.
 
-3. Unzip Folder.
-4. Create configuration for Client.
+2. Unzip Folder.
+3. Create configuration for Client.
 
     1. Within folder "bin" create a file called "configuration.json"
     2. Open "configuration.json" (use any text editor) and insert content from here
 
-        1. [https://github.com/umati/Dashboard-OPCUA-Client/blob/development/configuration.json.example](https://github.com/umati/Dashboard-OPCUA-Client/blob/development/configuration.json.example)
+        1. [configuration.json.example](../configuration.json.example)
         2. Change constant of OPCUA to your specific local OPC UA implementation
 
-5. Start "DashboardOpcUaClient.exe".
+4. Start `DashboardOpcUaClient.exe`.
 
     1. The start-up phase can last for up to 10 minutes, depending of the size of the server. While the start-up phase a '1' is transmitted to the MQTT Broker. The output of the console should look like this:
 ![Client_Output](https://user-images.githubusercontent.com/105195460/178679686-8a3fc388-ef05-45cd-aeaf-da880036e526.png)
 
-6. After the start up a JSON containing all machine values is transmitted to the MQTT Broker.
+5. After the start up a JSON containing all machine values is transmitted to the MQTT Broker.
 
-<details>
-    <summary>Troubleshooting</summary>
+<!-- markdownlint-disable MD033 -->
+<details><summary>Troubleshooting</summary>
 
-Common errors:
+### Common errors
+
 1. Missing DLLs
     In case DLLs are missing, those are most likely from the Visual C++ Redistributable package. Those can be downloaded [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
 
 </details>
-
 
 ## Compare errors by hand
 
