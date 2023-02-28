@@ -972,10 +972,18 @@ std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> OpcUaC
   return nullptr;
 }
 
-void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) {
-  std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-  m_opcUaWrapper->SubscriptionUnsubscribe(m_pClient.get(), monItemIds, clientHandles);
-}
+		void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){
+
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			m_opcUaWrapper->SubscriptionUnsubscribe(m_pClient.get(), monItemIds, clientHandles);
+		}
+		std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> OpcUaClient::SubscribeEvent(IDashboardDataClient::eventCallbackFunction_t ecbf, void* context) {
+			return m_opcUaWrapper->EventSubscribe(m_pClient.get(), ecbf, context); 
+		}
+
+		void OpcUaClient::UnsubscribeEvent() {
+			m_opcUaWrapper->EventUnsubscribe(m_pClient.get());
+		}
 
 std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) { return readValues2(modelNodeIds); }
 

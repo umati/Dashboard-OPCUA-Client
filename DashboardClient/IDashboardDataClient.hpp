@@ -27,7 +27,22 @@ namespace Umati
         class IDashboardDataClient
         {
         public:
+        /// Struct for handling Events
+            struct StructureChangeEvent{
+				ModelOpcUa::NodeId_t refreshNode;
+				bool nodeAdded = false;
+				bool nodeDeleted = false;
+				bool referenceAdded = false;
+				bool referenceDeleted = false;
+				bool dataTypeChanged = false;
+			};
+
+            /*! \brief Callback function for new Value Data Callback.
+            *
+            * This callback is triggered if a the data of an item changes.
+            */
             typedef std::function<void(nlohmann::json value)> newValueCallbackFunction_t;
+            typedef std::function<void(StructureChangeEvent sce, void* context)> eventCallbackFunction_t;
 
             virtual ~IDashboardDataClient() = default;
 
@@ -235,15 +250,22 @@ namespace Umati
 
             virtual void buildCustomDataTypes() = 0;
 
+            class EventSubscriptionHandle {
+                public:
+                    EventSubscriptionHandle(){};
+                    ~EventSubscriptionHandle(){};
+            };
+
             virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
             /// \todo Extract from interface!
             virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
-            virtual std::shared_ptr<ValueSubscriptionHandle>
-            Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
-
+            virtual std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
             virtual void Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) = 0;
+
+            virtual std::shared_ptr<EventSubscriptionHandle> SubscribeEvent(eventCallbackFunction_t ecbf, void* context) = 0;
+            virtual void UnsubscribeEvent() = 0;
 
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 

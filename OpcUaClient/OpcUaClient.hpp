@@ -62,7 +62,10 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
 
-  void Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandle) override;
+			void Unsubscribe(std::vector<int32_t>monItemIds, std::vector<int32_t> clientHandle) override;
+
+			std::shared_ptr<EventSubscriptionHandle> SubscribeEvent(IDashboardDataClient::eventCallbackFunction_t eccbf, void* context) override;
+			void UnsubscribeEvent() override;
 
   std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
 

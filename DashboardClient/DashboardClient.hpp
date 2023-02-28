@@ -51,6 +51,7 @@ namespace Umati {
 			void Publish();
 
 			void Unsubscribe(ModelOpcUa::NodeId_t nodeId);
+			void subscribeEvents();
 
 			bool containsNodeId(ModelOpcUa::NodeId_t nodeId);
 			void updateAddDataSet(ModelOpcUa::NodeId_t nodeId);

@@ -115,6 +115,23 @@ namespace Umati
 			browsedNodes.erase(simpleNode.NodeId);
 			browsedSimpleNodes.erase(simpleNode.NodeId);
 		}
+		void DashboardClient::subscribeEvents() {
+			auto ecbf = [](IDashboardDataClient::StructureChangeEvent sce, void* context) {
+				DashboardClient* pDashboardClient = static_cast<DashboardClient*> (context);
+				if(pDashboardClient != nullptr) {
+					LOG(INFO) << "Event Callback" << pDashboardClient;
+					if(sce.nodeAdded || sce.referenceAdded) {
+							pDashboardClient->updateAddDataSet(sce.refreshNode);
+							pDashboardClient->Publish();
+						}
+						if(sce.nodeDeleted || sce.referenceDeleted) {
+							pDashboardClient->updateDeleteDataSet(sce.refreshNode);
+							pDashboardClient->Publish();
+						}
+				}
+			};
+			m_pDashboardDataClient->SubscribeEvent(ecbf, this);
+		}
 		void DashboardClient::updateAddDataSet(ModelOpcUa::NodeId_t refreshNodeId) {
 			LOG(INFO) << "Update Add DataSet";
 			if(!m_dataSets.empty()) {
