@@ -1,14 +1,20 @@
 # Usage as a testing tool for correct information model instantiation according to a companion specification
 
-Content:
 The following documentation describes a use case in which a local server with a companion specification shall be tested
 by using a locally deployed gateway and a MQTT Broker.
 
-Requirements:
+## Requirements
 
 - A local OPC UA Server with an instance model according to a companion specification, which is supported by the Dashboard-OPCUA-Client. You can find an overview of all supported specification here: [README](../README.md)
 - Admin privileges
 - Open port between OPC UA Server, Getaway and MQTT Broker.
+
+## Deployment
+
+1. Deploy local [MQTT broker](MQTT.md#installing-a-mqtt-broker).
+2. Prepare the `configuration.json` and configure MQTT according to your local deployment.
+3. Deploy the client in [Standalone](./Standalone.md) or [Container](./Configuration.md) mode.
+4. Subcribe to your MQTT broker with a [MQTT client](MQTT.md#installing-a-mqtt-client)
 
 ## Compare errors by hand
 
