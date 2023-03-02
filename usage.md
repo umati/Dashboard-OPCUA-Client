@@ -14,8 +14,6 @@ This guide describe how to use this client for local testing and cloud deploymen
 
 ## Local requirements
 
-- Admin privileges for installing software
-- Open port to the OPC UA Server
-- Local [MQTT broker](doc/MQTT.md#installing-a-mqtt-broker)
-- Local [MQTT client](doc/MQTT.md#installing-a-mqtt-client)
-- container runtime, for container deployments
+1. [Use the client to test your server with a companion specification instance (Windows)](doc/usage_as_model_test.md)
+2. [Use the client as a gateway to connect your server to the umati.app (Windows)](doc/usage_for_dashboard.md)
+3. Use the client as a container image (Container)

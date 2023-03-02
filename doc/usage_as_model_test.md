@@ -11,10 +11,10 @@ by using a locally deployed gateway and a MQTT Broker.
 
 ## Deployment
 
-1. Deploy local [MQTT broker](MQTT.md#installing-a-mqtt-broker).
+1. Deploy local [MQTT broker](MQTT.md#installing-a-mqtt-broker-on-windows).
 2. Prepare the `configuration.json` and configure MQTT according to your local deployment.
 3. Deploy the client in [Standalone](./Standalone.md) or [Container](./Configuration.md) mode.
-4. Subcribe to your MQTT broker with a [MQTT client](MQTT.md#installing-a-mqtt-client)
+4. Subcribe to your MQTT broker with a [MQTT client](MQTT.md#installing-a-mqtt-client-on-windows)
 
 ## Compare errors by hand
 
@@ -23,3 +23,4 @@ by using a locally deployed gateway and a MQTT Broker.
 
     1. If all values are available and correct within the JSON, the OPC UA Server implementation and the OPC UA instances are correct.
     2. If some values are not correct or are shown at different places, please check the modelling and the naming of the values within the server.
+    3. ExtensionObjects might create issues and the parsing logic needs to be adapted. Please open an [issue](https://github.com/umati/Dashboard-OPCUA-Client/issues) pointing to your companion specification, if you run into this.

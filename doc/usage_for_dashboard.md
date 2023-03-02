@@ -5,6 +5,7 @@
 - A local OPC UA Server with an instance model according to a companion specification, which is supported by the Dashboard-OPCUA-Client. You can find an overview of all supported specification here: [README](../README.md)
 - Admin privileges
 - Internet connection for the Dashboard-OPCUA-Client and a open Port between the Client and the OPC UA Server
+- Credentials for connecting to the umati.app MQTT broker, please register at [info@umati.org](mailto:info@umati.org) to obtain those.
 
 ## MQTT Configuration for umati.app enviroment
 
@@ -34,4 +35,4 @@ The credentials and and clientId will be provided by umati.app administration.
 
 1. Prepare the `configuration.json` MQTT part according to above information and supplied information
 2. Deploy the client in [Standalone](./Standalone.md) or [Container](./Configuration.md) mode.
-3. Subscribe to the MQTT broker of the umati.app environment and check that data is published.
+3. Subscribe to the MQTT broker of the `umati.app` environment and check that data is published.
