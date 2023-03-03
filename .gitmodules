@@ -13,7 +13,7 @@
 [submodule "deps/googletest"]
 	path = deps/googletest
 	url = https://github.com/google/googletest.git
-	branch = master
+	branch = main
 [submodule "deps/easyloggingpp"]
 	path = deps/easyloggingpp
 	url = https://github.com/amrayn/easyloggingpp.git
