@@ -1,0 +1,38 @@
+FROM debian:bullseye-slim as build-env
+
+RUN apt-get update && apt-get -yy  --no-install-recommends install \
+      bash \
+      cmake\
+      gcc \
+      g++ \
+      git \
+      make \
+      python3 \
+      patch \
+      && \
+    mkdir /install
+
+ARG BUILD_TYPE=Debug
+
+COPY . /src/DashboardOpcUaClient
+
+WORKDIR /build
+RUN cmake /src/DashboardOpcUaClient/.github/ \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DPAHO_WITH_SSL=1 \
+      -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
+    cmake --build .
+
+FROM debian:bullseye-slim as runtime
+# RUN apk --no-cache add \
+#       libstdc++=12.2.1_git20220924-r4 \
+#       ca-certificates=20220614-r4
+
+COPY --from=build-env /install/bin /app
+COPY --from=build-env /install/lib /usr/lib
+
+WORKDIR /app
+
+EXPOSE 4840
+
+ENTRYPOINT ["/app/DashboardOpcUaClient"]
