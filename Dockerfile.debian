@@ -1,5 +1,6 @@
 FROM debian:bullseye-slim as build-env
 
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get -yy  --no-install-recommends install \
       bash \
       cmake\
