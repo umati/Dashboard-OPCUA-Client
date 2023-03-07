@@ -27,11 +27,12 @@ namespace Umati {
 			std::string Prefix = "umati";
 			std::string ClientId = "umati";
 			std::string Protocol = "tcp";
-			std::string CaTrustStorePath = "./certs/cacert.pem";
 #ifndef WIN32
 			std::string CaCertPath = "/etc/ssl/certs/";
+			std::string CaTrustStorePath = "";
 #else
 			std::string CaCertPath = "./certs";
+			std::string CaTrustStorePath = "./certs/cacert.pem";
 #endif
 		};
 
