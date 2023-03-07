@@ -25,9 +25,7 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
     cmake --build .
 
 FROM debian:bullseye-slim as runtime
-# RUN apk --no-cache add \
-#       libstdc++=12.2.1_git20220924-r4 \
-#       ca-certificates=20220614-r4
+RUN apt-get update && apt-get -yy install ca-certificates
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
