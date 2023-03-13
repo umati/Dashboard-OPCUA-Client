@@ -86,7 +86,7 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   void updateCustomTypes() override;
 
-			std::shared_ptr<UA_Client> getUaClient() override;
+
 		protected:
 			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
 

@@ -1058,10 +1058,6 @@ bool OpcUaClient::VerifyConnection() {
 
 			return true;
 		}
-		std::shared_ptr<UA_Client> OpcUaClient::getUaClient()
-		{
-			return m_pClient;
-		}
 		std::recursive_mutex* OpcUaClient::getClientMutex() {
 
 			return &m_clientMutex;
