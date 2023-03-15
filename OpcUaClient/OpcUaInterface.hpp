@@ -250,7 +250,7 @@ namespace Umati {
 					}
 				}  else {
 					UA_ExtensionObject* extensionObjects = (UA_ExtensionObject*)eventField.data;
-					UA_ModelChangeStructureDataType modelChangeStructureDataTypes[eventField.arrayLength];
+					UA_ModelChangeStructureDataType* modelChangeStructureDataTypes = (UA_ModelChangeStructureDataType*)UA_Array_new(eventField.arrayLength, &UA_TYPES[UA_TYPES_MODELCHANGESTRUCTUREDATATYPE]);
 					for(int j = 0; j < eventField.arrayLength; j ++) {
 						UA_ExtensionObject extensionObject = extensionObjects[j];
 						UA_ModelChangeStructureDataType* modelChangeStructureDataType =(UA_ModelChangeStructureDataType*)extensionObject.content.decoded.data;
@@ -285,6 +285,7 @@ namespace Umati {
 					} else {
 						LOG(ERROR) << "Unable to propagate Event callback!";
 					}
+					UA_Array_delete(modelChangeStructureDataTypes, eventField.arrayLength, &UA_TYPES[UA_TYPES_MODELCHANGESTRUCTUREDATATYPE]);
 				}
 			}
 		}
