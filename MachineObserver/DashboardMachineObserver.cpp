@@ -41,7 +41,7 @@ namespace Umati
 
 		void DashboardMachineObserver::PublishAll()
 		{
-			LOG(INFO) << "Publish";
+			LOG(TRACE) << "Publish";
 			{
 				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
 				for (const auto &pDashClient : m_dashboardClients)
@@ -71,7 +71,7 @@ namespace Umati
 				int cnt = 0;
 				while (this->m_running)
 				{
-					if ((cnt % 100) == 0 || cnt == 0)
+					if ((cnt % 100) == 0)
 					{
 						this->UpdateMachines();
 					}

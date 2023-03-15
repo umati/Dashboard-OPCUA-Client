@@ -56,6 +56,7 @@ namespace Umati {
 			bool containsNodeId(ModelOpcUa::NodeId_t nodeId);
 			void updateAddDataSet(ModelOpcUa::NodeId_t nodeId);
 			void updateDeleteDataSet(ModelOpcUa::NodeId_t nodeId);
+			void deleteAndUnsubscribeNode(const ModelOpcUa::SimpleNode nodeId);
 
 
 		protected:
@@ -142,7 +143,6 @@ namespace Umati {
 												  const std::shared_ptr<ModelOpcUa::StructureNode> &pChild) const;
 
 			void deleteAndUnsubscribeNode(ModelOpcUa::PlaceholderElement placeHolderElement);
-			void deleteAndUnsubscribeNode(const ModelOpcUa::SimpleNode nodeId);
 		};
 	}
 }

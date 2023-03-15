@@ -28,7 +28,6 @@ public:
     void addSubscriptionToModelChangeEvent();
     void StartMachineObserver();
     void Iterate();
-    std::map<uint, std::string> m_namespaces;
 
 protected:
     std::function<void()> m_issueReset;

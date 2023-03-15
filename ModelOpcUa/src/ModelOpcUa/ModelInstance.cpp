@@ -22,12 +22,9 @@ namespace ModelOpcUa {
 		return this->Instances;
 	}
 	void PlaceholderNode::removeInstance(const PlaceholderElement &instance) {
-		for(std::list<PlaceholderElement>::iterator it = this->Instances.begin(); it != this->Instances.end(); it++ ) {
-			if(it->pNode->NodeId == instance.pNode->NodeId) {
-				this->Instances.erase(it);
-				break;
-			}
-		}
+		Instances.remove_if([instance](PlaceholderElement const placeholderElement) {
+			return placeholderElement.pNode->NodeId == instance.pNode->NodeId;
+		});
 	}
 
 	Node::Node(const NodeDefinition &nodeDefinition, std::list<std::shared_ptr<const Node>> childNodes)

@@ -23,6 +23,9 @@ namespace Umati {
 
 			static Umati::Dashboard::IDashboardDataClient::eventCallbackFunction_t s_eventcallback;
 
+  virtual UA_StatusCode DiscoveryGetEndpoints(
+    UA_Client *client, const open62541Cpp::UA_String *sDiscoveryURL, size_t *endpointDescriptionsSize, UA_EndpointDescription **endpointDescriptions) = 0;
+
   virtual UA_StatusCode DiscoveryFindServers(
     UA_Client *client, const open62541Cpp::UA_String &sDiscoveryURL, size_t *registerdServerSize, UA_ApplicationDescription **applicationDescriptions) = 0;
 
@@ -68,14 +71,13 @@ namespace Umati {
   virtual void SubscriptionUnsubscribe(UA_Client *client, std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) = 0;
 
 			virtual std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> EventSubscribe(UA_Client* client,
-			Dashboard::IDashboardDataClient::eventCallbackFunction_t eventcallback, void* context) = 0;
-			virtual void EventUnsubscribe(UA_Client* client)= 0;
+			Dashboard::IDashboardDataClient::eventCallbackFunction_t eventcallback) = 0;
+			virtual void EventUnsubscribe(UA_Client* client, std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> eventSubscriptionhandle)= 0;
 
 		protected:
 			std::vector<std::string> namespaceArray;
 			Subscription *p_subscr;
 			Dashboard::IDashboardDataClient::eventCallbackFunction_t eventcallback;
-			void* context;
 		};
 
 		class OpcUaWrapper : public OpcUaInterface {
@@ -256,31 +258,29 @@ namespace Umati {
 					}
 					OpcUaWrapper* pWrapper = static_cast<OpcUaWrapper*> (monContext);
 					if(pWrapper != nullptr && pWrapper->eventcallback != nullptr) {
-						bool nodeAdded = false;
-						bool nodeDeleted = false;
-						bool referenceAdded = false;
-						bool referenceDeleted = false;
-						bool dataTypeChanged = false;
 						for(int i = 0; i < eventField.arrayLength; i++) {
 							UA_ModelChangeStructureDataType modelChangeStructureDataType = modelChangeStructureDataTypes[i];
 							UA_NodeId affectedNode = modelChangeStructureDataType.affected;
 							UA_NodeId affectedType = modelChangeStructureDataType.affectedType;
 							UA_Byte verb = modelChangeStructureDataType.verb;
-							if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) {nodeAdded = true;}
-							if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) {nodeDeleted = true;}
-							if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) {referenceAdded = true;}
-							if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) {referenceDeleted = true;}
-							if((verb & UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) == UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) {dataTypeChanged = true;}
 							Umati::Dashboard::IDashboardDataClient::StructureChangeEvent stc;
 							ModelOpcUa::NodeId_t nodeId = ModelOpcUa::NodeId_t();
-							nodeId.Id = "i=" + std::to_string(affectedNode.identifier.numeric);
+							nodeId.Uri = pWrapper->namespaceArray.at(affectedNode.namespaceIndex);
+							std::string nodeIdPrefix = "i=";
+							switch(affectedNode.identifierType){
+								case UA_NODEIDTYPE_NUMERIC: nodeIdPrefix = "i="; break;
+								case UA_NODEIDTYPE_STRING: nodeIdPrefix = "s="; break;
+								case UA_NODEIDTYPE_BYTESTRING: nodeIdPrefix = "b="; break;
+								case UA_NODEIDTYPE_GUID: nodeIdPrefix = "g="; break;
+							}
+							nodeId.Id = nodeIdPrefix + std::to_string(affectedNode.identifier.numeric);
 							stc.refreshNode = nodeId;
-							stc.nodeAdded = nodeAdded;
-							stc.nodeDeleted = nodeDeleted;
-							stc.referenceAdded = referenceAdded;
-							stc.referenceDeleted = referenceDeleted;
-							stc.dataTypeChanged = dataTypeChanged;
-							pWrapper->eventcallback(stc, pWrapper->context);
+							stc.nodeAdded = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED;
+							stc.nodeDeleted = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED;
+							stc.referenceAdded = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEADDED;
+							stc.referenceDeleted = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_REFERENCEDELETED;
+							stc.dataTypeChanged = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED) == UA_MODELCHANGESTRUCTUREVERBMASK_DATATYPECHANGED;
+							pWrapper->eventcallback(stc);
 						}	
 					} else {
 						LOG(ERROR) << "Unable to propagate Event callback!";
@@ -289,13 +289,11 @@ namespace Umati {
 			}
 		}
 			std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> EventSubscribe(UA_Client* client,
-			Dashboard::IDashboardDataClient::eventCallbackFunction_t eventcallback, void* context) {
+			Dashboard::IDashboardDataClient::eventCallbackFunction_t eventcallback) {
 				this->eventcallback = eventcallback;
-				this->context = context;
 				UA_CreateSubscriptionRequest request = UA_CreateSubscriptionRequest_default();
     			UA_CreateSubscriptionResponse response = UA_Client_Subscriptions_create(client, request, NULL, NULL, NULL);
 				if(response.responseHeader.serviceResult == UA_STATUSCODE_GOOD) {
-					LOG(INFO) << "###################################### Created Event Subscription #####################################";
 					UA_UInt32 subId = response.subscriptionId;
 					UA_MonitoredItemCreateRequest item;
     				UA_MonitoredItemCreateRequest_init(&item);
@@ -368,6 +366,9 @@ namespace Umati {
 					UA_ExtensionObject extensionObject;
 					UA_ExtensionObject_setValue(&extensionObject, &literalOperand, &UA_TYPES[UA_TYPES_LITERALOPERAND]);
 					contentFilterElement.filterOperands[0] = extensionObject;
+					if(!contentFilterElement.filterOperands) {
+						UA_ContentFilterElement_delete(&contentFilterElement);
+					}
 
 					contentFilter.elementsSize = 1;
 					contentFilter.elements = (UA_ContentFilterElement* ) UA_Array_new(contentFilter.elementsSize, &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT]);
@@ -379,23 +380,37 @@ namespace Umati {
     				item.requestedParameters.filter.content.decoded.data = &filter;
     				item.requestedParameters.filter.content.decoded.type = &UA_TYPES[UA_TYPES_EVENTFILTER];
 
-					//UA_UInt32 monId = 0;
-
     				UA_MonitoredItemCreateResult result = UA_Client_MonitoredItems_createEvent(client, subId, UA_TIMESTAMPSTORETURN_BOTH, item, this, handler_events, NULL);
+
 					if(result.statusCode == UA_STATUSCODE_GOOD) {
        					LOG(INFO) << "Created MonitoredItem";
+						return std::make_shared<Dashboard::IDashboardDataClient::EventSubscriptionHandle>(result.monitoredItemId, item.requestedParameters.clientHandle);
 					} else {
 						LOG(ERROR) << "Unable to create MonitoredItem";
-				}
-					//monId = result.monitoredItemId; 
+						return NULL;
+					}
+
     			} else {
 					return NULL;
 				}	
 				return NULL;
 			}
 
-			void EventUnsubscribe(UA_Client* client) {
-				LOG(ERROR) << "Unsubscribe EventCallback";
+			void EventUnsubscribe(UA_Client* client, std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> eventSubscriptionHandle) {
+				LOG(INFO) << "Unsubscribe EventCallback";
+				UA_DeleteSubscriptionsRequest deleteRequest;
+    			UA_DeleteSubscriptionsRequest_init(&deleteRequest);
+				deleteRequest.subscriptionIdsSize = 1;
+				UA_UInt32* pSubscriptionId = (UA_UInt32 *) UA_Array_new(1, &UA_TYPES[UA_TYPES_UINT32]);
+				pSubscriptionId[0] = (UA_UInt32)eventSubscriptionHandle->getSubscriptionId();
+				deleteRequest.subscriptionIds = pSubscriptionId;
+				UA_DeleteSubscriptionsResponse response = UA_Client_Subscriptions_delete(client, deleteRequest);
+				if(UA_STATUSCODE_GOOD == response.results[0]) {
+					eventSubscriptionHandle->unsubscribe();
+				}
+				UA_DeleteSubscriptionsRequest_clear(&deleteRequest);
+				UA_DeleteSubscriptionsResponse_clear(&response);
+				UA_Array_delete(pSubscriptionId, 1, &UA_TYPES[UA_TYPES_UINT32]);
 			};
 
 			UA_SessionState m_pSessionState;

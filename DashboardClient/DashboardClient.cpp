@@ -35,32 +35,27 @@ namespace Umati
 				if(!childNodes.empty()) {
 					auto child = childNodes.front();
 					std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
-					if(placeholderNode == nullptr) {
-					} else {
-						auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType, child->SpecifiedTypeNodeId);
-						//Check if Instances are still in browsresult
-						std::list<ModelOpcUa::PlaceholderElement> instances = placeholderNode->getInstances();
-						std::list<ModelOpcUa::PlaceholderElement> missingElements;
-						for(std::list<ModelOpcUa::PlaceholderElement>::iterator it = instances.begin(); it != instances.end(); it++) {
-							bool found = false;
-							ModelOpcUa::NodeId_t nodeId = it->pNode->NodeId;
-							for(auto &browseResult : browseResults) {
-								if(browseResult.NodeId == nodeId) {
-									found = true;
-									break;
-								}
-							}
-							if(!found) {
-								LOG(INFO) << "Deleted Node: " << it -> pNode ->NodeId;
-								missingElements.push_back(*it);
-							}
+					if(placeholderNode == nullptr) { return; } 
+					auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType, child->SpecifiedTypeNodeId);
+					//Check if Instances are still in browsresult
+					std::list<ModelOpcUa::PlaceholderElement> instances = placeholderNode->getInstances();
+					std::list<ModelOpcUa::PlaceholderElement> missingElements;
+					for(auto& el : instances) {
+						bool found = false;
+						ModelOpcUa::NodeId_t nodeId = el.pNode->NodeId;
+						if(std::any_of(browseResults.begin(), browseResults.end(),[nodeId](ModelOpcUa::BrowseResult_t br){ return br.NodeId == nodeId;})) {
+							found = true;
+							break;
 						}
-						//Remove and Unsubscribe the elements
-						for(std::list<ModelOpcUa::PlaceholderElement>::iterator it = missingElements.begin(); it != missingElements.end();it++) {
-							std::shared_ptr<ModelOpcUa::PlaceholderNode> placeholderNodeUnconst = std::const_pointer_cast<ModelOpcUa::PlaceholderNode>(placeholderNode);
-							placeholderNodeUnconst->removeInstance(*it);
-							deleteAndUnsubscribeNode(*it);
+						if(!found) {
+							missingElements.push_back(el);
 						}
+					}
+					//Remove and Unsubscribe the elements
+					for(auto& el : missingElements) {
+						std::shared_ptr<ModelOpcUa::PlaceholderNode> placeholderNodeUnconst = std::const_pointer_cast<ModelOpcUa::PlaceholderNode>(placeholderNode);
+						placeholderNodeUnconst->removeInstance(el);
+						deleteAndUnsubscribeNode(el);
 					}
 				}
 			}
@@ -70,32 +65,28 @@ namespace Umati
 		void DashboardClient::deleteAndUnsubscribeNode(ModelOpcUa::PlaceholderElement placeHolderElement) {
 			std::shared_ptr<const ModelOpcUa::SimpleNode> element = placeHolderElement.pNode;
 			const std::list<std::shared_ptr<const ModelOpcUa::Node>> children = element->ChildNodes;
-			for(auto it = children.begin(); it != children.end();it++) {
-				std::shared_ptr<const ModelOpcUa::Node> node = *it;
+			for(auto& el : children) {
+				std::shared_ptr<const ModelOpcUa::Node> node = el;
 				std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(node);
 				if(simpleNode != nullptr) {
 					const ModelOpcUa::SimpleNode simpleN = *simpleNode;
 					deleteAndUnsubscribeNode(simpleN);
 				} else {
 					std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeHolderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(node);
-					if(placeHolderNode != nullptr) {
-						std::list<ModelOpcUa::PlaceholderElement> instances = placeHolderNode->getInstances();
-						for(std::list<ModelOpcUa::PlaceholderElement>::iterator it = instances.begin(); it != instances.end(); it++) {
-							deleteAndUnsubscribeNode(*it);
-						}
-
+					if(placeHolderNode == nullptr) { continue;}
+					std::list<ModelOpcUa::PlaceholderElement> instances = placeHolderNode->getInstances();
+					for(auto& el : instances) {
+						deleteAndUnsubscribeNode(el);
 					}
 				}
 			}
-			LOG(INFO) << "Erase NodeId :" <<  element->NodeId;
 			browsedNodes.erase(element->NodeId);
 			browsedSimpleNodes.erase(element->NodeId);
 
 		}
 		void DashboardClient::deleteAndUnsubscribeNode(const ModelOpcUa::SimpleNode simpleNode) {
 			const std::list<std::shared_ptr<const ModelOpcUa::Node>> children = simpleNode.ChildNodes;
-			for(auto it = children.begin(); it != children.end();it++) {
-				std::shared_ptr<const ModelOpcUa::Node> node = *it;
+			for(auto node : children) {
 				std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(node);
 				if(simpleNode != nullptr) {
 					const ModelOpcUa::SimpleNode simpleN = *simpleNode;
@@ -111,76 +102,76 @@ namespace Umati
 					}
 				}
 			}
-			LOG(INFO) << "Erase NodeId :" << simpleNode.NodeId;
 			browsedNodes.erase(simpleNode.NodeId);
 			browsedSimpleNodes.erase(simpleNode.NodeId);
 		}
 		void DashboardClient::subscribeEvents() {
-			auto ecbf = [](IDashboardDataClient::StructureChangeEvent sce, void* context) {
-				DashboardClient* pDashboardClient = static_cast<DashboardClient*> (context);
-				if(pDashboardClient != nullptr) {
-					LOG(INFO) << "Event Callback" << pDashboardClient;
-					if(sce.nodeAdded || sce.referenceAdded) {
-							pDashboardClient->updateAddDataSet(sce.refreshNode);
-							pDashboardClient->Publish();
+			auto ecbf = [this](IDashboardDataClient::StructureChangeEvent sce) {
+				if(sce.nodeAdded || sce.referenceAdded) {
+					std::thread t([this, sce](){
+						this->updateAddDataSet(sce.refreshNode);
+						this->Publish();
+    				});
+					t.detach();
+				}
+				if(sce.nodeDeleted || sce.referenceDeleted) {
+					std::thread t([this, sce](){
+						this -> updateDeleteDataSet(sce.refreshNode);
+						if(sce.nodeDeleted == true) {
+							auto search = browsedSimpleNodes.find(sce.refreshNode);
+							if(search != browsedSimpleNodes.end()) {
+								std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = search->second;
+								this->deleteAndUnsubscribeNode(*simpleNode);
+							}
 						}
-						if(sce.nodeDeleted || sce.referenceDeleted) {
-							pDashboardClient->updateDeleteDataSet(sce.refreshNode);
-							pDashboardClient->Publish();
-						}
+						this -> Publish();
+    				});
+					t.detach();
 				}
 			};
-			m_pDashboardDataClient->SubscribeEvent(ecbf, this);
+			m_pDashboardDataClient->SubscribeEvent(ecbf);
 		}
 		void DashboardClient::updateAddDataSet(ModelOpcUa::NodeId_t refreshNodeId) {
 			LOG(INFO) << "Update Add DataSet";
-			if(!m_dataSets.empty()) {
-				std::shared_ptr<Umati::Dashboard::DashboardClient::DataSetStorage_t> dataSet = m_dataSets.front();
-				auto search = browsedSimpleNodes.find(refreshNodeId);
-				if( search != browsedSimpleNodes.end()) {
-					std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = search->second;
-					auto childNodes = simpleNode->ChildNodes;
-					if(!childNodes.empty()) {
-						auto child = childNodes.front();
-						std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
-						if(placeholderNode == nullptr) {
-						} else {
-							LOG(INFO) << "Start Browsing Jobs";
-							auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType,
-																child->SpecifiedTypeNodeId);
-							LOG(INFO) << "End Browsing Jobs";
-							for (auto &browseResult : browseResults) {	
-								if (browseResult.TypeDefinition.Id == NodeId_BaseObjectType.Id) {
-								auto ifs = m_pDashboardDataClient->Browse(browseResult.NodeId,
-								Dashboard::IDashboardDataClient::BrowseContext_t::HasInterface());
-								browseResult.TypeDefinition = ifs.front().NodeId;
-								LOG(INFO) << "Updated TypeDefinition of " << browseResult.BrowseName.Name << " to " << browseResult.TypeDefinition 
-								  		  << " because the node implements an interface";				
-								}
-							
-								auto possibleType = m_pTypeReader->m_typeMap->find(browseResult.TypeDefinition);  // use subtype
-								if (possibleType != m_pTypeReader->m_typeMap->end())
-								{
-									if(browsedNodes.find(browseResult.NodeId) == browsedNodes.end()) {
-										LOG(INFO) << "Added Job:" << browseResult.NodeId;
-										//std::lock_guard<std::recursive_mutex> l(*(m_pDashboardDataClient->getClientMutex()));
-										auto sharedPossibleType = possibleType->second;
-										ModelOpcUa::PlaceholderElement plElement;
-										plElement.BrowseName = browseResult.BrowseName;
-										plElement.pNode = TransformToNodeIds(browseResult.NodeId, sharedPossibleType);
-										plElement.TypeDefinition = browseResult.TypeDefinition;
-										//Const cast
-										std::shared_ptr<ModelOpcUa::PlaceholderNode> placeholderNodeUnconst = std::const_pointer_cast<ModelOpcUa::PlaceholderNode>(placeholderNode);
-										placeholderNodeUnconst->addInstance(plElement);
-										LOG(INFO) << "Start Subscription";
-										subscribeValues(plElement.pNode, dataSet->values, dataSet->values_mutex);
-										//std::lock_guard<std::recursive_mutex> l(m_dataSetMutex);
-										LOG(INFO) << "End Subcription";
-									}
-									else {
-										LOG(INFO) << "Allready found Job";
-									}
-								}
+			if(m_dataSets.empty()) {
+				return;
+			}
+			std::shared_ptr<Umati::Dashboard::DashboardClient::DataSetStorage_t> dataSet = m_dataSets.front();
+			auto search = browsedSimpleNodes.find(refreshNodeId);
+			if(search == browsedSimpleNodes.end()) {
+				return;
+			}
+			std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = search->second;
+			auto childNodes = simpleNode->ChildNodes;
+			if(!childNodes.empty()) {
+				auto child = childNodes.front();
+				std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
+				if(placeholderNode == nullptr) {
+				} else {
+					auto browseResults = m_pDashboardDataClient->Browse(refreshNodeId, child->ReferenceType,
+														child->SpecifiedTypeNodeId);
+					for (auto &browseResult : browseResults) {	
+						if (browseResult.TypeDefinition.Id == NodeId_BaseObjectType.Id) {
+						auto ifs = m_pDashboardDataClient->Browse(browseResult.NodeId,
+						Dashboard::IDashboardDataClient::BrowseContext_t::HasInterface());
+						browseResult.TypeDefinition = ifs.front().NodeId;
+						LOG(INFO) << "Updated TypeDefinition of " << browseResult.BrowseName.Name << " to " << browseResult.TypeDefinition 
+									<< " because the node implements an interface";				
+						}
+					
+						auto possibleType = m_pTypeReader->m_typeMap->find(browseResult.TypeDefinition);  // use subtype
+						if (possibleType != m_pTypeReader->m_typeMap->end())
+						{
+							if(browsedNodes.find(browseResult.NodeId) == browsedNodes.end()) {
+								auto sharedPossibleType = possibleType->second;
+								ModelOpcUa::PlaceholderElement plElement;
+								plElement.BrowseName = browseResult.BrowseName;
+								plElement.pNode = TransformToNodeIds(browseResult.NodeId, sharedPossibleType);
+								plElement.TypeDefinition = browseResult.TypeDefinition;
+								//Const cast
+								std::shared_ptr<ModelOpcUa::PlaceholderNode> placeholderNodeUnconst = std::const_pointer_cast<ModelOpcUa::PlaceholderNode>(placeholderNode);
+								placeholderNodeUnconst->addInstance(plElement);
+								subscribeValues(plElement.pNode, dataSet->values, dataSet->values_mutex);
 							}
 						}
 					}
@@ -188,11 +179,7 @@ namespace Umati
 			}
 		}
 		bool DashboardClient::containsNodeId(ModelOpcUa::NodeId_t nodeId) {
-			if(browsedNodes.find(nodeId) != browsedNodes.end()) {
-				return true;
-			} else {
-				return false;
-			}
+			return (browsedNodes.find(nodeId) != browsedNodes.end());
 		}
 
 
@@ -575,7 +562,7 @@ namespace Umati
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
 			std::mutex &valueMap_mutex)
 		{
-			// LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+			//LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
@@ -677,7 +664,7 @@ namespace Umati
 			{
 				for(auto value : m_subscribedValues){
 					if(value && value.get()->getNodeId() == pNode.get()->NodeId) {
-						LOG(INFO) << "Allready Subscribed" << value.get()->getNodeId();
+						//LOG(INFO) << "Allready Subscribed" << value.get()->getNodeId();
 						return;
 					}
 				}
