@@ -24,8 +24,10 @@ jobs:
           LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')"
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH="${{ env.CMAKE_INSTALL_PREFIX }}" \
-            -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
+          cmake ../UmatiDashboardOpcUaClient/.github/ \ 
+           -DCMAKE_INSTALL_PREFIX:PATH="${{ env.CMAKE_INSTALL_PREFIX }}" \
+           -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 \
+           -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
           cmake --build . -j
           make package
       - name: Run Tests
@@ -33,7 +35,7 @@ jobs:
           cd build/Dashboard-Client-build
           ctest -V -C "${{matrix.build_type}}"
       - name: Run integration test cacert_test
-        run : |
+        run: |
           cd UmatiDashboardOpcUaClient/Tests/integration_tests/cacert_test
           ./genCerts.sh
           cp "${{ github.workspace }}/build/Dashboard-Client-build/Tests/TestCaCertificate" .
@@ -74,7 +76,8 @@ jobs:
           if($matrixarch = "amd64"){$arch="x64"}
           mkdir -p build
           cd build
-          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -A "$arch" -DPAHO_WITH_SSL=1
+          cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} \
+           -A "$arch" -DPAHO_WITH_SSL=1
           cmake --build . -j --config ${{matrix.build_type}}
       - name: Run Tests
         run: |
@@ -112,6 +115,7 @@ jobs:
         run: |
           #shellcheck  disable=SC2154
           echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          # yamllint disable-line rule:line-length
           echo IMAGE_TAG=$(echo ${{ github.ref }} | tr '[:upper:]' '[:lower:]' |  awk '{sub(/([^\/]*\/){2}/,""); gsub(/\/|_/, "-")}1') >> $GITHUB_ENV
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2.1.0
