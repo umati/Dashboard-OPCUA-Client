@@ -8,6 +8,7 @@
   "Mqtt": {
     "Hostname": "localhost",
     "Port": 1883,
+    "ClientId": "test/test",
     "Username": "MyUser",
     "Password": "MyPassword"
   },
