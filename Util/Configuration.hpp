@@ -12,65 +12,69 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <stdexcept>
 #include "../ModelOpcUa/src/ModelOpcUa/ModelDefinition.hpp"
 
 namespace Umati {
-	namespace Util {
-		struct MqttConfig {
-			///  Hostname or IP-Address
-			std::string Hostname;
-			std::uint16_t Port;
-			/// Might be empty if no authentification required
-			std::string Username;
-			/// Might be empty if no authentification required
-			std::string Password;
-			std::string Prefix = "umati";
-			std::string ClientId = "umati";
-			std::string Protocol = "tcp";
+namespace Util {
+struct MqttConfig {
+  ///  Hostname or IP-Address
+  std::string Hostname;
+  std::uint16_t Port = 0;
+  /// Might be empty if no authentification required
+  std::string Username;
+  /// Might be empty if no authentification required
+  std::string Password;
+  std::string Prefix = "umati/v2";
+  /// Must be provided
+  std::string ClientId;
+  std::string Protocol = "tcp";
 #ifndef WIN32
-			std::string CaCertPath = "/etc/ssl/certs/";
-			std::string CaTrustStorePath = "";
+  std::string CaCertPath = "/etc/ssl/certs/";
+  std::string CaTrustStorePath = "";
 #else
-			std::string CaCertPath = "./certs";
-			std::string CaTrustStorePath = "./certs/cacert.pem";
+  std::string CaCertPath = "./certs";
+  std::string CaTrustStorePath = "./certs/cacert.pem";
 #endif
-		};
+};
 
-		struct OpcUaConfig {
-			/// OPC UA Endpoint
-			std::string Endpoint;
-			std::string Username;
-			std::string Password;
-			/// 1 = None, 2 Sign, 3 = Sign&Encrypt
-			std::uint8_t Security = 1;
-			bool ByPassCertVerification = false;
-		};
+struct OpcUaConfig {
+  /// OPC UA Endpoint
+  std::string Endpoint;
+  std::string Username;
+  std::string Password;
+  /// 1 = None, 2 Sign, 3 = Sign&Encrypt
+  std::uint8_t Security = 1;
+  bool ByPassCertVerification = false;
+};
 
-		/**
-		 * @brief NamespaceInformation
-		 * Describes how to handle types introduced by a namespace.
-		 */
-		struct NamespaceInformation {
-			std::string Namespace; /**< Namespace, e.g. https://opcfoundation.org/SurfaceTechnology */
-			std::vector<ModelOpcUa::NodeId_t> Types; /**< Types, this Namespace introduces */
-			ModelOpcUa::NodeId_t IdentificationType; /**< IdentificationType, child of types */
-		};
+/**
+ * @brief NamespaceInformation
+ * Describes how to handle types introduced by a namespace.
+ */
+struct NamespaceInformation {
+  std::string Namespace;                   /**< Namespace, e.g. https://opcfoundation.org/SurfaceTechnology */
+  std::vector<ModelOpcUa::NodeId_t> Types; /**< Types, this Namespace introduces */
+  ModelOpcUa::NodeId_t IdentificationType; /**< IdentificationType, child of types */
+};
 
-		class Configuration {
-		public:
-			virtual ~Configuration() = 0;
+class Configuration {
+ public:
+  virtual ~Configuration() = 0;
 
-			virtual std::vector<NamespaceInformation> getNamespaceInformations() = 0;
+  virtual std::vector<NamespaceInformation> getNamespaceInformations() = 0;
 
-			virtual std::vector<std::string> getObjectTypeNamespaces() = 0;
+  virtual std::vector<std::string> getObjectTypeNamespaces() = 0;
 
-			virtual MqttConfig getMqtt() = 0;
+  virtual MqttConfig getMqtt() = 0;
 
-			virtual OpcUaConfig getOpcUa() = 0;
+  virtual OpcUaConfig getOpcUa() = 0;
 
-			virtual bool hasMachinesFilter() = 0;
+  virtual bool hasMachinesFilter() = 0;
 
-			virtual std::vector<ModelOpcUa::NodeId_t> getMachinesFilter() = 0;
-		};
-	}
-}
+  virtual std::vector<ModelOpcUa::NodeId_t> getMachinesFilter() = 0;
+  /// Verify, that there is a valid configuration. Throws an exception, if an error is detected.
+  virtual void Verify();
+};
+}  // namespace Util
+}  // namespace Umati

@@ -1,8 +1,8 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
- * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
+ *
+ * Copyright 2019-2023 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
@@ -23,47 +23,48 @@
 #include <mqtt/async_client.h>
 
 namespace Umati {
-	namespace MqttPublisher_Paho {
-		class MqttPublisher_Paho : public Umati::Dashboard::IPublisher {
-		public:
-			MqttPublisher_Paho(
-					const std::string &protocol,
-					const std::string &host,
-					std::uint16_t port,
-					const std::string &CaCertPath,
-					const std::string &CaTrustStorePath,
-					const std::string &username = std::string(),
-					const std::string &password = std::string()
-			);
+namespace MqttPublisher_Paho {
+class MqttPublisher_Paho : public Umati::Dashboard::IPublisher {
+ public:
+  MqttPublisher_Paho(
+    const std::string &protocol,
+    const std::string &host,
+    std::uint16_t port,
+    const std::string &CaCertPath,
+    const std::string &CaTrustStorePath,
+    const std::string &onlineTopic = std::string(),
+    const std::string &username = std::string(),
+    const std::string &password = std::string());
 
-			virtual ~MqttPublisher_Paho();
+  virtual ~MqttPublisher_Paho();
 
-			// Inherit from IPublisher
-			void Publish(std::string channel, std::string message) override;
+  // Inherit from IPublisher
+  void Publish(std::string channel, std::string message) override;
 
-		private:
-			static std::string getClientId();
+ private:
+  static std::string getClientId();
 
-			mqtt::will_options getLastWill() const;
+  mqtt::will_options getLastWill() const;
 
-			static mqtt::connect_options getOptions(const std::string &username, const std::string &password);
-			static std::string getUri(std::string protocol, std::string host, std::uint16_t port);
+  static mqtt::connect_options getOptions(const std::string &username, const std::string &password);
+  static std::string getUri(std::string protocol, std::string host, std::uint16_t port);
 
-			class MqttCallbacks : public mqtt::callback {
-				friend class MqttPublisher_Paho;
-			public:
-				MqttCallbacks(MqttPublisher_Paho *mqttPublisher_paho);
+  class MqttCallbacks : public mqtt::callback {
+    friend class MqttPublisher_Paho;
 
-				void connected(const std::string &cause) override;
+   public:
+    MqttCallbacks(MqttPublisher_Paho *mqttPublisher_paho);
 
-				void connection_lost(const std::string &cause) override;
+    void connected(const std::string &cause) override;
 
-				MqttPublisher_Paho *m_mqttPublisher_paho;
-			};
+    void connection_lost(const std::string &cause) override;
 
-			mqtt::async_client m_cli;
-			MqttCallbacks m_callbacks;
-			const std::string m_onlineTopic = Umati::MachineObserver::Topics::Prefix + "/opcUaToMqttOnline";
-		};
-	}
-}
+    MqttPublisher_Paho *m_mqttPublisher_paho;
+  };
+
+  mqtt::async_client m_cli;
+  MqttCallbacks m_callbacks;
+  const std::string m_onlineTopic;
+};
+}  // namespace MqttPublisher_Paho
+}  // namespace Umati
