@@ -101,12 +101,10 @@ std::string MqttPublisher_Paho::getClientId() {
 }
 
 MqttPublisher_Paho::~MqttPublisher_Paho() {
-  
   try {
     auto tokenPtr = m_cli.publish(m_onlineTopic, std::string("0"), 0, true);
     tokenPtr->wait_for(1000);
-    if(!tokenPtr->is_complete())
-    {
+    if (!tokenPtr->is_complete()) {
       LOG(ERROR) << "Could not send client offline state";
     }
     m_cli.disconnect();
