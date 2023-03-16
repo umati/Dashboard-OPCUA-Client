@@ -18,7 +18,6 @@
 #include <cstring>
 #include <ctime>
 
-#include "../MachineObserver/Topics.hpp"
 #include <IPublisher.hpp>
 #include <mqtt/async_client.h>
 

@@ -9,6 +9,7 @@
  */
 
 #include "DashboardOpcUaClient.hpp"
+#include "MachineObserver/Topics.hpp"
 
 DashboardOpcUaClient::DashboardOpcUaClient(std::shared_ptr<Umati::Util::Configuration> configuration, std::function<void()> issueReset):
 m_issueReset(issueReset),
@@ -29,6 +30,7 @@ m_pPublisher(std::make_shared<Umati::MqttPublisher_Paho::MqttPublisher_Paho>(
         configuration->getMqtt().Port,
         configuration->getMqtt().CaCertPath,
         configuration->getMqtt().CaTrustStorePath,
+        Umati::MachineObserver::Topics::ClientOnline(),
         configuration->getMqtt().Username,
         configuration->getMqtt().Password
         )),

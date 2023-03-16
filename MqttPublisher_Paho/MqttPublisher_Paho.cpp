@@ -101,8 +101,18 @@ std::string MqttPublisher_Paho::getClientId() {
 }
 
 MqttPublisher_Paho::~MqttPublisher_Paho() {
-  Publish(m_onlineTopic, "0");
-  m_cli.disconnect();
+  
+  try {
+    auto tokenPtr = m_cli.publish(m_onlineTopic, std::string("0"), 0, true);
+    tokenPtr->wait_for(1000);
+    if(!tokenPtr->is_complete())
+    {
+      LOG(ERROR) << "Could not send client offline state";
+    }
+    m_cli.disconnect();
+  } catch (const mqtt::exception &ex) {
+    LOG(ERROR) << "Paho Exception:" << ex.what();
+  }
 }
 
 MqttPublisher_Paho::MqttCallbacks::MqttCallbacks(MqttPublisher_Paho *mqttPublisher_paho) : m_mqttPublisher_paho(mqttPublisher_paho) {}
