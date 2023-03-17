@@ -53,10 +53,12 @@ add_subdirectory(Tests)
 message("### opcua_dashboardclient: Adding the executable c++ file")
 find_package(Threads)
 add_executable(DashboardOpcUaClient DashboardOpcUaClient.cpp Main.cpp)
+add_executable(WssTroubleshooter WssTroubleshooter.cpp)
 
 message("### opcua_dashboardclient: Setting Dashboard Publisher")
 target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)
 target_link_libraries(DashboardOpcUaClient PUBLIC MachineObserver)
+target_link_libraries(WssTroubleshooter PUBLIC OpcUaClientLib PahoMqttCpp::paho-mqttpp3-static)
 
 set(DASHBOARD_PUBLISHER
     "MQTT_PAHO"
@@ -92,7 +94,7 @@ add_custom_command(
 
 message("### opcua_dashboardclient: Installing DashboardOpcUaClient targets")
 install(
-    TARGETS DashboardOpcUaClient
+    TARGETS DashboardOpcUaClient WssTroubleshooter
     EXPORT DashboardOpcUaClient
     RUNTIME DESTINATION bin
 )
