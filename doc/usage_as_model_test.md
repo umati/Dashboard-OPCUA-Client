@@ -5,7 +5,7 @@ by using a locally deployed gateway and a MQTT Broker.
 
 ## Requirements
 
-- A local OPC UA Server with an instance model according to a companion specification, which is supported by the Dashboard-OPCUA-Client. You can find an overview of all supported specification here: [README](../README.md)
+- A local OPC UA Server with an instance model according to a companion specification, which is supported by the Dashboard-OPCUA-Client. You can find an overview of all supported specification here: [README](../README.md#tested-companion-specifications)
 - Admin privileges
 - Open port between OPC UA Server, Getaway and MQTT Broker.
 

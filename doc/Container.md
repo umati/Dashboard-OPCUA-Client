@@ -17,7 +17,7 @@ The `configuration.json` needs to be mounted with a volume mount into the contai
 3. Run the image with mounting the configuration into the container:
 
     ``` shell
-    docker run -it --rm -v /path/to//configuration.json:/app/configuration.json --name=dashboard-opcua-client ghcr.io/umati/dashboard-opcua-client:v*.*.*
+    docker run -it --rm -v /path/to/configuration.json:/app/configuration.json --name=dashboard-opcua-client ghcr.io/umati/dashboard-opcua-client:v*.*.*
     ```
 
     Replace PATH to `configuration.json` and container version to the desired version as per [Releases](https://github.com/umati/Dashboard-OPCUA-Client/releases).

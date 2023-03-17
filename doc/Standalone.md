@@ -30,7 +30,7 @@
 7. Start on Linux `DashboardOpcUaClient configuration.json` from your home directory
 
     1. The start-up phase can last for up to 10 minutes, depending of the size of the server. During the start-up phase a `1` is transmitted to the MQTT Broker on the topic `TODO`. The output of the console should look like this:
-![Client_Output](https://user-images.githubusercontent.com/105195460/178679686-8a3fc388-ef05-45cd-aeaf-da880036e526.png)
+![Client_Output](sample-log.png)
 
     2. After the start up a JSON containing all machine values is transmitted to the MQTT Broker. `TODO: Topic`
 

@@ -35,4 +35,6 @@ The MQTT Client is used to read the values on the MQTT Broker. This Example uses
 
 If you want to run a MQTT broker as container image, please make sure you have a container runtime link [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed.
 
-1. Execute `docker run -it -p 1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf` This starts a unauthenticated MQTT broker on your localhost.
+1. Execute `docker run -it -p 1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf`
+
+This starts a unauthenticated MQTT broker on your localhost.
