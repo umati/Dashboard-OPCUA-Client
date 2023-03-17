@@ -2,3 +2,4 @@ pki/
 *.log
 build/
 install/
+configuration.json

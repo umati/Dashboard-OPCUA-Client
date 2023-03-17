@@ -86,12 +86,12 @@ cmake --build .
 ## Usage for connecting a server to the dashboard
 
 Follow these instructions to use the client to connect your local OPC UA Server to the umati dashboard:
-[usage_for_dashboard.md](usage_for_dashboard.md)
+[usage_for_dashboard.md](doc/usage_for_dashboard.md)
 
 ## Usage for instance testing
 
 Follow these instructions to use the client as a testing tool for your implementation:
-[usage_as_model_test.md](usage_as_model_test.md)
+[usage_as_model_test.md](doc/usage_as_model_test.md)
 
 ## License
 
