@@ -9,7 +9,6 @@ set(BUILD_DEB_PACKAGE FALSE CACHE BOOL "Flag that defines whether to build a deb
 set(DEB_PACKAGE_LIBCPP_VERSION "8.4.0" CACHE STRING "The debian package libstdc++6 dependency version")
 set(PAHO_WITH_SSL TRUE CACHE BOOL "Flag that defines whether to build paho.mqtt with SSL")
 
-
 externalproject_add(
     JsonExternal
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../deps/json
@@ -41,7 +40,7 @@ externalproject_add(
     URL_HASH SHA256=3fc1290f4007ec75f6e9acecbb25512630d1b9ab8c53ba79844e395868c3e006
     PATCH_COMMAND "${Patch_EXECUTABLE}" -p1 --forward -d ${CMAKE_CURRENT_BINARY_DIR}/libreSslSource <
                   ${CMAKE_CURRENT_SOURCE_DIR}/ciPatches/libressl-no_postfix.patch || echo "Patch returned non-zero"
-    CMAKE_ARGS -DLIBRESSL_APPS:BOOL=0 -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+    CMAKE_ARGS -DLIBRESSL_APPS:BOOL=0 -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
@@ -55,6 +54,7 @@ externalproject_add(
                -DPAHO_BUILD_STATIC:BOOL=1
                -DPAHO_ENABLE_TESTING:BOOL=1 
                -DLIBRESSL_ROOT_DIR:PATH=${CMAKE_INSTALL_PREFIX}/
+               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     DEPENDS libreSSLExternal
     PATCH_COMMAND "${Patch_EXECUTABLE}" -p1 --forward -d ${CMAKE_CURRENT_SOURCE_DIR}/../deps/paho.mqtt.c <
                   ${CMAKE_CURRENT_SOURCE_DIR}/ciPatches/paho.mqtt.c.patch || echo "Patch returned non-zero"
@@ -70,6 +70,7 @@ externalproject_add(
                 -DPAHO_BUILD_STATIC:BOOL=1
                 -DPAHO_ENABLE_TESTING:BOOL=1
                 -DLIBRESSL_ROOT_DIR:PATH=${CMAKE_INSTALL_PREFIX}/
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     DEPENDS PahoCExternal libreSSLExternal
     PATCH_COMMAND "${Patch_EXECUTABLE}" -p1 --forward -d ${CMAKE_CURRENT_SOURCE_DIR}/../deps/paho.mqtt.cpp <
                   ${CMAKE_CURRENT_SOURCE_DIR}/ciPatches/paho.mqtt.cpp.patch || echo "Patch returned non-zero"
