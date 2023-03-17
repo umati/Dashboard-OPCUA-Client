@@ -344,8 +344,6 @@
     "Password": "",
     "Prefix": "umati",
     "ClientId": "umati",
-    "Protocol": "tcp",
-    "CaCertPath":"/etc/ssl/certs/"
-    "CaTrustStorePath": ""
+    "Protocol": "tcp"
   }
 }
