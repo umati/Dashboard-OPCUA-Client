@@ -54,7 +54,9 @@ The example `configuration.json` options are explained:
     "Password": "",
     "Prefix": "umati", // Topic prefix
     "ClientId": "umati", // ClientId part of topic structure
-    "Protocol": "tcp" // tcp: plain; tls: TLC secured; wss: WebSocket TLS secured 
+    "Protocol": "tcp", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
+    "CaCertPath":"", // path to the CA-Cert file, only to be modified if advised
+    "CaTrustStorePath": "" 
   }
 }
 ```
