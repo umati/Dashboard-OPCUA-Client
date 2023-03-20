@@ -24,6 +24,7 @@
  */
 
 #include "DashboardOpcUaClient.hpp"
+#include "Util/ClientVersion.hpp"
 #include <signal.h>
 #include <easylogging++.h>
 #include <thread>
@@ -59,6 +60,8 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, stopHandler);
 
 	LOG(INFO) << "Start Dashboard OPC UA Client";
+	LOG(INFO) << "OPC UA Dashboard Client Version: " << gitClientVersion <<std::endl;
+
 
 	std::string configFilename("configuration.json");
 
