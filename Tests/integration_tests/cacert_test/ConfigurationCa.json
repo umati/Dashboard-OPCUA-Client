@@ -5,10 +5,16 @@
     "Port": 1884,
     "Username": "",
     "Password": "",
+    "ClientId": "test/test",
     "CaCertPath":"/etc/ssl/certs",
     "CaTrustStorePath": ""
   },
-  "OpcUa": {},
+  "OpcUa": {
+    "Endpoint": "opc.tcp://localhost:4840",
+    "Username": "User",
+    "Password": "Password",
+    "Security": 1
+  },
   "ObjectTypeNamespaces": [],
   "NamespaceInformations": [],
   "MachinesFilter": []

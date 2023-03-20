@@ -36,6 +36,7 @@ TEST(ConfigurationJsonFile, WithoutNamespaces) {
   EXPECT_EQ(conf.getObjectTypeNamespaces(), objectTypeNamespaces);
   EXPECT_EQ(conf.getMqtt().Hostname, "localhost");
   EXPECT_EQ(conf.getMqtt().Port, 1883);
+  EXPECT_EQ(conf.getMqtt().ClientId, "test/test");
   EXPECT_EQ(conf.getMqtt().Username, "MyUser");
   EXPECT_EQ(conf.getMqtt().Password, "MyPassword");
 }
