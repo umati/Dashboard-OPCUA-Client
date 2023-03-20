@@ -34,7 +34,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 ###########
 # Version #
 ###########
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 # The current version information. On the master branch, we take the version
 # number from the latest release plus the "-undefined" label. Will be
 # overwritten with more detailed information if git is available.
