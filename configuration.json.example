@@ -340,10 +340,10 @@
   "Mqtt": {
     "Hostname": "localhost",
     "Port": 1883,
-    "Username": "opcua_client",
+    "Username": "MyCompany/ClientName",
     "Password": "",
-    "Prefix": "umati",
-    "ClientId": "umati",
+    "Prefix": "umati/v2",
+    "ClientId": "MyCompany/ClientName",
     "Protocol": "tcp"
   }
 }

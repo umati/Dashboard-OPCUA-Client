@@ -29,10 +29,10 @@
 
 7. Start on Linux `DashboardOpcUaClient configuration.json` from your home directory
 
-    1. The start-up phase can last for up to 10 minutes, depending of the size of the server. During the start-up phase a `1` is transmitted to the MQTT Broker on the topic `TODO`. The output of the console should look like this:
+    1. The start-up phase can last for up to 10 minutes, depending of the size of the server. When the client is connected to the MQTT broker a `1` is transmitted to the MQTT Broker on the topic `umati/v2/<CompanyName>/<ClientName>/clientOnline`. The output of the console should look like this:
 ![Client_Output](sample-log.png)
 
-    2. After the start up a JSON containing all machine values is transmitted to the MQTT Broker. `TODO: Topic`
+    2. After the start up a JSON containing all machine values is published on the MQTT Broker at topic `umati/v2/<CompanyName>/<ClientName>/<SpecificationType>/<EscapedMachineNodeId>` (e.g. `umati/v2/ISW/ClientSampleServer/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382`)
 
 <!-- markdownlint-disable MD033 -->
 <details><summary>Troubleshooting</summary>
