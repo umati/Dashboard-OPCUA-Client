@@ -1,7 +1,11 @@
 ---
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+    branches: [main, development]
+  merge_group:
 
 jobs:
   build-linux:
@@ -15,25 +19,27 @@ jobs:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
       - name: Build UmatiDashboardOpcUaClient with dependencies
+        # yamllint disable rule:line-length
         run: |
-          LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')"
+          LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')" # yamllint disable-line rule:line-length
           mkdir -p build
           cd build
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH="${{ env.CMAKE_INSTALL_PREFIX }}" \
             -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
           cmake --build . -j
           make package
+        # yamllint enable rule:line-length
       - name: Run Tests
         run: |
           cd build/Dashboard-Client-build
           ctest -V -C "${{matrix.build_type}}"
       - name: Run integration test cacert_test
-        run : |
+        run: |
           cd UmatiDashboardOpcUaClient/Tests/integration_tests/cacert_test
           ./genCerts.sh
           cp "${{ github.workspace }}/build/Dashboard-Client-build/Tests/TestCaCertificate" .
@@ -63,11 +69,12 @@ jobs:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
       - name: Build UmatiDashboardOpcUaClient with dependencies
+        # yamllint disable rule:line-length
         run: |
           $matrixarch = "${{matrix.arch}}"
           if($matrixarch = "386"){$arch="Win32"}
@@ -76,6 +83,7 @@ jobs:
           cd build
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -A "$arch" -DPAHO_WITH_SSL=1
           cmake --build . -j --config ${{matrix.build_type}}
+        # yamllint enable rule:line-length
       - name: Run Tests
         run: |
           cd build/Dashboard-Client-build
@@ -100,7 +108,7 @@ jobs:
       IS_NOT_PR: ${{ !github.head_ref && true }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
@@ -109,10 +117,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.5.0
       - name: PrepareReg Names
+        # yamllint disable rule:line-length
         run: |
           #shellcheck  disable=SC2154
           echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
           echo IMAGE_TAG=$(echo ${{ github.ref }} | tr '[:upper:]' '[:lower:]' |  awk '{sub(/([^\/]*\/){2}/,""); gsub(/\/|_/, "-")}1') >> $GITHUB_ENV
+        # yamllint enable rule:line-length
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2.1.0
         if: env.IS_NOT_PR == 'true' && ${{ github.actor }} != 'dependabot'
