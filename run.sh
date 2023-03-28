@@ -3,4 +3,4 @@
 
 docker build -t opcuaclient -f Dockerfile.debian . --no-cache
 docker container rm -f opcuaclient
-docker run -it --rm -v /home/goetz/projects/Dashboard-OPCUA-Client/configuration.json:/app/configuration.json --name=opcuaclient opcuaclient
+docker run -it --rm -v /workspace/Dashboard-OPCUA-Client/configuration.json:/app/configuration.json --name=opcuaclient dashboardopcuaclient
