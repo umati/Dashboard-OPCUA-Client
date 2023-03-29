@@ -133,7 +133,7 @@ jobs:
       - name: Build Docker Release
         uses: docker/build-push-action@v4.0.0
         with:
-          file: "./UmatiDashboardOpcUaClient/Dockerfile.debian"
+          file: "./UmatiDashboardOpcUaClient/Dockerfile"
           context: ./UmatiDashboardOpcUaClient
           platforms: linux/amd64
           push: ${{env.IS_NOT_PR == 'true'}}
