@@ -23,6 +23,7 @@ public:
 
     bool connect(std::atomic_bool &running);
     void ReadTypes();
+    void ReadTypeDictionaries();
     void StartMachineObserver();
     void Iterate();
 protected:

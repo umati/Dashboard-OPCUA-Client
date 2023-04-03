@@ -12,6 +12,7 @@
 #include <utility>
 #include "Converter/ModelNodeIdToUaNodeId.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
+#include "Converter/UaNodeIdToModelNodeId.hpp"
 #include "Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
 static void createDataChangeCallback(UA_Client *client, UA_UInt32 subId, void *subContext,
@@ -28,7 +29,9 @@ static void createDataChangeCallback(UA_Client *client, UA_UInt32 subId, void *s
   UA_DataChangeNotification_init(&notify);
   notify.monitoredItems = &monitems;
   notify.monitoredItemsSize = 1;
-  sub->dataChange(monId, notify, *notify.diagnosticInfos);
+  auto nodeId = sub->valueSubscriptionHandle.get()->getNodeId();
+  auto uanodeId = (open62541Cpp::UA_NodeId)(Umati::OpcUa::Converter::ModelNodeIdToUaNodeId(nodeId, sub->m_uriToIndexCache).getNodeId());
+  sub->dataChange(monId, notify, *notify.diagnosticInfos, client, *uanodeId.NodeId);
 
 } 
 
@@ -69,7 +72,7 @@ namespace Umati {
 
 		void Subscription::dataChange(UA_Int32 /*clientSubscriptionHandle*/,
 									  const UA_DataChangeNotification &dataNotifications,
-									  const UA_DiagnosticInfo & /*diagnosticInfos*/) {
+									  const UA_DiagnosticInfo & /*diagnosticInfos*/, UA_Client *client, UA_NodeId nid) {
 			std::unique_lock<decltype(m_callbacks_mutex)> ul(m_callbacks_mutex);
 			for (UA_Int32 i = 0; i < dataNotifications.monitoredItemsSize; ++i) {
 				auto clientHandle = dataNotifications.monitoredItems->clientHandle;
@@ -78,8 +81,8 @@ namespace Umati {
 					LOG(WARNING) << "Received Item with unknown client handle.";
 					continue;
 				}
-
-				auto value = Converter::UaDataValueToJsonValue(UA_DataValue(dataNotifications.monitoredItems->value),
+				
+				auto value = Converter::UaDataValueToJsonValue(UA_DataValue(dataNotifications.monitoredItems->value), client, nid, 
 															   false).getValue();
 				it->second(value);
 			}
@@ -170,6 +173,7 @@ namespace Umati {
 				}
                 auto returnPointer = std::make_shared<Dashboard::IDashboardDataClient::ValueSubscriptionHandle>(monItemCreateResult.monitoredItemId,
 																 monItemCreateReq.requestedParameters.clientHandle, nodeId);
+				valueSubscriptionHandle = returnPointer;
 				UA_MonitoredItemCreateResult_clear(&monItemCreateResult);
 				UA_MonitoredItemCreateRequest_clear(&monItemCreateReq);
 
