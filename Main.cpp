@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 			LOG(INFO) << "Connection not established, exiting.";
 			return -1;
 		}
-
+		dashboardClient.ReadTypeDictionaries();
 		dashboardClient.ReadTypes();
 		dashboardClient.StartMachineObserver();
 		while (running && !reset)

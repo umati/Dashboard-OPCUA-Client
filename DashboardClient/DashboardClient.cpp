@@ -383,7 +383,7 @@ namespace Umati
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
 			std::mutex &valueMap_mutex)
 		{
-			// LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+			LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
@@ -476,7 +476,7 @@ namespace Umati
                                              * at position pNode with the received json value.
                                              */
 			// LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
-
+			
 			auto callback = [pNode, &valueMap, &valueMap_mutex](nlohmann::json value) {
 					std::unique_lock<std::remove_reference<decltype(valueMap_mutex)>::type>(valueMap_mutex);
 					valueMap[pNode] = value;
