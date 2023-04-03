@@ -20,6 +20,7 @@ class Topics {
   static std::string ErrorList(const std::string &specType);
   static std::string OnlineStatus(const std::string &machineId);
   static std::string ClientOnline();
+  static std::string GwVersion();
 };
 }  // namespace MachineObserver
 }  // namespace Umati

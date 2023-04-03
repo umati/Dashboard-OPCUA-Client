@@ -10,6 +10,7 @@
 
 #include "DashboardOpcUaClient.hpp"
 #include "MachineObserver/Topics.hpp"
+#include "Util/ClientVersion.hpp"
 
 DashboardOpcUaClient::DashboardOpcUaClient(std::shared_ptr<Umati::Util::Configuration> configuration, std::function<void()> issueReset)
   : m_issueReset(issueReset),
@@ -30,6 +31,8 @@ DashboardOpcUaClient::DashboardOpcUaClient(std::shared_ptr<Umati::Util::Configur
       configuration->getMqtt().CaCertPath,
       configuration->getMqtt().CaTrustStorePath,
       Umati::MachineObserver::Topics::ClientOnline(),
+      Umati::MachineObserver::Topics::GwVersion(),
+      gitClientVersion,
       configuration->getMqtt().Username,
       configuration->getMqtt().Password)),
     m_pOpcUaTypeReader(

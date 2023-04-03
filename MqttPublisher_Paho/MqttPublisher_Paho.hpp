@@ -32,6 +32,8 @@ class MqttPublisher_Paho : public Umati::Dashboard::IPublisher {
     const std::string &CaCertPath,
     const std::string &CaTrustStorePath,
     const std::string &onlineTopic = std::string(),
+    const std::string &versionTopic = std::string(),
+    const std::string &gitClientVersion = std::string(),
     const std::string &username = std::string(),
     const std::string &password = std::string());
 
@@ -64,6 +66,8 @@ class MqttPublisher_Paho : public Umati::Dashboard::IPublisher {
   mqtt::async_client m_cli;
   MqttCallbacks m_callbacks;
   const std::string m_onlineTopic;
+  const std::string m_versionTopic;
+  const std::string m_gitClientVersion;
 };
 }  // namespace MqttPublisher_Paho
 }  // namespace Umati

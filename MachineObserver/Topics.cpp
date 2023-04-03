@@ -44,5 +44,10 @@ std::string Topics::ClientOnline() {
   topic << Topics::Prefix << "/" << Topics::ClientId << "/clientOnline";
   return topic.str();
 }
+std::string Topics::GwVersion() { 
+  std::stringstream topic;
+  topic << Topics::Prefix << "/" << Topics::ClientId << "/gw-version";
+  return topic.str();
+}
 }  // namespace MachineObserver
 }  // namespace Umati

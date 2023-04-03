@@ -22,9 +22,11 @@ MqttPublisher_Paho::MqttPublisher_Paho(
   const std::string &CaCertPath,
   const std::string &CaTrustStorePath,
   const std::string &onlineTopic,
+  const std::string &versionTopic,
+  const std::string &gitClientVersion,
   const std::string &username,
   const std::string &password)
-  : m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr), m_callbacks(this), m_onlineTopic(onlineTopic) {
+  : m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr), m_callbacks(this), m_onlineTopic(onlineTopic), m_versionTopic(versionTopic),m_gitClientVersion(gitClientVersion) {
   m_cli.set_callback(m_callbacks);
 
   mqtt::connect_options opts_conn = getOptions(username, password);
@@ -118,6 +120,7 @@ MqttPublisher_Paho::MqttCallbacks::MqttCallbacks(MqttPublisher_Paho *mqttPublish
 void MqttPublisher_Paho::MqttCallbacks::connected(const std::string &cause) {
   LOG(INFO) << "Mqtt Connected: " << cause;
   m_mqttPublisher_paho->Publish(m_mqttPublisher_paho->m_onlineTopic, "1");
+  m_mqttPublisher_paho->Publish(m_mqttPublisher_paho->m_versionTopic, m_mqttPublisher_paho->m_gitClientVersion);
 }
 
 void MqttPublisher_Paho::MqttCallbacks::connection_lost(const std::string &cause) { LOG(ERROR) << "Connection lost: " << cause; }
