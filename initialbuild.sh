@@ -22,11 +22,12 @@
 # SOFTWARE.
 
 BASEDIR=$(pwd)
+LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')" # yamllint disable-line rule:line-length
 
 mkdir -p build
 cd build || exit
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH="$BASEDIR/install" ../.github/ 
-cmake --build .
-# TODO fix tests
-# cd Dashboard-Client-build|| exit
-# ctest
+cmake ../.github/ -DCMAKE_INSTALL_PREFIX:PATH="$BASEDIR/install" \
+    -DCMAKE_BUILD_TYPE=Debug -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
+cmake --build . -j
+cd Dashboard-Client-build || exit
+ctest -V -C Debug
