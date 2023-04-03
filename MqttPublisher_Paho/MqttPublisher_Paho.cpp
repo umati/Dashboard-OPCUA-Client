@@ -26,7 +26,7 @@ MqttPublisher_Paho::MqttPublisher_Paho(
   const std::string &gitClientVersion,
   const std::string &username,
   const std::string &password)
-  : m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr), m_callbacks(this), m_onlineTopic(onlineTopic), m_versionTopic(versionTopic),m_gitClientVersion(gitClientVersion) {
+  : m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr), m_callbacks(this), m_onlineTopic(onlineTopic), m_versionTopic(versionTopic), m_gitClientVersion(gitClientVersion) {
   m_cli.set_callback(m_callbacks);
 
   mqtt::connect_options opts_conn = getOptions(username, password);
