@@ -54,7 +54,6 @@ set_umati_dashboard_client_version()
 # v1.2.3-rc1-dirty
 # v1.2.3-5-g4538abcd
 # v1.2.3-5-g4538abcd-dirty
-#-- umati Dashboard Client Version: v1.3.1-5-g34fb64a-dirty
 set(DASHBOARD_CLIENT_VERSION "v${UMATI_CLIENT_VER_MAJOR}.${UMATI_CLIENT_VER_MINOR}.${UMATI_CLIENT_VER_PATCH}${UMATI_CLIENT_VER_LABEL}")
 MESSAGE("### opcua_dashboardclient Version: ${DASHBOARD_CLIENT_VERSION}")
 
