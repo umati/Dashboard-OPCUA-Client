@@ -45,7 +45,8 @@ The example `configuration.json` options are explained:
     "Endpoint": "opc.tcp://localhost:4840", // OPC UA Endpoint to connect to
     "Username": "",
     "Password": "",
-    "Security": 1 // 1 plain, 3, Sign&Encrypt
+    "Security": 1, // 1 plain, 3, Sign&Encrypt
+    "ByPassCertVerification": true // If you are using Sign&Encrypt, you must disable certificate verification with this option
   },
   "Mqtt": {
     "Hostname": "localhost", // MQTT Broker
