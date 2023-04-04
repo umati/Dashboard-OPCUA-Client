@@ -61,6 +61,7 @@ function(set_umati_dashboard_client_version)
            endif()
        endif()
    endif()
+   
 
    # Set the variables in the parent scope
    set(UMATI_CLIENT_VER_MAJOR ${GIT_VER_MAJOR} PARENT_SCOPE)
