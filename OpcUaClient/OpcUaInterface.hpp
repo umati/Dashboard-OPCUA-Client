@@ -238,7 +238,6 @@ namespace Umati {
 	}
 
 	static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext, UA_UInt32 monId, void *monContext, size_t nEventFields, UA_Variant *eventFields) {
-		UA_NodeId* sourceNodeId;
 		UA_NodeId affectedNode;
 		UA_NodeId affectedType;
 		UA_Byte verb;
@@ -266,13 +265,7 @@ namespace Umati {
 						UA_Byte verb = modelChangeStructureDataType.verb;
 						Umati::Dashboard::IDashboardDataClient::StructureChangeEvent stc;
 						std::map<uint16_t, std::string> id2Uri{{affectedNode.namespaceIndex, pWrapper->namespaceArray.at(affectedNode.namespaceIndex)}};
-						open62541Cpp::UA_NodeId affectedNodeCpp;
-						switch(affectedNode.identifierType) {
-							case UA_NODEIDTYPE_NUMERIC: affectedNodeCpp = open62541Cpp::UA_NodeId(affectedNode.namespaceIndex, affectedNode.identifier.numeric); break;
-							case UA_NODEIDTYPE_STRING: affectedNodeCpp = open62541Cpp::UA_NodeId(affectedNode.namespaceIndex, std::string(*affectedNode.identifier.string.data, affectedNode.identifier.string.length)); break;
-							case UA_NODEIDTYPE_GUID: affectedNodeCpp = open62541Cpp::UA_NodeId(affectedNode.namespaceIndex, affectedNode.identifier.guid); break;
-							case UA_NODEIDTYPE_BYTESTRING: affectedNodeCpp = open62541Cpp::UA_NodeId(affectedNode.namespaceIndex, std::string(*affectedNode.identifier.byteString.data, affectedNode.identifier.byteString.length)); break;
-						}
+						open62541Cpp::UA_NodeId affectedNodeCpp = open62541Cpp::UA_NodeId(affectedNode);
 						ModelOpcUa::NodeId_t nodeId = Converter::UaNodeIdToModelNodeId(affectedNodeCpp, id2Uri).getNodeId();
 						stc.nodeAdded = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEADDED;
 						stc.nodeDeleted = (verb & UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED) == UA_MODELCHANGESTRUCTUREVERBMASK_NODEDELETED;
