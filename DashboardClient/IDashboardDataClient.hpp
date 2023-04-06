@@ -250,12 +250,12 @@ namespace Umati
 
             class EventSubscriptionHandle {
                 public:
-                    EventSubscriptionHandle(int32_t clientHandle, int32_t subscriptionId) : m_clientHandle(clientHandle), m_subscriptionId(subscriptionId){};
-                    ~EventSubscriptionHandle(){};
-                    void unsubscribe() { m_unsubscribed = true; }
-                    bool isUnsubscribed() {return m_unsubscribed;}
-                    int32_t getClientHandle() { return m_clientHandle;}
-                    int32_t getSubscriptionId() { return m_subscriptionId;}
+                   inline EventSubscriptionHandle(int32_t clientHandle, int32_t subscriptionId) : m_clientHandle(clientHandle), m_subscriptionId(subscriptionId){};
+                   inline ~EventSubscriptionHandle(){};
+                   inline void unsubscribe() { m_unsubscribed = true; }
+                   inline bool isUnsubscribed() {return m_unsubscribed;}
+                   inline int32_t getClientHandle() { return m_clientHandle;}
+                   inline int32_t getSubscriptionId() { return m_subscriptionId;}
 
                 private:
                     bool m_unsubscribed = false;
