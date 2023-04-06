@@ -1053,8 +1053,7 @@ bool OpcUaClient::VerifyConnection() {
     LOG(WARNING) << "Getting NodeClass failed. Got NodeClass: " << (status);
     return false;
   }
-
-			return true;
-		}
+	return true;
+}
 }  // namespace OpcUa
 }  // namespace Umati
