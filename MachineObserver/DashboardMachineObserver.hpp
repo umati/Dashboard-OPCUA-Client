@@ -37,18 +37,7 @@ namespace Umati
 			~DashboardMachineObserver() override;
 
 			void PublishAll();
-			void updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes);
-			struct StructureChangeEvent{
-				std::shared_ptr<Umati::Dashboard::DashboardClient> dbc;
-				ModelOpcUa::NodeId_t refreshNode;
-				bool nodeAdded = false;
-				bool nodeDeleted = false;
-				bool referenceAdded = false;
-				bool referenceDeleted = false;
-				bool dataTypeChanged = false;
-			};
-			std::queue<StructureChangeEvent> modelStructureChangeEvents;
-			
+			void updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes);		
 
 		protected:
 			void startUpdateMachineThread();

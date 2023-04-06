@@ -243,12 +243,7 @@ namespace Umati {
 		UA_Byte verb;
 		for(size_t i = 0; i < nEventFields; ++i) {
 			UA_Variant eventField = eventFields[i];
-			if(UA_Variant_hasScalarType(&eventField, &UA_TYPES[UA_TYPES_NODEID])) {
-				UA_NodeId* nodeId = (UA_NodeId *)eventField.data;
-				if(i == 1) {
-					sourceNodeId = nodeId;
-				}
-			}  else {
+			if(!UA_Variant_hasScalarType(&eventField, &UA_TYPES[UA_TYPES_NODEID])) {
 				UA_ExtensionObject* extensionObjects = (UA_ExtensionObject*)eventField.data;
 				UA_ModelChangeStructureDataType* modelChangeStructureDataTypes = (UA_ModelChangeStructureDataType*)UA_Array_new(eventField.arrayLength, &UA_TYPES[UA_TYPES_MODELCHANGESTRUCTUREDATATYPE]);
 				for(int j = 0; j < eventField.arrayLength; j ++) {
