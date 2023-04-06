@@ -49,13 +49,13 @@ include(SetGitBasedVersion)
 set_umati_dashboard_client_version()
 
 # Examples for the version string are:
-# v1.2
-# v1.2.3
-# v1.2.3-rc1
-# v1.2.3-rc1-dirty
-# v1.2.3-5-g4538abcd
-# v1.2.3-5-g4538abcd-dirty
-set(DASHBOARD_CLIENT_VERSION "v${UMATI_CLIENT_VER_MAJOR}.${UMATI_CLIENT_VER_MINOR}.${UMATI_CLIENT_VER_PATCH}${UMATI_CLIENT_VER_LABEL}")
+# 1.2
+# 1.2.3
+# 1.2.3-rc1
+# 1.2.3-rc1-dirty
+# 1.2.3-5-g4538abcd
+# 1.2.3-5-g4538abcd-dirty
+set(DASHBOARD_CLIENT_VERSION "${UMATI_CLIENT_VER_MAJOR}.${UMATI_CLIENT_VER_MINOR}.${UMATI_CLIENT_VER_PATCH}${UMATI_CLIENT_VER_LABEL}")
 MESSAGE("### opcua_dashboardclient Version: ${DASHBOARD_CLIENT_VERSION}")
 
 configure_file(Util/ClientVersion.cpp.in Util/ClientVersion.cpp @ONLY)
@@ -143,12 +143,11 @@ install(
     NAMESPACE DashboardOpcUaClient::
     EXPORT_LINK_INTERFACE_LIBRARIES
 )
-message("### Build debian package test")
-
+message("### opcua_dashbboardclient: package stage")
 set(BUILD_DEB_PACKAGE TRUE CACHE BOOL "Flag that defines whether to build a debian package")
 
 if(${BUILD_DEB_PACKAGE})
-    message("### Build debian package")
+    message("### opcua_dashboardclient: build debian package")
     set(DEB_PACKAGE_LIBCPP_VERSION "8.4.0" CACHE STRING "The debian package libstdc++6 dependency version")
     #unset(BINARY_DIR)
     #ExternalProject_Get_property(Dashboard-Client BINARY_DIR) 
