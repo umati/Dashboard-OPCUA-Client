@@ -300,7 +300,7 @@ namespace Umati {
     				UA_MonitoredItemCreateRequest_init(&item);
 					item.itemToMonitor.attributeId = UA_ATTRIBUTEID_EVENTNOTIFIER;
 					item.monitoringMode = UA_MONITORINGMODE_REPORTING;
-    				item.itemToMonitor.nodeId = UA_NODEID_NUMERIC(0, 2253); // Root->Objects->Server
+    				item.itemToMonitor.nodeId = UA_NODEID_NUMERIC(0,UA_NS0ID_SERVER); // Root->Objects->Server
     			
 					UA_EventFilter filter;
     				UA_EventFilter_init(&filter);
