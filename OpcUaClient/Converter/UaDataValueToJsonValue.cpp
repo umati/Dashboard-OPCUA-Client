@@ -184,7 +184,7 @@ namespace Umati {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
 						*jsonValue = {};
 						(*jsonValue)["locale"] = std::string((char*)localText.locale.data,localText.locale.length);
-						//(*jsonValue)["text"] =  std::string((char*)localText.text.data,localText.text.length);
+						(*jsonValue)["text"] =  std::string((char*)localText.text.data,localText.text.length);
 						break;
 					}
 
