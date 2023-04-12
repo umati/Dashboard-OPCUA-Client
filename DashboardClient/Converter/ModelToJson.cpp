@@ -103,9 +103,9 @@ namespace Umati {
 			}
 			//TODO use another function to check for i=17570 aka AnalogUnitRangeType and i=2755 aka StateVariableType
 			//Set ofBaseDataVariableType somewhere?
-			bool ModelToJson::isBaseDataVariableType(
-					const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) {
-				return (pSimpleNode->SpecifiedTypeNodeId.Uri == "" 
+			bool ModelToJson::isBaseDataVariableType(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) {
+				bool isOfBaseDataVariableType = false;
+				isOfBaseDataVariableType = (pSimpleNode->SpecifiedTypeNodeId.Uri == "" 
 						&& (pSimpleNode->SpecifiedTypeNodeId.Id == "i=63" || pSimpleNode->SpecifiedTypeNodeId.Id == "i=17570"
                                                                           || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2755"
                                                                           || pSimpleNode->SpecifiedTypeNodeId.Id == "i=17497"
@@ -113,6 +113,10 @@ namespace Umati {
 									  || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2368"
 									  || pSimpleNode->SpecifiedTypeNodeId.Id == "i=2760"))
 					   	|| pSimpleNode->ofBaseDataVariableType;
+				if(isOfBaseDataVariableType) {
+					//LOG(INFO) << "Is Of BaseVariableType Uri: " << pSimpleNode->SpecifiedTypeNodeId.Uri << " NodeId:" << pSimpleNode->SpecifiedTypeNodeId.Id << " " << pSimpleNode->ofBaseDataVariableType;
+				}
+				return isOfBaseDataVariableType;
 			}
 
 			std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass) {

@@ -58,9 +58,16 @@
             LOG(INFO) << "Browsing variable types.";
             browseObjectOrVariableTypeAndFillBidirectionalTypeMap(NodeId_BaseVariableType, bidirectionalTypeMap, true);
             LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
+            for (auto &typeIterator : *bidirectionalTypeMap) {          
+                LOG(INFO) << "Uri:" << typeIterator.first.Uri << " Id:" << typeIterator.first.Id; 
+            };
+            
 
             browseObjectOrVariableTypeAndFillBidirectionalTypeMap(NodeId_BaseObjectType, bidirectionalTypeMap, false);
             LOG(INFO) << "Browsing object types finished";
+            for (auto &typeIterator : *bidirectionalTypeMap) {          
+                LOG(INFO) << "Uri:" << typeIterator.first.Uri << " Id:" << typeIterator.first.Id; 
+            };
 
             auto namespaces = m_pClient->Namespaces();
             for (std::size_t iNamespace = 0; iNamespace < namespaces.size(); ++iNamespace)
@@ -84,10 +91,21 @@
             {
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespace;
             }
-
-            // printTypeMapYaml();
+            std::vector<std::shared_ptr<ModelOpcUa::StructureNode>> structured_nodes;
+            for(auto it = m_typeMap->begin(); it != m_typeMap->end(); ++it) {
+                structured_nodes.push_back(it->second);
+            }
+            //printTypeMapYaml();
             updateTypeMap();
             updateObjectTypeNames();
+            structured_nodes.clear();
+            for(auto it = m_typeMap->begin(); it != m_typeMap->end(); ++it) {
+                structured_nodes.push_back(it->second);
+                if(it-> second->SpecifiedBrowseName.Name == "GMSResultManagementType") {
+                    printStructuredNode(it->second, 0);
+                }
+            }
+            LOG(INFO)  << "";
         }
         void OpcUaTypeReader::updateObjectTypeNames() {
             m_expectedObjectTypeNames.clear();
@@ -341,6 +359,7 @@
 
             for (auto &browseResult : browseResults)
             {
+                //LOG(INFO) << "Browseresult: " << browseResult.NodeId;
                 ModelOpcUa::ModellingRule_t modellingRule = ModelOpcUa::ModellingRule_t::None;
                 try {
                     modellingRule = m_pClient->BrowseModellingRule(browseResult.NodeId);
@@ -398,6 +417,23 @@
             }   
             return pair->second;
 		}
+        void OpcUaTypeReader::printStructuredNode(std::shared_ptr<ModelOpcUa::StructureNode> node, unsigned int indent) {
+            std::string indentString = "";
+            for(unsigned int i = 0; i < indent; i++) {
+                indentString += "\t";
+            }
+            indent++;
+            std::cout << indentString << node->SpecifiedBrowseName.Name << ":" << std::endl;
+		    std::cout << indentString << "ModellingRule: " << ModelOpcUa::ModellingRuleToString(node->ModellingRule) << std::endl;
+		    std::cout << indentString << "NodeClass: " << ModelOpcUa::NodeClassToString(node->NodeClass) << std::endl;
+		    std::cout << indentString << "ReferenceType: " << static_cast<std::string>(node->ReferenceType) << std::endl;
+		    std::cout << indentString << "TypeDefinition: " << static_cast<std::string>(node->SpecifiedTypeNodeId) << std::endl;
+		    std::cout << indentString << "OfBaseDataVariableType: " << node->ofBaseDataVariableType << std::endl;
+            auto structureNodeChildren = node ->SpecifiedChildNodes;
+            for (auto &childOfChild : *structureNodeChildren) {
+                printStructuredNode(childOfChild,indent);
+            }
+        };
 
     } // namespace Dashboard
 } // namespace Umati

@@ -145,7 +145,11 @@ namespace Umati
 				auto it = pDataSetStorage->values.find(pNode);
 				if (it == pDataSetStorage->values.end())
 				{
-					// LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
+					auto values = pDataSetStorage->values;
+					for(auto it : values) {
+						std::cout << it.first;
+					}
+					LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
 					return nullptr;
 				}
 				return it->second;
@@ -208,8 +212,11 @@ namespace Umati
 				pTypeDefinition->SpecifiedTypeNodeId,
 				*pTypeDefinition,
 				foundChildNodes);
-
+			if(pTypeDefinition->SpecifiedTypeNodeId.Id == "i=63" && pTypeDefinition->SpecifiedTypeNodeId.Uri == "") {
+				LOG(INFO) << "Here";
+			}
 			pNode->ofBaseDataVariableType = pTypeDefinition->ofBaseDataVariableType;
+
 			return pNode;
 		}
 
@@ -383,11 +390,14 @@ namespace Umati
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
 			std::mutex &valueMap_mutex)
 		{
-			LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
-
+			//LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
 			{
+				LOG(INFO) << "!!!!subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+				if(pNode->NodeId.Id == "i=59118") {
+					LOG(INFO) << "Here";
+				}
 				subscribeValue(pNode, valueMap, valueMap_mutex);
 			}
 
@@ -480,6 +490,7 @@ namespace Umati
 			auto callback = [pNode, &valueMap, &valueMap_mutex](nlohmann::json value) {
 					std::unique_lock<std::remove_reference<decltype(valueMap_mutex)>::type>(valueMap_mutex);
 					valueMap[pNode] = value;
+					LOG(INFO) << "CallbackValue " << pNode->NodeId << " " << value; 
 			};
 			try
 			{

@@ -22,9 +22,9 @@ namespace Umati {
 
 
 			std::string UaToModelConverter::getUriFromNsIndex(uint16_t nsIndex) {
-				if (nsIndex == 0) {
+				/*if (nsIndex == 0) {
 					return std::string();
-				}
+				}*/
 				
 				auto it = m_idToUri.find(nsIndex);
 				if (it == m_idToUri.end()) {

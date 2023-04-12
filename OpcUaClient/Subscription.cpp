@@ -72,7 +72,7 @@ namespace Umati {
 
 		void Subscription::dataChange(UA_Int32 /*clientSubscriptionHandle*/,
 									  const UA_DataChangeNotification &dataNotifications,
-									  const UA_DiagnosticInfo & /*diagnosticInfos*/, UA_Client *client, UA_NodeId nid) {
+									  const UA_DiagnosticInfo & /*diagnosticInfos*/, UA_Client *client, UA_NodeId nid) {									
 			std::unique_lock<decltype(m_callbacks_mutex)> ul(m_callbacks_mutex);
 			for (UA_Int32 i = 0; i < dataNotifications.monitoredItemsSize; ++i) {
 				auto clientHandle = dataNotifications.monitoredItems->clientHandle;
@@ -156,7 +156,7 @@ namespace Umati {
 				ModelOpcUa::NodeId_t nodeId,
 				Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback
 		) {
-			// LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
+			LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
 			UA_MonitoredItemCreateRequest monItemCreateReq;
 			UA_MonitoredItemCreateResult monItemCreateResult;
 

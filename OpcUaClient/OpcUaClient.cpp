@@ -320,6 +320,13 @@ void OpcUaClient::buildCustomDataTypes() {
 						nameToBinaryNodeId.insert({nameOfDescribedStructuredType, describedNode.NodeId});
 					}
 				}
+        /*ModelOpcUa::NodeId_t nodeId1;
+        nodeId1.Uri = "http://opcfoundation.org/UA/Scales";
+        nodeId1.Id = "i=6002";
+        ModelOpcUa::QualifiedName_t qname;
+        qname.Uri = "http://opcfoundation.org/UA/Scales";
+        qname.Name = "AbstractWeightType";
+        nameToNodeId.insert({qname, nodeId1});*/
 				/* Search for EnumTypes */
 				tinyxml2::XMLError eResult;
 				tinyxml2::XMLDocument xml_file;
@@ -389,10 +396,14 @@ void OpcUaClient::buildCustomDataTypes() {
 						eResult = it2.current->QueryUnsigned64Attribute("SwitchValue", &field.SwitchValue);
 						eResult = it2.current->QueryBoolAttribute("IsLengthInBytes", &field.IsLengthInBytes);
 						stype.Fields.push_back(field);
-					}
+					} 
+          try {
 					stype.NodeId = nameToNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
 					stype.BinaryNodeId = nameToBinaryNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
-					td.StructuredTypes.push_back(stype);
+          td.StructuredTypes.push_back(stype);
+          } catch(...) {
+            LOG(INFO) << "Unable to resolve DataType:" << td.TargetNamespace << " " << stype.Name;
+          }
 				}
 
 				xml_element = xml_file.RootElement();

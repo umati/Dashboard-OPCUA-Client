@@ -86,6 +86,8 @@ namespace Umati
             
             /// \return Companion Specification Name
             static std::string CSNameFromUri(std::string nsUri);
+
+            void printStructuredNode(std::shared_ptr<ModelOpcUa::StructureNode> structuredNode, unsigned int indent);
         };
     } // namespace OpcUa
 } // namespace Umati

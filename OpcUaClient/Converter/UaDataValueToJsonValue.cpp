@@ -20,11 +20,11 @@ namespace Umati {
 														   UA_Client *c,
 														   UA_NodeId nid,
 														   bool serializeStatusInformation) {
+				if(nid.identifierType == UA_NODEIDTYPE_NUMERIC) {
+					LOG(INFO) << "Created for NodeId" << +nid.namespaceIndex << " " << +nid.identifier.numeric;
+				}
 				m_pClient = c;
 				nodeId = nid;
-				if(nid.identifier.numeric == 59118) {
-					LOG(INFO) << "Here";
-				}
 				setValueFromDataValue(dataValue, serializeStatusInformation);
 				if (serializeStatusInformation) {
 					setStatusCodeFromDataValue(dataValue);
