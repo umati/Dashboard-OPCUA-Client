@@ -389,9 +389,16 @@ void OpcUaClient::buildCustomDataTypes() {
 						eResult = it2.current->QueryBoolAttribute("IsLengthInBytes", &field.IsLengthInBytes);
 						stype.Fields.push_back(field);
 					}
-					stype.NodeId = nameToNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
-					stype.BinaryNodeId = nameToBinaryNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
-					td.StructuredTypes.push_back(stype);
+          // FIX_BEGIN (FIX4)
+          // Abstract Datatypes without fields not represented in the TypeDictionary of the server, are not added to the client.
+          try {
+					  stype.NodeId = nameToNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
+					  stype.BinaryNodeId = nameToBinaryNodeId.at(ModelOpcUa::QualifiedName_t{td.TargetNamespace, stype.Name});
+					  td.StructuredTypes.push_back(stype);
+          } catch (...) {
+            LOG(INFO) << "Unable to resolve DataType:" << td.TargetNamespace << " " << stype.Name;
+          }
+          // FIX_END
 				}
 
 				xml_element = xml_file.RootElement();
