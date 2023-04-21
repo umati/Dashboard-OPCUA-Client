@@ -145,7 +145,27 @@ namespace Umati
 				auto it = pDataSetStorage->values.find(pNode);
 				if (it == pDataSetStorage->values.end())
 				{
-					// LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
+					LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
+					// FIX_BEGIN(FIX_2) In case we don't wnt to remove the duplicate pointers with FIX_1, we can simply check the
+					// Identity of the node via its node Id.
+					//
+					//
+					auto pSimpleNode = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pNode);
+					if(pSimpleNode) {
+						//std::cout << pSimpleNode->NodeId << "\n";
+						auto values = pDataSetStorage->values;
+						for(auto it1 : values) {
+							auto pSimpleNode1 = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(it1.first);
+								if(pSimpleNode1->NodeId == pSimpleNode->NodeId) {
+									// DEBUG_BEGIN in case we want to see the different pointer addresses.
+									// std::cout << pSimpleNode.get() << "\n";
+									// std::cout << pSimpleNode1.get() << "\n";
+									// DEBUG_END
+									return it1.second;
+								}
+						}
+					}
+					//FIX_END
 					return nullptr;
 				}
 				return it->second;
@@ -159,6 +179,25 @@ namespace Umati
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition)
 		{
 			auto ret = browsedNodes.insert(startNode);
+			// DEBUG_BEGIN (RESULTTYPE), List all SpecifiedChildNodes, tested with BasicGMS
+			// IMHO Should only contain <ResultVariable> and should it contain only once.
+			// I think contains all childs of all specs possible for a FolderType, some double (due to inheritance?).
+
+			/*if(startNode.Id == "i=59117") {
+				std::cout << "\n";
+				std::list<std::shared_ptr<ModelOpcUa::StructureNode>> removeList;
+				for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes) {
+
+					std::cout << pChild->SpecifiedBrowseName.Name << "\n";
+				}
+				std::cout << "\n";
+			}*/
+			// DEBUG_END
+
+			// FIX_BEGIN (FIX_1), removed duplicates to avoid different pointers to the same node
+			(*pTypeDefinition->SpecifiedChildNodes).sort();
+			(*pTypeDefinition->SpecifiedChildNodes).unique();
+			// FIX_END
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
 			if(ret.second==true) {
 				for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes)
@@ -344,7 +383,7 @@ namespace Umati
 		}
 
 		void DashboardClient::preparePlaceholderNodesTypeId(
-			const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> & /*pStructurePlaceholder*/,
+			const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> & pStructurePlaceholder,
 			std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
 			std::list<ModelOpcUa::BrowseResult_t> &browseResults)
 		{
@@ -384,13 +423,17 @@ namespace Umati
 			std::mutex &valueMap_mutex)
 		{
 			LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
+			for(auto value : m_subscribedValues){
+				if(value && value.get()->getNodeId() == pNode.get()->NodeId)
+				return;
+			}
 
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
-			{
+			{	
 				subscribeValue(pNode, valueMap, valueMap_mutex);
+				
 			}
-
 			handleSubscribeChildNodes(pNode, valueMap, valueMap_mutex);
 		}
 

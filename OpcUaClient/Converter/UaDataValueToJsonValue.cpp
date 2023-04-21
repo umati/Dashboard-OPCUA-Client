@@ -22,9 +22,6 @@ namespace Umati {
 														   bool serializeStatusInformation) {
 				m_pClient = c;
 				nodeId = nid;
-				if(nid.identifier.numeric == 59118) {
-					LOG(INFO) << "Here";
-				}
 				setValueFromDataValue(dataValue, serializeStatusInformation);
 				if (serializeStatusInformation) {
 					setStatusCodeFromDataValue(dataValue);
@@ -183,8 +180,17 @@ namespace Umati {
 					case UA_DATATYPEKIND_LOCALIZEDTEXT: {
 						UA_LocalizedText localText(*(UA_LocalizedText*)variant.data);
 						*jsonValue = {};
+						// FIX_BEGIN (FIX_3)
+						// Inserted nullchecks
+						// Added a max length because length determination on some Servers return invalid high length numbers 
+						std::size_t maxLength = 4000;
+						if(localText.locale.data != nullptr && localText.locale.length < maxLength) {
 						(*jsonValue)["locale"] = std::string((char*)localText.locale.data,localText.locale.length);
-						//(*jsonValue)["text"] =  std::string((char*)localText.text.data,localText.text.length);
+						}
+						if(localText.text.data != nullptr && localText.text.length < maxLength) {
+							(*jsonValue)["text"] =  std::string((char*)localText.text.data,localText.text.length);
+						}
+						// FIX_END
 						break;
 					}
 

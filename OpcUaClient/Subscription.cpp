@@ -156,7 +156,7 @@ namespace Umati {
 				ModelOpcUa::NodeId_t nodeId,
 				Dashboard::IDashboardDataClient::newValueCallbackFunction_t callback
 		) {
-			// LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
+			LOG(INFO) << "Subscribe request for nodeId " << nodeId.Uri << ";" << nodeId.Id;
 			UA_MonitoredItemCreateRequest monItemCreateReq;
 			UA_MonitoredItemCreateResult monItemCreateResult;
 
