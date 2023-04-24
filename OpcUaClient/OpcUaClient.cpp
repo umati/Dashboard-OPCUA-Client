@@ -5,6 +5,7 @@
  * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #include "OpcUaClient.hpp"
@@ -121,10 +122,8 @@ OpcUaClient::OpcUaClient(
   {
     std::lock_guard<std::recursive_mutex> l(m_clientMutex);
     UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
-    if (bypassCertVerification) {
-      config->certificateVerification.verifyCertificate = &bypassVerify;
-    }
-    SetupSecurity::setupSecurity(config, m_pClient.get());
+
+    SetupSecurity::setupSecurity(config, m_pClient.get(), bypassCertVerification);
     config->securityMode = UA_MessageSecurityMode(security);
     config->timeout = 2000;
     config->inactivityCallback = inactivityCallback;

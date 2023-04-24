@@ -5,6 +5,7 @@
  * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #include "SetupSecurity.hpp"
@@ -33,8 +34,6 @@ UA_StatusCode bypassVerify(const UA_CertificateVerification *verificationContext
 const std::string SetupSecurity::m_applicationName = std::string("umati Dashboard Gateway");
 const std::string SetupSecurity::m_applicationUri = std::string("http://umati.app/OPCUA_Gateway");
 const std::string SetupSecurity::m_productUri = std::string("KonI40OpcUaClient_Product");
-
-UA_StatusCode bypassVerify(void *verificationContext, const UA_ByteString *cert) { return UA_STATUSCODE_GOOD; }
 
 SetupSecurity::paths_t SetupSecurity::paths = {
   "./pki/",
@@ -140,7 +139,7 @@ static bool createDirs(std::string directory) {
 
   return true;
 }
-bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
+bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client, bool bypassCertVerification) {
   std::ifstream f(paths.ClientPrivCert.c_str());
   if (!f.good()) {
     createDirs(paths.ServerRevokedCerts);
@@ -169,6 +168,9 @@ bool SetupSecurity::setupSecurity(UA_ClientConfig *config, UA_Client *client) {
 
   UA_ClientConfig_setDefaultEncryption(config, certificate, privateKey, trustList, trustListSize, revocationList, revocationListSize);
   setSessionConnectInfo(config->clientDescription);
+  if (bypassCertVerification) {
+    config->certificateVerification.verifyCertificate = &bypassVerify;
+  }
   UA_ByteString_clear(&certificate);
   UA_ByteString_clear(&privateKey);
 

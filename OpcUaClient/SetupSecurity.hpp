@@ -5,6 +5,7 @@
  * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
+ * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
 #pragma once
@@ -20,7 +21,6 @@
 namespace Umati {
 namespace OpcUa {
 
-UA_StatusCode bypassVerify(const UA_CertificateVerification *verificationContext, const UA_ByteString *cert);
 class SetupSecurity {
  public:
   struct paths_t {
@@ -36,7 +36,7 @@ class SetupSecurity {
     std::string IssuerRevokedCerts;
   };
 
-  static bool setupSecurity(UA_ClientConfig *config, UA_Client *client);
+  static bool setupSecurity(UA_ClientConfig *config, UA_Client *client, bool bypassCertVerification);
 
   static void createNewClientCert();
 
