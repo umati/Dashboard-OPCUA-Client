@@ -145,7 +145,7 @@ namespace Umati
 				auto it = pDataSetStorage->values.find(pNode);
 				if (it == pDataSetStorage->values.end())
 				{
-					LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
+					LOG(DEBUG) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id << "Try to search it with NodeId!";
 					// FIX_BEGIN(FIX_2) In case we don't wnt to remove the duplicate pointers with FIX_1, we can simply check the
 					// Identity of the node via its node Id.
 					//
@@ -161,10 +161,12 @@ namespace Umati
 									// std::cout << pSimpleNode.get() << "\n";
 									// std::cout << pSimpleNode1.get() << "\n";
 									// DEBUG_END
+									LOG(DEBUG) << pNode->SpecifiedBrowseName.Name << " " << "found!";
 									return it1.second;
 								}
 						}
 					}
+					LOG(DEBUG) << pNode->SpecifiedBrowseName.Name << " " << " not found!";
 					//FIX_END
 					return nullptr;
 				}
