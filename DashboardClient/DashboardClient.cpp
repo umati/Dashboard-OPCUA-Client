@@ -26,7 +26,80 @@ namespace Umati
 			std::shared_ptr<OpcUaTypeReader> pTypeReader)
 			: m_pDashboardDataClient(pDashboardDataClient), m_pPublisher(pPublisher), m_pTypeReader(pTypeReader)
 		{
+			this->startEventThread();
 		}
+
+		DashboardClient::~DashboardClient() {
+			this->stopEventThread();
+		}
+
+		void DashboardClient::startEventThread() {
+			if (m_eventThreadRunning)
+			{
+				LOG(INFO) << "EventThread Running";
+				return;
+			}
+
+			auto func = [this]() {
+				int cnt = 0;
+				while (this->m_eventThreadRunning) {
+					if(!m_eventqueue.empty()) {
+						IDashboardDataClient::StructureChangeEvent sce = m_eventqueue.front();
+						m_eventqueue.pop();
+						this->m_dynamicNodes.push_back(sce.refreshNode);
+						if(sce.nodeAdded || sce.referenceAdded) {
+							this->updateAddDataSet(sce.refreshNode);
+							this->Publish();
+						}
+						if(sce.nodeDeleted || sce.referenceDeleted) {
+							this -> updateDeleteDataSet(sce.refreshNode);
+							if(sce.nodeDeleted == true) {
+							auto search = browsedSimpleNodes.find(sce.refreshNode);
+								if(search != browsedSimpleNodes.end()) {
+									std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = search->second;
+									this->deleteAndUnsubscribeNode(*simpleNode);
+								}
+							}
+							this -> Publish();
+    					}
+					}
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				}
+			};
+			m_eventThreadRunning = true;
+			m_eventThread = std::thread(func);
+		}
+		void DashboardClient::stopEventThread() {
+			m_eventThreadRunning = false;
+			if (m_eventThread.joinable())
+			{
+				m_eventThread.join();
+			}
+		}
+		void DashboardClient::reloadDataSet(ModelOpcUa::NodeId_t nodeId) {
+			auto search = browsedSimpleNodes.find(nodeId);
+			if(search == browsedSimpleNodes.end()){
+				return;
+			}
+			std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = search->second;
+			auto childNodes = simpleNode->ChildNodes;
+			if(childNodes.empty()) { 
+				return;
+			}
+			auto child = childNodes.front();
+			std::shared_ptr<const ModelOpcUa::PlaceholderNode> placeholderNode = std::dynamic_pointer_cast<const ModelOpcUa::PlaceholderNode>(child);
+			if(placeholderNode == nullptr) {
+				return;
+			}
+			std::shared_ptr<ModelOpcUa::PlaceholderNode> placeholderNodeUnconst = std::const_pointer_cast<ModelOpcUa::PlaceholderNode>(placeholderNode);
+			for(auto instance : placeholderNode->getInstances()) {
+				placeholderNodeUnconst->removeInstance(instance);
+				deleteAndUnsubscribeNode(instance);
+			}
+			auto browseResults = m_pDashboardDataClient->Browse(nodeId, child->ReferenceType, child->SpecifiedTypeNodeId);
+			this->updateAddDataSet(nodeId);
+		}
+		
 		void DashboardClient::updateDeleteDataSet(ModelOpcUa::NodeId_t refreshNodeId) {
 			auto search = browsedSimpleNodes.find(refreshNodeId);
 			if( search != browsedSimpleNodes.end()) {
@@ -43,9 +116,11 @@ namespace Umati
 					for(auto& el : instances) {
 						bool found = false;
 						ModelOpcUa::NodeId_t nodeId = el.pNode->NodeId;
-						if(std::any_of(browseResults.begin(), browseResults.end(),[nodeId](ModelOpcUa::BrowseResult_t br){ return br.NodeId == nodeId;})) {
-							found = true;
-							break;
+						for(ModelOpcUa::BrowseResult_t browseResult : browseResults) {
+							if(browseResult.NodeId == nodeId) {
+								found = true;
+								break;
+							}
 						}
 						if(!found) {
 							missingElements.push_back(el);
@@ -59,8 +134,6 @@ namespace Umati
 					}
 				}
 			}
-			//Hotfix clear subscription cache.
-			m_subscribedValues.clear();
 		}
 		void DashboardClient::deleteAndUnsubscribeNode(ModelOpcUa::PlaceholderElement placeHolderElement) {
 			std::shared_ptr<const ModelOpcUa::SimpleNode> element = placeHolderElement.pNode;
@@ -107,27 +180,7 @@ namespace Umati
 		}
 		void DashboardClient::subscribeEvents() {
 			auto ecbf = [this](IDashboardDataClient::StructureChangeEvent sce) {
-				if(sce.nodeAdded || sce.referenceAdded) {
-					std::thread t([this, sce](){
-						this->updateAddDataSet(sce.refreshNode);
-						this->Publish();
-    				});
-					t.detach();
-				}
-				if(sce.nodeDeleted || sce.referenceDeleted) {
-					std::thread t([this, sce](){
-						this -> updateDeleteDataSet(sce.refreshNode);
-						if(sce.nodeDeleted == true) {
-							auto search = browsedSimpleNodes.find(sce.refreshNode);
-							if(search != browsedSimpleNodes.end()) {
-								std::shared_ptr<const ModelOpcUa::SimpleNode> simpleNode = search->second;
-								this->deleteAndUnsubscribeNode(*simpleNode);
-							}
-						}
-						this -> Publish();
-    				});
-					t.detach();
-				}
+				this->m_eventqueue.push(sce);
 			};
 			m_pDashboardDataClient->SubscribeEvent(ecbf);
 		}

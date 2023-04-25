@@ -16,6 +16,9 @@
 #include <map>
 #include <set>
 #include <mutex>
+#include <thread>
+#include <queue>
+
 namespace Umati {
 
 	namespace Dashboard {
@@ -42,6 +45,8 @@ namespace Umati {
 							std::shared_ptr<IPublisher> pPublisher,
 							std::shared_ptr<OpcUaTypeReader> pTypeReader);
 
+			~DashboardClient();
+
 			void addDataSet(
 					const ModelOpcUa::NodeId_t &startNodeId,
 					const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition,
@@ -57,6 +62,7 @@ namespace Umati {
 			void updateAddDataSet(ModelOpcUa::NodeId_t nodeId);
 			void updateDeleteDataSet(ModelOpcUa::NodeId_t nodeId);
 			void deleteAndUnsubscribeNode(const ModelOpcUa::SimpleNode nodeId);
+			void reloadDataSet(ModelOpcUa::NodeId_t nodeId);
 
 
 		protected:
@@ -102,6 +108,14 @@ namespace Umati {
 			std::recursive_mutex m_dataSetMutex;
 			std::list<std::shared_ptr<DataSetStorage_t>> m_dataSets;
 			std::map<std::string, LastMessage_t> m_latestMessages;
+
+			bool m_eventThreadRunning;
+			std::thread m_eventThread;
+			std::queue<IDashboardDataClient::StructureChangeEvent> m_eventqueue;
+			std::list<ModelOpcUa::NodeId_t> m_dynamicNodes;
+
+			void startEventThread();
+			void stopEventThread();
 
 			bool isMandatoryOrOptionalVariable(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pNode);
 
