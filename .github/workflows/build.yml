@@ -26,9 +26,11 @@ jobs:
       - name: Build UmatiDashboardOpcUaClient with dependencies
         # yamllint disable rule:line-length
         run: |
+          #! /bin/bash
           LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')" # yamllint disable-line rule:line-length
           mkdir -p build
-          cd build
+          cd build || exit
+          #shellcheck  disable=SC2296
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH="${{ env.CMAKE_INSTALL_PREFIX }}" \
             -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
           cmake --build . -j
@@ -36,10 +38,12 @@ jobs:
         # yamllint enable rule:line-length
       - name: Run Tests
         run: |
-          cd build/Dashboard-Client-build
+          #! /bin/bash
+          cd build/Dashboard-Client-build || exit
           ctest -V -C "${{matrix.build_type}}"
       - name: Run integration test cacert_test
         run: |
+          #! /bin/bash
           cd UmatiDashboardOpcUaClient/Tests/integration_tests/cacert_test
           ./genCerts.sh
           cp "${{ github.workspace }}/build/Dashboard-Client-build/Tests/TestCaCertificate" .
@@ -74,21 +78,25 @@ jobs:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
       - name: Build UmatiDashboardOpcUaClient with dependencies
+        shell: pwsh
         # yamllint disable rule:line-length
         run: |
+          #shellcheck disable=SC1073,SC1050,SC1141,SC1083,SC1072,SC2296
           $matrixarch = "${{matrix.arch}}"
-          if($matrixarch = "386"){$arch="Win32"}
-          if($matrixarch = "amd64"){$arch="x64"}
+          if($matrixarch -eq "386"){$arch="Win32"}
+          if($matrixarch -eq "amd64"){$arch="x64"}
           mkdir -p build
-          cd build
+          cd build || exit
           cmake ../UmatiDashboardOpcUaClient/.github/ -DCMAKE_INSTALL_PREFIX:PATH=${{ env.CMAKE_INSTALL_PREFIX }} -A "$arch" -DPAHO_WITH_SSL=1
           cmake --build . -j --config ${{matrix.build_type}}
         # yamllint enable rule:line-length
       - name: Run Tests
+        shell: pwsh
         run: |
-          cd build/Dashboard-Client-build
+          cd build/Dashboard-Client-build || exit
           ctest -V -C ${{matrix.build_type}}
       - name: Download CA Certs
+        shell: pwsh
         run: |
           cd ${{ env.CMAKE_INSTALL_PREFIX }}
           mkdir -p  bin/certs
@@ -119,9 +127,10 @@ jobs:
       - name: PrepareReg Names
         # yamllint disable rule:line-length
         run: |
-          #shellcheck  disable=SC2154
-          echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-          echo IMAGE_TAG=$(echo ${{ github.ref }} | tr '[:upper:]' '[:lower:]' |  awk '{sub(/([^\/]*\/){2}/,""); gsub(/\/|_/, "-")}1') >> $GITHUB_ENV
+          #! /bin/bash
+          #shellcheck  disable=SC2296
+          echo IMAGE_REPOSITORY="$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+          echo IMAGE_TAG="$(echo "${{ github.ref }}" | tr '[:upper:]' '[:lower:]' |  awk '{sub(/([^\/]*\/){2}/,""); gsub(/\/|_/, "-")}1')" >> "$GITHUB_ENV"
         # yamllint enable rule:line-length
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2.1.0
@@ -139,3 +148,4 @@ jobs:
           push: ${{env.IS_NOT_PR == 'true'}}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          provenance: false
