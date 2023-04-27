@@ -11,7 +11,7 @@
 
 ```json
 "Mqtt": {
-    "Hostname": "dev.umati.app", // MQTT Broker umati.app for Prod or dev.umati.app for Dev environment
+    "Hostname": "staging.umati.app", // MQTT Broker umati.app for Prod or staging.umati.app for staging environment
     "Port": 443,
     "Username": "<SUPPLIED-USERNAME>", // This is formatted like this: <CompanyName>/<ClientName>
     "Password": "<SUPPLIED-PASSWORD",
@@ -25,10 +25,15 @@ The credentials and and clientId will be provided by umati.app administration.
 
 ## MQTT broker endpoint of umati.app
 
-    Hostname: dev.umati.app or umati.app
-    Port: 443
-    Path: /ws
-    Protocol: wss
+```text
+Hostname: staging.umati.app or umati.app
+Port: 443
+Path: /ws
+Protocol: wss
+Topic: umati/v2/#
+Username: umatiApp
+Password: _request at umati team_
+```
 
 ## Deployment
 

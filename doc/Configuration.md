@@ -51,10 +51,10 @@ The example `configuration.json` options are explained:
   "Mqtt": {
     "Hostname": "localhost", // MQTT Broker
     "Port": 1883, // Port to conenect to
-    "Username": "opcua_client", 
+    "Username": "MyCompany/ClientName", 
     "Password": "",
-    "Prefix": "umati", // Topic prefix
-    "ClientId": "umati", // ClientId part of topic structure
+    "Prefix": "umati/v2", // Topic prefix
+    "ClientId": "MyCompany/ClientName", // ClientId part of topic structure
     "Protocol": "tcp", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
     "CaCertPath":"", // path to the CA-Cert file, only to be set if advised
     "CaTrustStorePath": "" // path to the CA-Cert file, only to be set if advised
