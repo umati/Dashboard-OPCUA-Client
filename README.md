@@ -82,6 +82,7 @@ cmake --build .
 - WoodWorking :heavy_check_mark:
 - Robotics  :heavy_check_mark:
 - Surface Technology :waning_gibbous_moon:
+- Additive Manufacturing DRAFT :waning_gibbous_moon:
 
 ## Usage for connecting a server to the dashboard
 
