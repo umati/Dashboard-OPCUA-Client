@@ -9,18 +9,17 @@
 
 ## MQTT Configuration for umati.app enviroment
 
-    ``` JSON
-      "Mqtt": {
-        "Hostname": "dev.umati.app", // MQTT Broker umati.app for Prod or dev.umati.app for Dev environment
-        "Port": 443,
-        "Username": "<SUPPLIED-USERNAME>", // This is formatted like this: <CompanyName>/<ClientName>
-        "Password": "<SUPPLIED-PASSWORD",
-        "Prefix": "umati/v2",
-        "ClientId": "<SUPPLIED-ClientID>", // Identical to Username on umati.app
-        "Protocol": "wss"
-      }
-
-    ```
+```json
+"Mqtt": {
+    "Hostname": "dev.umati.app", // MQTT Broker umati.app for Prod or dev.umati.app for Dev environment
+    "Port": 443,
+    "Username": "<SUPPLIED-USERNAME>", // This is formatted like this: <CompanyName>/<ClientName>
+    "Password": "<SUPPLIED-PASSWORD",
+    "Prefix": "umati/v2",
+    "ClientId": "<SUPPLIED-ClientID>", // Identical to Username on umati.app
+    "Protocol": "wss"
+}
+```
 
 The credentials and and clientId will be provided by umati.app administration.
 
