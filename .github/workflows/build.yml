@@ -23,6 +23,7 @@ jobs:
         with:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
+          fetch-depth: 0
       - name: Build UmatiDashboardOpcUaClient with dependencies
         # yamllint disable rule:line-length
         run: |
