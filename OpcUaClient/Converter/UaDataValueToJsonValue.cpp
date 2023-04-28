@@ -298,6 +298,10 @@ namespace Umati {
 								} 
 								else {
 									void *dataPointer = (UA_Byte*) data + variant.type->members[i].padding;
+									if(variant.type->members[i].isOptional) {
+										void** pointerToPointer = (void**)((UA_Byte*) data +variant.type->members[i].padding);
+										dataPointer = *(pointerToPointer);
+									}
 									UA_Variant_setScalar(&dataVal.value, dataPointer, variant.type->members[i].memberType);
 									auto json = UaDataValueToJsonValue(
 										dataVal,

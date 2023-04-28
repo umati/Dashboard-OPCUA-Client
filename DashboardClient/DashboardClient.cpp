@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * 
- * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Moritz Walker, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
@@ -143,31 +143,26 @@ namespace Umati
 										const std::shared_ptr<const ModelOpcUa::Node> &pNode) -> nlohmann::json {
 				std::unique_lock<decltype(pDataSetStorage->values_mutex)> ul(pDataSetStorage->values_mutex);
 				auto it = pDataSetStorage->values.find(pNode);
-				if (it == pDataSetStorage->values.end())
-				{
+				if (it == pDataSetStorage->values.end()) {
 					LOG(DEBUG) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id << "Try to search it with NodeId!";
-					// FIX_BEGIN(FIX_2) In case we don't wnt to remove the duplicate pointers with FIX_1, we can simply check the
+					// In case we don't wnt to remove the duplicate pointers with FIX_1, we can simply check the
 					// Identity of the node via its node Id.
-					//
-					//
 					auto pSimpleNode = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pNode);
 					if(pSimpleNode) {
-						//std::cout << pSimpleNode->NodeId << "\n";
+						LOG(DEBUG) << pSimpleNode->NodeId << "\n";
 						auto values = pDataSetStorage->values;
 						for(auto it1 : values) {
 							auto pSimpleNode1 = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(it1.first);
 								if(pSimpleNode1->NodeId == pSimpleNode->NodeId) {
 									// DEBUG_BEGIN in case we want to see the different pointer addresses.
-									// std::cout << pSimpleNode.get() << "\n";
-									// std::cout << pSimpleNode1.get() << "\n";
-									// DEBUG_END
+									LOG(DEBUG) << pSimpleNode.get() << "\n";
+									LOG(DEBUG) << pSimpleNode1.get() << "\n";
 									LOG(DEBUG) << pNode->SpecifiedBrowseName.Name << " " << "found!";
 									return it1.second;
 								}
 						}
 					}
 					LOG(DEBUG) << pNode->SpecifiedBrowseName.Name << " " << " not found!";
-					//FIX_END
 					return nullptr;
 				}
 				return it->second;
@@ -181,20 +176,6 @@ namespace Umati
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition)
 		{
 			auto ret = browsedNodes.insert(startNode);
-			// DEBUG_BEGIN (RESULTTYPE), List all SpecifiedChildNodes, tested with BasicGMS
-			// IMHO Should only contain <ResultVariable> and should it contain only once.
-			// I think contains all childs of all specs possible for a FolderType, some double (due to inheritance?).
-
-			/*if(startNode.Id == "i=59117") {
-				std::cout << "\n";
-				std::list<std::shared_ptr<ModelOpcUa::StructureNode>> removeList;
-				for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes) {
-
-					std::cout << pChild->SpecifiedBrowseName.Name << "\n";
-				}
-				std::cout << "\n";
-			}*/
-			// DEBUG_END
 
 			// FIX_BEGIN (FIX_1), removed duplicates to avoid different pointers to the same node
 			(*pTypeDefinition->SpecifiedChildNodes).sort();
@@ -424,11 +405,7 @@ namespace Umati
 			std::map<std::shared_ptr<const ModelOpcUa::Node>, nlohmann::json> &valueMap,
 			std::mutex &valueMap_mutex)
 		{
-			LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
-			for(auto value : m_subscribedValues){
-				if(value && value.get()->getNodeId() == pNode.get()->NodeId)
-				return;
-			}
+			// LOG(INFO) << "subscribeValues "   << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
 
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))

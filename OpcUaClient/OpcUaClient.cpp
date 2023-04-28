@@ -666,25 +666,6 @@ void OpcUaClient::fillNamespaceCache(const std::vector<std::string> &uaNamespace
 }
 
 void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::size_t namespaceIndex) {
-  /*if (namespaceURI == "http://opcfoundation.org/UA/Machinery/Result/") {
-    uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
-
-    for (size_t j = 0; j < UA_TYPES_MACHINERY_RESULT_COUNT; j++) {
-      UA_TYPES_MACHINERY_RESULT[j].typeId.namespaceIndex = nsIdx;
-      UA_TYPES_MACHINERY_RESULT[j].binaryEncodingId.namespaceIndex = nsIdx;
-    }
-
-    m_dataTypeArray->types = UA_TYPES_MACHINERY_RESULT;
-  }
-
-  if (namespaceURI == "http://opcfoundation.org/UA/IJT/") {
-    uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
-
-    for (size_t j = 0; j < UA_TYPES_TIGHTENING_COUNT; j++) {
-      UA_TYPES_TIGHTENING[j].typeId.namespaceIndex = nsIdx;
-      UA_TYPES_TIGHTENING[j].binaryEncodingId.namespaceIndex = nsIdx;
-    }
-  }*/
 }
 
 ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(const open62541Cpp::UA_NodeId &uaNodeId) {
