@@ -22,8 +22,6 @@
 #include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
-#include "Converter/CustomDataTypes/types_machinery_result_generated_handling.h"
-#include "Converter/CustomDataTypes/types_tightening_generated_handling.h"
 
 namespace Umati {
 
@@ -101,8 +99,6 @@ static void stateCallback(UA_Client *client, UA_SecureChannelState channelState,
 
 static void inactivityCallback(UA_Client *client) { LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n"; }
 
-UA_DataTypeArray TighteningSystemTypes = {NULL, 1, UA_TYPES_TIGHTENING};
-static UA_DataTypeArray getMachineryResultTypes() { return  {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT}; }
 
 OpcUaClient::OpcUaClient(
   std::string serverURI,
