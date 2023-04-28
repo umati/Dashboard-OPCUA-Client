@@ -232,7 +232,7 @@ index 0000000..6bdc069
 +
 +endif(LIBRESSL_FOUND)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 4c06409..409a968 100644
+index 4c06409..c2bfa93 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -187,14 +187,12 @@ INSTALL(FILES MQTTAsync.h MQTTClient.h MQTTClientPersistence.h MQTTProperties.h
@@ -309,15 +309,15 @@ index 4c06409..409a968 100644
  	TARGET_COMPILE_DEFINITIONS( Sha1TestOpenSSL PUBLIC "-DSHA1_TEST -DOPENSSL=1" )
  ENDIF (PAHO_WITH_SSL)
 diff --git a/src/SSLSocket.c b/src/SSLSocket.c
-index fd80c72..1dbd03b 100644
+index a4941b6..76b2c86 100644
 --- a/src/SSLSocket.c
 +++ b/src/SSLSocket.c
-@@ -593,7 +593,7 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
- 		}
+@@ -594,7 +594,7 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
  	}
  
+ /*
 -#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
 +#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER))
  	SSL_CTX_set_security_level(net->ctx, 1);
  #endif
- 
+ */
