@@ -302,15 +302,17 @@ namespace Umati {
 										void** pointerToPointer = (void**)((UA_Byte*) data +variant.type->members[i].padding);
 										dataPointer = *(pointerToPointer);
 									}
-									UA_Variant_setScalar(&dataVal.value, dataPointer, variant.type->members[i].memberType);
-									auto json = UaDataValueToJsonValue(
-										dataVal,
-										m_pClient,
-										nodeId,
-										serializeStatusInformation)
-										.getValue();
-									if(!json.is_null()) {
-										(*jsonValue)[std::string(variant.type->members[i].memberName)] = json;
+									if(dataPointer != nullptr) {
+										UA_Variant_setScalar(&dataVal.value, dataPointer, variant.type->members[i].memberType);
+										auto json = UaDataValueToJsonValue(
+											dataVal,
+											m_pClient,
+											nodeId,
+											serializeStatusInformation)
+											.getValue();
+										if(!json.is_null()) {
+											(*jsonValue)[std::string(variant.type->members[i].memberName)] = json;
+										}
 									}
 								}
 								if (variant.type->members[i].isArray) {
@@ -400,6 +402,12 @@ namespace Umati {
 					CASENOTIMPLEMENTED(DATAVALUE, DataValue);
 					CASENOTIMPLEMENTED(VARIANT, Variant);
 					CASENOTIMPLEMENTED(DIAGNOSTICINFO, DiagnosticInfo);
+
+					case UA_DATATYPEKIND_OPTSTRUCT: {
+						UA_Variant myvariant = variant;
+						//UaDataValueToJsonValue::setValueFromScalarVariant(myvariant, jsonValue, serializeStatusInformation);
+						break;
+					}
 
 					case UA_DATATYPEKIND_STRUCTURE: {
 						if (strcmp(variant.type->typeName, "EUInformation") == 0) {
