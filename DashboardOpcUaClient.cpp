@@ -49,7 +49,15 @@ bool DashboardOpcUaClient::connect(std::atomic_bool &running) {
   return m_pClient->isConnected();
 }
 
-void DashboardOpcUaClient::ReadTypes() { m_pOpcUaTypeReader->readTypes(); }
+void DashboardOpcUaClient::ReadTypes() {
+    m_pOpcUaTypeReader->readTypes();
+
+    auto typeMap = m_pOpcUaTypeReader->m_typeMap;
+}
+
+void DashboardOpcUaClient::ReadTypeDictionaries() {
+    m_pOpcUaTypeReader->readTypeDictionaries();
+}
 
 void DashboardOpcUaClient::StartMachineObserver() {
   m_pMachineObserver = std::make_shared<Umati::MachineObserver::DashboardMachineObserver>(m_pClient, m_pPublisher, m_pOpcUaTypeReader, m_machinesFilter);

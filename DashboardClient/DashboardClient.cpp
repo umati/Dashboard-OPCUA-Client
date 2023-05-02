@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * 
- * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Moritz Walker, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
@@ -143,9 +143,26 @@ namespace Umati
 										const std::shared_ptr<const ModelOpcUa::Node> &pNode) -> nlohmann::json {
 				std::unique_lock<decltype(pDataSetStorage->values_mutex)> ul(pDataSetStorage->values_mutex);
 				auto it = pDataSetStorage->values.find(pNode);
-				if (it == pDataSetStorage->values.end())
-				{
-					// LOG(INFO) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id;
+				if (it == pDataSetStorage->values.end()) {
+					LOG(DEBUG) << "Couldn't write value for " << pNode->SpecifiedBrowseName.Name << " | " << pNode->SpecifiedTypeNodeId.Uri << ";" << pNode->SpecifiedTypeNodeId.Id << "Try to search it with NodeId!";
+					// In case we don't wnt to remove the duplicate pointers with FIX_1, we can simply check the
+					// Identity of the node via its node Id.
+					auto pSimpleNode = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(pNode);
+					if(pSimpleNode) {
+						LOG(DEBUG) << pSimpleNode->NodeId << "\n";
+						auto values = pDataSetStorage->values;
+						for(auto it1 : values) {
+							auto pSimpleNode1 = std::dynamic_pointer_cast<const ModelOpcUa::SimpleNode>(it1.first);
+								if(pSimpleNode1->NodeId == pSimpleNode->NodeId) {
+									// DEBUG_BEGIN in case we want to see the different pointer addresses.
+									LOG(DEBUG) << pSimpleNode.get() << "\n";
+									LOG(DEBUG) << pSimpleNode1.get() << "\n";
+									LOG(DEBUG) << pNode->SpecifiedBrowseName.Name << " " << "found!";
+									return it1.second;
+								}
+						}
+					}
+					LOG(DEBUG) << pNode->SpecifiedBrowseName.Name << " " << " not found!";
 					return nullptr;
 				}
 				return it->second;
@@ -159,6 +176,11 @@ namespace Umati
 			const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition)
 		{
 			auto ret = browsedNodes.insert(startNode);
+
+			// FIX_BEGIN (FIX_1), removed duplicates to avoid different pointers to the same node
+			(*pTypeDefinition->SpecifiedChildNodes).sort();
+			(*pTypeDefinition->SpecifiedChildNodes).unique();
+			// FIX_END
 			std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
 			if(ret.second==true) {
 				for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes)
@@ -344,7 +366,7 @@ namespace Umati
 		}
 
 		void DashboardClient::preparePlaceholderNodesTypeId(
-			const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> & /*pStructurePlaceholder*/,
+			const std::shared_ptr<const ModelOpcUa::StructurePlaceholderNode> & pStructurePlaceholder,
 			std::shared_ptr<ModelOpcUa::PlaceholderNode> &pPlaceholderNode,
 			std::list<ModelOpcUa::BrowseResult_t> &browseResults)
 		{
@@ -387,10 +409,10 @@ namespace Umati
 
 			// Only Mandatory/Optional variables
 			if (isMandatoryOrOptionalVariable(pNode))
-			{
+			{	
 				subscribeValue(pNode, valueMap, valueMap_mutex);
+				
 			}
-
 			handleSubscribeChildNodes(pNode, valueMap, valueMap_mutex);
 		}
 
@@ -476,7 +498,7 @@ namespace Umati
                                              * at position pNode with the received json value.
                                              */
 			// LOG(INFO) << "SubscribeValue " << pNode->SpecifiedBrowseName.Uri << ";" << pNode->SpecifiedBrowseName.Name << " | " << pNode->NodeId.Uri << ";" << pNode->NodeId.Id;
-
+			
 			auto callback = [pNode, &valueMap, &valueMap_mutex](nlohmann::json value) {
 					std::unique_lock<std::remove_reference<decltype(valueMap_mutex)>::type>(valueMap_mutex);
 					valueMap[pNode] = value;
