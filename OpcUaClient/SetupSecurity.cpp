@@ -199,9 +199,16 @@ void SetupSecurity::createNewClientCert() {
   UA_UInt32 lenSubjectAltName = 2;
   UA_ByteString certificate = UA_BYTESTRING_NULL;
   UA_ByteString privateKey = UA_BYTESTRING_NULL;
-
+  UA_KeyValueMap *kvm = UA_KeyValueMap_new();
+  UA_UInt16 expiresIn = 356;
+  UA_KeyValueMap_setScalar(kvm, UA_QUALIFIEDNAME(0, "expires-in-days"),
+                            (void *)&expiresIn, &UA_TYPES[UA_TYPES_UINT16]);
+  UA_UInt16 keySize = 2048;
+  UA_KeyValueMap_setScalar(kvm, UA_QUALIFIEDNAME(0, "key-size-bits"),
+                            (void *)&keySize, &UA_TYPES[UA_TYPES_UINT16]);
   UA_StatusCode statusCertGen =
-    UA_CreateCertificate(UA_Log_Stdout, subject, lenSubject, subjectAltName, lenSubjectAltName, 2048, UA_CERTIFICATEFORMAT_PEM, &privateKey, &certificate);
+    UA_CreateCertificate(UA_Log_Stdout, subject, lenSubject, subjectAltName, lenSubjectAltName, kvm, UA_CERTIFICATEFORMAT_PEM, &privateKey, &certificate);
+  UA_KeyValueMap_delete(kvm);
 
   if (statusCertGen != UA_STATUSCODE_GOOD) {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Generating Certificate failed: %s", UA_StatusCode_name(statusCertGen));
