@@ -29,9 +29,6 @@ namespace OpcUa {
 
 static void stateCallback(UA_Client *client, UA_SecureChannelState channelState, UA_SessionState sessionState, UA_StatusCode connectState) {
   switch (channelState) {
-    case UA_SECURECHANNELSTATE_FRESH:
-      LOG(INFO) << "The client state is fresh";
-      break;
     case UA_SECURECHANNELSTATE_CLOSED:
       LOG(INFO) << "The client is disconnected";
       break;
