@@ -6,6 +6,7 @@
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
  * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright 2023 (c) Sebastian Friedl, FVA GmbH interop4x
  */
 
 #include "SetupSecurity.hpp"
@@ -15,6 +16,7 @@
 #include <open62541/plugin/create_certificate.h>
 #include <open62541/plugin/log_stdout.h>
 #include <Open62541Cpp/UA_String.hpp>
+#include <Open62541Cpp/UA_QualifiedName.hpp>
 #include <stdlib.h>
 #include <string>
 #include <fstream>
@@ -201,13 +203,13 @@ void SetupSecurity::createNewClientCert() {
   UA_ByteString privateKey = UA_BYTESTRING_NULL;
   UA_KeyValueMap *kvm = UA_KeyValueMap_new();
   UA_UInt16 expiresIn = 356;
-  UA_KeyValueMap_setScalar(kvm, UA_QUALIFIEDNAME(0, "expires-in-days"),
+  UA_KeyValueMap_setScalar(kvm, *open62541Cpp::UA_QualifiedName(0, "expires-in-days").QualifiedName,
                             (void *)&expiresIn, &UA_TYPES[UA_TYPES_UINT16]);
   UA_UInt16 keySize = 2048;
-  UA_KeyValueMap_setScalar(kvm, UA_QUALIFIEDNAME(0, "key-size-bits"),
+  UA_KeyValueMap_setScalar(kvm, *open62541Cpp::UA_QualifiedName(0, "key-size-bits").QualifiedName,
                             (void *)&keySize, &UA_TYPES[UA_TYPES_UINT16]);
   UA_StatusCode statusCertGen =
-    UA_CreateCertificate(UA_Log_Stdout, subject, lenSubject, subjectAltName, lenSubjectAltName, kvm, UA_CERTIFICATEFORMAT_PEM, &privateKey, &certificate);
+    UA_CreateCertificate(UA_Log_Stdout, subject, lenSubject, subjectAltName, lenSubjectAltName, UA_CERTIFICATEFORMAT_PEM,kvm, &privateKey, &certificate);
   UA_KeyValueMap_delete(kvm);
 
   if (statusCertGen != UA_STATUSCODE_GOOD) {
