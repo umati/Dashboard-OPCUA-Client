@@ -392,8 +392,8 @@
 		{            
             auto pair = m_identificationTypeOfTypeDefinition.find(typeDefinition);
             if (pair == m_identificationTypeOfTypeDefinition.end()) {
-                throw Umati::MachineObserver::Exceptions::MachineInvalidException("IdentificationType not found, probably because namesapce " +
-														  static_cast<std::string>(typeDefinition) + " is not in the config, or this type does   " +
+                throw Umati::MachineObserver::Exceptions::MachineInvalidException("IdentificationType not found, probably because namespace " +
+														  static_cast<std::string>(typeDefinition) + " is not in the config, or this type does " +
                                                           "not have an identification type.");
             }   
             return pair->second;
