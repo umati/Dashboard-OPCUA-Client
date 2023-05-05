@@ -11,8 +11,10 @@ The example `configuration.json` options are explained:
       "Id": "i=66382",
       "$comment": "BasicMachineTool"
     }
-  ],  // MachineFilter enables to filter for specific instances in a server. Add Uri, NodeId and comment 
-
+  ],  
+// MachineFilter enables to filter for specific instances in a server. Add Uri, NodeId and comment 
+// The MachineFilter can be an empty array if all machine should be added to the dashboard e.g.
+// "MachinesFilter": [],
 
   "ObjectTypeNamespaces": [
     "http://opcfoundation.org/UA/",
