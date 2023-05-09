@@ -194,6 +194,7 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
 
         void *data = exObj.content.decoded.data;
         for (size_t i = 0; i < exObj.content.decoded.type->membersSize; i++) {
+          //std::cout << exObj.content.decoded.type->members[i].memberName << "\n";
           UA_DataValue dataVal;
           UA_DataValue_init(&dataVal);
           if (exObj.content.decoded.type->members[i].isArray) {
@@ -212,10 +213,16 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
             }
           } else {
             void *dataPointer = (UA_Byte *)data + exObj.content.decoded.type->members[i].padding;
-            UA_Variant_setScalar(&dataVal.value, dataPointer, exObj.content.decoded.type->members[i].memberType);
-            auto json = UaDataValueToJsonValue(dataVal, m_pClient, nodeId, serializeStatusInformation).getValue();
-            if (!json.is_null()) {
-              (*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] = json;
+            if (exObj.content.decoded.type->members[i].isOptional) {
+              void **pointerToPointer = (void **)((UA_Byte *)data + exObj.content.decoded.type->members[i].padding);
+              dataPointer = *(pointerToPointer);
+            }
+            if (dataPointer != nullptr) {
+              UA_Variant_setScalar(&dataVal.value, dataPointer, exObj.content.decoded.type->members[i].memberType);
+              auto json = UaDataValueToJsonValue(dataVal, m_pClient, nodeId, serializeStatusInformation).getValue();
+              if (!json.is_null()) {
+                (*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] = json;
+              }
             }
           }
           if (exObj.content.decoded.type->members[i].isArray) {
@@ -258,6 +265,7 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
     default: {
       void *data = variant.data;
       for (size_t i = 0; i < variant.type->membersSize; i++) {
+        std::cout << variant.type->members[i].memberName << "\n";
         UA_DataValue dataVal;
         UA_DataValue_init(&dataVal);
 
