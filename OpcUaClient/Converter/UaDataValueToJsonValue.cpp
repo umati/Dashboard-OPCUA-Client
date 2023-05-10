@@ -156,7 +156,24 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
     }
 
     case UA_DATATYPEKIND_VARIANT: {
-      LOG(ERROR) << "Not implemented conversion to OpcUaType_Variant. ";
+      //LOG(ERROR) << "Not implemented conversion to OpcUaType_Variant. ";
+      UA_Variant d(*(UA_Variant *)variant.data);
+      if(strcmp(d.type->typeName,"StatisticResultContentDataType") == 0) {
+        void* data = d.data;
+        for (size_t i = 0; i < d.type->membersSize; i++) {
+          void* dataPointer = (UA_Byte *)data + d.type->members[0].padding;
+          UA_DataValue dataVal;
+          UA_DataValue_init(&dataVal);
+          UA_Variant_setScalar(&dataVal.value, dataPointer, d.type->members[i].memberType);
+          auto json = UaDataValueToJsonValue(dataVal, m_pClient, nodeId, serializeStatusInformation).getValue();
+          if (!json.is_null()) {
+            (*jsonValue)[std::string(d.type->members[i].memberName)] = json;
+          }
+          data = (UA_Byte *)data + d.type->members[i].memberType->memSize;
+          data = (UA_Byte *)data + d.type->members[i].padding;
+        }
+      }
+      std::cout << "here";
       break;
     }
 
@@ -196,11 +213,14 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
           LOG(INFO) << "Known conversion from OpcUaType_ExtensionObject with DataTypeEncodingType: ns=" << exObj.content.encoded.typeId.namespaceIndex
                     << "; i=" << exObj.content.encoded.typeId.identifier.numeric;
 
-          void *data = exObj.content.decoded.data;
-          for (size_t i = 0; i < exObj.content.decoded.type->membersSize; i++) {
-            UA_DataValue dataVal;
-            UA_DataValue_init(&dataVal);
-            if (exObj.content.decoded.type->members[i].isArray) {
+        void *data = exObj.content.decoded.data;
+        for (size_t i = 0; i < exObj.content.decoded.type->membersSize; i++) {
+          UA_DataValue dataVal;
+          UA_DataValue_init(&dataVal);
+          if (exObj.content.decoded.type->members[i].isArray) {
+            if (exObj.content.decoded.type->members[i].isOptional) {
+
+            } else {
               size_t arraySize = *((size_t *)data);
               void **pointerToArrayPointer = (void **)((UA_Byte *)data + sizeof(size_t));
               void *pointerToArray = *(pointerToArrayPointer);
@@ -214,8 +234,9 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
                 (*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] =
                   UaDataValueToJsonValue(dataVal, m_pClient, nodeId, serializeStatusInformation).getValue();
               }
-            } else {
-              void *dataPointer = (UA_Byte *)data + exObj.content.decoded.type->members[i].padding;
+            }
+          } else {
+            void *dataPointer = (UA_Byte *)data + exObj.content.decoded.type->members[i].padding;
             if (exObj.content.decoded.type->members[i].isOptional) {
               void **pointerToPointer = (void **)((UA_Byte *)data + exObj.content.decoded.type->members[i].padding);
               dataPointer = *(pointerToPointer);
@@ -287,7 +308,6 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
     default: {
       void *data = variant.data;
       for (size_t i = 0; i < variant.type->membersSize; i++) {
-        std::cout << variant.type->members[i].memberName << "\n";
         UA_DataValue dataVal;
         UA_DataValue_init(&dataVal);
 
@@ -403,8 +423,14 @@ void UaDataValueToJsonValue::setValueFromArrayVariant(UA_Variant &variant, nlohm
     CASENOTIMPLEMENTED(EXPANDEDNODEID, ExpandedNodeId);
     CASENOTIMPLEMENTED(STATUSCODE, StatusCode);
     CASENOTIMPLEMENTED(DATAVALUE, DataValue);
-    CASENOTIMPLEMENTED(VARIANT, Variant);
+    //CASENOTIMPLEMENTED(VARIANT, Variant);
     CASENOTIMPLEMENTED(DIAGNOSTICINFO, DiagnosticInfo);
+
+    case UA_DATATYPEKIND_VARIANT: {
+      UA_Variant *v = (UA_Variant *)variant.data; 
+      getValueFromDataValueArray<UA_Variant>(&variant, UA_UInt32(0), jsonValue, v, serializeStatusInformation);
+      break;
+    }
 
     case UA_DATATYPEKIND_OPTSTRUCT:;
 
