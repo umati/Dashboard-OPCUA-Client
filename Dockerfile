@@ -1,15 +1,15 @@
-FROM alpine:3.17.3 as build-env
+FROM alpine:3.18.0 as build-env
 
 RUN apk --no-cache add \
-      bash=5.2.15-r0 \
-      cmake=3.24.4-r0 \
-      gcc=12.2.1_git20220924-r4 \
-      g++=12.2.1_git20220924-r4 \
-      git=2.38.5-r0 \
-      make=4.3-r1  \
-      python3=3.10.11-r0 \
-      patch=2.7.6-r9 \
-      linux-headers=5.19.5-r0 && \
+      bash=5.2.15-r3\
+      cmake=3.26.3-r1 \
+      gcc=12.2.1_git20220924-r10 \
+      g++=12.2.1_git20220924-r10\
+      git=2.40.1-r0 \
+      make=4.4.1-r1  \
+      python3=3.11.3-r11 \
+      patch=2.7.6-r10 \
+      linux-headers=6.3-r0 && \
     mkdir /install
 
 ARG BUILD_TYPE=Debug
@@ -23,9 +23,9 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
     cmake --build .
 
-FROM alpine:3.17.3 as runtime
+FROM alpine:3.18.0 as runtime
 RUN apk --no-cache add \
-      libstdc++=12.2.1_git20220924-r4 \
+      libstdc++=12.2.1_git20220924-r10 \
       ca-certificates=20230506-r0
 
 COPY --from=build-env /install/bin /app
