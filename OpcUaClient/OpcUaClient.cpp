@@ -448,7 +448,7 @@ std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
     auto uaResult = UA_Client_readBrowseNameAttribute(m_pClient.get(), *nodeId.NodeId, &resultname);
 
     if (UA_StatusCode_isBad(uaResult)) {
-      LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data << "' with " << UA_StatusCode_name(uaResult);
+      LOG(ERROR) << "readNodeBrowsename failed for node: '" << nodeId.NodeId->identifier.string.data << "' with " << UA_StatusCode_name(uaResult);
       UA_QualifiedName_clear(&resultname);
       throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
     }
@@ -469,11 +469,11 @@ UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId) {
     std::lock_guard<std::recursive_mutex> l(m_clientMutex);
     auto uaResult = UA_Client_readNodeClassAttribute(m_pClient.get(), *nodeId.NodeId, &returnClass);
     if (UA_StatusCode_isBad(uaResult)) {
-      LOG(ERROR) << "readNodeClass failed";
+      LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data << "' with " << UA_StatusCode_name(uaResult);
       throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
     }
   } catch (...) {
-    LOG(ERROR) << "readNodeClass failed";
+      LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data;
   }
   return returnClass;
 }
