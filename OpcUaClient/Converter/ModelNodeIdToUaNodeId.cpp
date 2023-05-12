@@ -5,6 +5,7 @@
  * Copyright 2019-2021 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
  * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
  * Copyright 2021 (c) Marius Dege, basysKom GmbH
+ * Copyright 2023 (c) Sebastian Fried, FVA GmbH
  */
 
 #include "ModelNodeIdToUaNodeId.hpp"
@@ -16,6 +17,53 @@
 namespace Umati {
 namespace OpcUa {
 namespace Converter {
+
+
+// inverse method of the hexmap used in open62541
+char hexmapValue(char hex) {
+    if(hex >= '0' && hex <= '9')
+        return hex - '0';
+    else if(hex >= 'a' && hex <= 'f')
+        return hex - 'a' + 10;
+    else if(hex >= 'A' && hex <= 'F')
+        return hex - 'A' + 10;
+    else
+	    LOG(ERROR) << "Invalid char in Guid String";
+        throw std::invalid_argument("Invalid char in Guid String");
+ 
+}
+
+//Convert an hex string to a UA_GUID
+UA_Guid hex_to_UA_Guid(const char* hex) {
+	UA_Guid out;
+    size_t i = 0, j = 28;
+    out.data1 = 0;
+    for(; i<8;i++,j-=4)         /* pos 0-7, 4byte, (a) */
+        out.data1 |= (UA_UInt32)(hexmapValue(hex[i]) & 0x0Fu) << j;
+    i++;                        /* pos 8 */
+    out.data2 = 0;
+    for(j=12; i<13;i++,j-=4)    /* pos 9-12, 2byte, (b) */
+        out.data2 |= (UA_UInt16)(hexmapValue(hex[i]) & 0x0Fu) << j;
+    i++;                        /* pos 13 */
+    out.data3 = 0;
+    for(j=12; i<18;i++,j-=4)    /* pos 14-17, 2byte (c) */
+        out.data3 |= (UA_UInt16)(hexmapValue(hex[i]) & 0x0Fu) << j;
+    i++;                        /* pos 18 */
+    memset(out.data4, 0, sizeof(out.data4));
+    for(j=0;i<23;i+=2,j++) {     /* pos 19-22, 2byte (d) */
+        out.data4[j] |= (UA_Byte)(hexmapValue(hex[i]) & 0x0Fu) << 4u;
+        out.data4[j] |= (UA_Byte)(hexmapValue(hex[i+1]) & 0x0Fu);
+    }
+    i++;                        /* pos 23 */
+    for(j=2; i<36;i+=2,j++) {    /* pos 24-35, 6byte (e) */
+        out.data4[j] |= (UA_Byte)(hexmapValue(hex[i]) & 0x0Fu) << 4u;
+        out.data4[j] |= (UA_Byte)(hexmapValue(hex[i+1]) & 0x0Fu);
+    }
+    return out;
+}
+
+
+
 enum NodeID_Type { NODEID_NUMERIC = (int)'i', NODEID_STRING = (int)'s', NODEID_GUID = (int)'g', NODEID_BYTESTRING = (int)'b' };
 
 ModelNodeIdToUaNodeId::ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t &modelNodeId, const std::map<std::string, uint16_t> &uriToID)
@@ -34,26 +82,7 @@ ModelNodeIdToUaNodeId::ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t &modelNo
     case NODEID_GUID:
       UA_Guid guid;
       // Convert std::string to UA_Guid
-      {
-        int ret = sscanf(
-          subs.c_str(),
-          "{%08x-%04hx-%04hx-%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx}",
-          &guid.data1,
-          &guid.data2,
-          &guid.data3,
-          &guid.data4[0],
-          &guid.data4[1],
-          &guid.data4[2],
-          &guid.data4[3],
-          &guid.data4[4],
-          &guid.data4[5],
-          &guid.data4[6],
-          &guid.data4[7]);
-        if (ret != 11) {
-          LOG(ERROR) << "Failed to convert string to UA_Guid";
-        }
-      }
-
+	  guid = hex_to_UA_Guid(subs.c_str());
       m_nodeId = open62541Cpp::UA_NodeId(getNsIndexFromUri(modelNodeId.Uri), guid);
       break;
 
@@ -66,6 +95,7 @@ ModelNodeIdToUaNodeId::ModelNodeIdToUaNodeId(const ModelOpcUa::NodeId_t &modelNo
       throw "Identifier type not valid";
       break;
   }
+
 }
 }  // namespace Converter
 }  // namespace OpcUa

@@ -13,6 +13,18 @@
 #include <Converter/ModelNodeIdToUaNodeId.hpp>
 #include <Converter/ModelQualifiedNameToUaQualifiedName.hpp>
 
+TEST(Converter, Number_NodeId) {
+  ModelOpcUa::NodeId_t nodeId{"MyURI", "i=10"};
+
+  std::map<std::string, uint16_t> uri2Id{{"MyURI", 2}};
+  std::map<uint16_t, std::string> id2Uri{{2, "MyURI"}};
+
+  auto uaNodeId = Umati::OpcUa::Converter::ModelNodeIdToUaNodeId(nodeId, uri2Id).getNodeId();
+  auto convNodeId = Umati::OpcUa::Converter::UaNodeIdToModelNodeId(uaNodeId, id2Uri).getNodeId();
+
+  EXPECT_EQ(nodeId, convNodeId);
+}
+
 TEST(Converter, String_NodeId) {
   ModelOpcUa::NodeId_t nodeId{"MyURI", "s=StringId"};
 
@@ -26,7 +38,7 @@ TEST(Converter, String_NodeId) {
 }
 
 TEST(Converter, GUID_NodeId) {
-  ModelOpcUa::NodeId_t nodeId{"MyURI", "s=StringId"};
+  ModelOpcUa::NodeId_t nodeId{"MyURI", "g=1b9be88d-9249-4cfb-8d08-9a7e32d0d01d"};
 
   std::map<std::string, uint16_t> uri2Id{{"MyURI", 2}};
   std::map<uint16_t, std::string> id2Uri{{2, "MyURI"}};
@@ -37,6 +49,27 @@ TEST(Converter, GUID_NodeId) {
   EXPECT_EQ(nodeId, convNodeId);
 }
 
+TEST(Converter, GUID_NodeId2) {
+  UA_Guid myGuid = UA_Guid_random();
+  auto nodeid = open62541Cpp::UA_NodeId(2,myGuid);
+  
+  std::map<std::string, uint16_t> uri2Id{{"MyURI", 2}};
+  std::map<uint16_t, std::string> id2Uri{{2, "MyURI"}};
+
+  auto modelNodeId = Umati::OpcUa::Converter::UaNodeIdToModelNodeId(nodeid, id2Uri).getNodeId();
+  auto convNodeId = Umati::OpcUa::Converter::ModelNodeIdToUaNodeId(modelNodeId, uri2Id).getNodeId();
+
+  EXPECT_EQ(nodeid, convNodeId);
+}
+
+TEST(Converter, INVALID_GUID_NodeId2) {
+  ModelOpcUa::NodeId_t nodeId{"MyURI", "g=not a GUID"};
+
+  std::map<std::string, uint16_t> uri2Id{{"MyURI", 2}};
+  std::map<uint16_t, std::string> id2Uri{{2, "MyURI"}};
+
+  EXPECT_THROW(Umati::OpcUa::Converter::ModelNodeIdToUaNodeId(nodeId, uri2Id),std::invalid_argument);
+}
 
 TEST(Converter, QualifiedName) {
   ModelOpcUa::QualifiedName_t qualName{"MyURI", "MyName"};
