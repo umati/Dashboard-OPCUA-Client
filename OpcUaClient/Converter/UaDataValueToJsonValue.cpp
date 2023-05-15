@@ -173,7 +173,6 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
           data = (UA_Byte *)data + d.type->members[i].padding;
         }
       }
-      std::cout << "here";
       break;
     }
 
