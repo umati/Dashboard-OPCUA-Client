@@ -172,7 +172,6 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
           data = (UA_Byte *)data + d.type->members[i].padding;
         }
       }
-      std::cout << "here";
       break;
     }
 
@@ -265,14 +264,21 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
           case UA_NodeIdType::UA_NODEIDTYPE_NUMERIC:
             LOG(ERROR) << "The erroc originates from ns=" << nodeId.namespaceIndex << "; s=" << nodeId.identifier.numeric;
         }
-
         UA_NodeId dataTypeNodeId;
         UA_NodeId_init(&dataTypeNodeId);
-        UA_Client_readDataTypeAttribute(m_pClient, nodeId, &dataTypeNodeId);
+        UA_StatusCode ret = UA_Client_readDataTypeAttribute(m_pClient, nodeId, &dataTypeNodeId);
+        if (ret != UA_STATUSCODE_GOOD){
+          LOG(ERROR) <<  "could not read DataType Attribute";
+          throw Umati::Exceptions::OpcUaNonGoodStatusCodeException(ret,"Could not read DataType Attribute");
+        }
+
         UA_Variant v;
         UA_Variant_init(&v);
-        UA_Client_readValueAttribute(m_pClient, nodeId, &v);
-
+        ret = UA_Client_readValueAttribute(m_pClient, nodeId, &v);
+        if (ret != UA_STATUSCODE_GOOD){
+          throw Umati::Exceptions::OpcUaNonGoodStatusCodeException(ret,"Could not read Value Attribute");
+          throw ret;
+        }
         // auto dataType = UA_Client_findDataType(m_pClient, &dataTypeNodeId);
         auto dataType = v.type;
         auto clientConfig = UA_Client_getConfig(m_pClient);
