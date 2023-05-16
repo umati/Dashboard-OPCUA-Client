@@ -11,6 +11,7 @@
 
 #include <easylogging++.h>
 #include "../../deps/open62541/src/ua_types_encoding_json.h"
+#include "../../OpcUaClient/Exceptions/OpcUaNonGoodStatusCodeException.hpp"
 
 namespace Umati {
 namespace OpcUa {
@@ -256,14 +257,10 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
       } else {
         LOG(ERROR) << "Unknow conversion from OpcUaType_ExtensionObject with DataTypeEncodingType: ns=" << exObj.content.encoded.typeId.namespaceIndex
                    << "; i=" << exObj.content.encoded.typeId.identifier.numeric;
-        switch (nodeId.identifierType) {
-          case UA_NodeIdType::UA_NODEIDTYPE_STRING:
-            LOG(ERROR) << "The erroc originates from ns=" << nodeId.namespaceIndex
-                       << "; s=" << std::string((char *)nodeId.identifier.string.data, nodeId.identifier.string.length);
-            break;
-          case UA_NodeIdType::UA_NODEIDTYPE_NUMERIC:
-            LOG(ERROR) << "The erroc originates from ns=" << nodeId.namespaceIndex << "; s=" << nodeId.identifier.numeric;
-        }
+        UA_String tmp;
+        UA_NodeId_print(&nodeId,&tmp);
+        LOG(ERROR) << "The erroc originates from ns=" << tmp.data;
+
         UA_NodeId dataTypeNodeId;
         UA_NodeId_init(&dataTypeNodeId);
         UA_StatusCode ret = UA_Client_readDataTypeAttribute(m_pClient, nodeId, &dataTypeNodeId);
