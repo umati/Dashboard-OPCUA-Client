@@ -371,13 +371,18 @@ namespace Umati
 			std::list<ModelOpcUa::BrowseResult_t> &browseResults)
 		{
 			for (auto &browseResult : browseResults)
-			{	
+			{
 				if (browseResult.TypeDefinition.Id == NodeId_BaseObjectType.Id) {
+					LOG(INFO) << "TypeDefinition is BaseObjectType "
+							  << static_cast<std::string>(browseResult.NodeId)
+							  << "- Try to find an Interface";
 					auto ifs = m_pDashboardDataClient->Browse(browseResult.NodeId,
 						Dashboard::IDashboardDataClient::BrowseContext_t::HasInterface());
-						browseResult.TypeDefinition = ifs.front().NodeId;
-						LOG(INFO) << "Updated TypeDefinition of " << browseResult.BrowseName.Name << " to " << browseResult.TypeDefinition 
-								  << " because the node implements an interface";				
+					if (ifs.empty()){
+						LOG(WARNING) << "No Interface found!";
+					}
+					browseResult.TypeDefinition = ifs.front().NodeId;
+
 				}
 				auto possibleType = m_pTypeReader->m_typeMap->find(browseResult.TypeDefinition);  // use subtype
 				if (possibleType != m_pTypeReader->m_typeMap->end())
