@@ -8,10 +8,10 @@ on:
   merge_group:
 
 jobs:
-  build-linux:
+  build-linux-mac:
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
         build_type: [Debug, Release]
         arch: ["386", "amd64"]
     runs-on: ${{matrix.os}}
@@ -148,7 +148,7 @@ jobs:
         with:
           file: "./UmatiDashboardOpcUaClient/Dockerfile"
           context: ./UmatiDashboardOpcUaClient
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm64
           push: ${{env.IS_NOT_PR == 'true'}}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
