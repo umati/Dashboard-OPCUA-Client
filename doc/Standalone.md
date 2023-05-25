@@ -6,7 +6,7 @@ There are two options for obtaining the binaries:
 
         1. Select `latest` release.
         2. Download artefact for your operating system.
-           - use windows-2022 for most versions of windows 2010 and window 2011 (only older version need windows-2019 (see [#477](https://github.com/umati/Dashboard-OPCUA-Client/issues/477) for details)
+           - use `windows-2022` for most versions of Win 10 and Win 11,(only older versions need `windows-2019` (see [#477](https://github.com/umati/Dashboard-OPCUA-Client/issues/477) for details)
         3. If older than 4 weeks use alternative option.
 
     2. Download the development version from the latest [CI](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml) run
@@ -34,7 +34,7 @@ There are two options for obtaining the binaries:
 
     2. After the start up a JSON containing all machine values is published on the MQTT Broker at topic `umati/v2/<CompanyName>/<ClientName>/<SpecificationType>/<EscapedMachineNodeId>` (e.g. `umati/v2/ISW/ClientSampleServer/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382`)
 
-## Installing the Debug version
+## Installing the `debug` version
 
 For the Debug version also the DLLs of Debugging are nessasry:
 
@@ -42,12 +42,9 @@ For the Debug version also the DLLs of Debugging are nessasry:
 - C++ 2022: <https://aka.ms/vs/17/release/vc_redist.x86.exeWindows10>
 - SDK: <https://go.microsoft.com/fwlink/p/?linkid=2196241>
 
-<!-- markdownlint-disable MD033 -->
-<details><summary>Troubleshooting</summary>
+## Troubleshooting
 
-## Common errors
+### Common errors
 
 1. Missing DLLs
     In case DLLs are missing, those are most likely from the Visual C++ Redistributable package. Those can be downloaded [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
-
-</details>

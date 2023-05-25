@@ -30,7 +30,6 @@ The example `configuration.json` options are explained:
         {
           "Uri": "http://opcfoundation.org/UA/MachineTool/",
           "Id": "i=13",
-          "BaseTypeLevel": 0,  // ????
           "$comment": "MachineToolType" // Defines the TypeDefinition of instances the client will be looking for and he will continuously monitor.
         }
       ],
@@ -52,7 +51,7 @@ The example `configuration.json` options are explained:
   },
   "Mqtt": {
     "Hostname": "localhost", // MQTT Broker
-    "Port": 1883, // Port to conenect to
+    "Port": 443, // Port to connect to the broker 1883 for tcp, 8883 for TLS or 443 for wss
     "Username": "MyCompany/ClientName", 
     "Password": "",
     "Prefix": "umati/v2", // Topic prefix
