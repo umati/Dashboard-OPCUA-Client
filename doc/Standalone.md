@@ -34,6 +34,14 @@ There are two options for obtaining the binaries:
 
     2. After the start up a JSON containing all machine values is published on the MQTT Broker at topic `umati/v2/<CompanyName>/<ClientName>/<SpecificationType>/<EscapedMachineNodeId>` (e.g. `umati/v2/ISW/ClientSampleServer/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382`)
 
+## Installing the Debug version
+
+For the Debug version also the DLLs of Debugging are nessasry:
+
+- C++ 2013: <https://aka.ms/highdpimfc2013x86enu>
+- C++ 2022: <https://aka.ms/vs/17/release/vc_redist.x86.exeWindows10>
+- SDK: <https://go.microsoft.com/fwlink/p/?linkid=2196241>
+
 <!-- markdownlint-disable MD033 -->
 <details><summary>Troubleshooting</summary>
 

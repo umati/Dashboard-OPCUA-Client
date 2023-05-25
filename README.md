@@ -1,6 +1,10 @@
 # umati Dashboard OPC UA Client
 
-This is the OPC UA client specifically developed for the umati Dashboard. The client subscribes to values from one or more machine instances on a single OPC UA server and then publishes them using MQTT in a JSON encoding format. All instances are read based on OPC UA ObjectType-definitions. Invalid instances (e.g., those missing mandatory nodes) are skipped. To maintain uniform output via MQTT, additional nodes not specified are also ignored.
+This is the OPC UA client specifically developed for the umati Dashboard.
+The client subscribes to values from one or more machine instances on a single OPC UA server and then publishes them using MQTT in a JSON encoding format.
+ All instances are read based on OPC UA ObjectType-definitions.
+ Invalid instances (e.g., those missing mandatory nodes) are skipped.
+ To maintain uniform output via MQTT, additional nodes not specified are also ignored.
 
 ## Features
 
