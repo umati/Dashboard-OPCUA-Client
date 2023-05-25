@@ -3,15 +3,39 @@
 This is the OPC UA client for the [umati Dashboard](http://umati.app). The client subscribes to the values of one or multiple machine instances in one OPC UA Server and publish them via MQTT in a JSON encoding. All instances are read based on OPC UA ObjectType-definitions.
 Invalid instances (e.g. missing mandatory nodes) are skipped. Additional nodes aside from the specified nodes are also ignored to ensure a uniform output via MQTT.
 
+## Tested Companion Specifications
+
+- Flatglass :waning_gibbous_moon:
+- Textil Test Devices :waning_gibbous_moon:
+- Geometrical Measuring Systems :heavy_check_mark:
+- MachineTools :heavy_check_mark:
+- PlasticsRubber :heavy_check_mark:
+- WoodWorking :heavy_check_mark:
+- Robotics  :heavy_check_mark:
+- Surface Technology :waning_gibbous_moon:
+- Additive Manufacturing DRAFT :waning_gibbous_moon:
+
+## Usage for connecting a server to the dashboard
+
+Follow these instructions to use the client to connect your local OPC UA Server to the umati dashboard:
+[usage_for_dashboard.md](doc/usage_for_dashboard.md)
+
+## Usage for instance testing
+
+Follow these instructions to use the client as a testing tool for your implementation:
+[usage_as_model_test.md](doc/usage_as_model_test.md)
+
 ## Dependencies
 
 - [Easylogging](https://github.com/amrayn/easyloggingpp)
 - [JSON for Modern C++](https://github.com/nlohmann/json)
 - [Eclipse Paho](https://www.eclipse.org/paho/index.php) in [C](https://github.com/eclipse/paho.mqtt.c) and [C++](https://github.com/eclipse/paho.mqtt.cpp)
+- [tinyxml2](https://github.com/leethomason/tinyxml2)
 - [Googletest](https://github.com/google/googletest)
 - [Open62541](https://open62541.org/)
 - [Open62541Cpp](https://github.com/umati/open62541Cpp)
 - [Python](https://www.python.org/)
+
 
 ## Build
 
@@ -72,27 +96,6 @@ cmake --build .
 - [OpcUaClient](OpcUaClient) Implementation of an OPC UA client for the Dashboard using Unified Automation C++ SDK
 - [Tests](Tests) Some basic test, mainly for debugging past errors.
 - [Util](Util) General purpose code, e.g. Encoding of machine IDs
-
-## Tested Companion Specifications
-
-- Flatglass :waning_gibbous_moon:
-- Geometrical Measuring Systems :waning_gibbous_moon:
-- MachineTools :heavy_check_mark:
-- PlasticsRubber :heavy_check_mark:
-- WoodWorking :heavy_check_mark:
-- Robotics  :heavy_check_mark:
-- Surface Technology :waning_gibbous_moon:
-- Additive Manufacturing DRAFT :waning_gibbous_moon:
-
-## Usage for connecting a server to the dashboard
-
-Follow these instructions to use the client to connect your local OPC UA Server to the umati dashboard:
-[usage_for_dashboard.md](doc/usage_for_dashboard.md)
-
-## Usage for instance testing
-
-Follow these instructions to use the client as a testing tool for your implementation:
-[usage_as_model_test.md](doc/usage_as_model_test.md)
 
 ## License
 

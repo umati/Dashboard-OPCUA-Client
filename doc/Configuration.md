@@ -4,7 +4,6 @@ The example `configuration.json` options are explained:
 
 ``` JSON
 {
-  "MachineCacheFile": "MachineCache_datahub.json", // Location of the MachineCacheFile used by the client
   "MachinesFilter": [
     {
       "Uri": "http://example.com/BasicMachineTool/",
@@ -31,6 +30,7 @@ The example `configuration.json` options are explained:
         {
           "Uri": "http://opcfoundation.org/UA/MachineTool/",
           "Id": "i=13",
+          "BaseTypeLevel": 0,  // ????
           "$comment": "MachineToolType" // Defines the TypeDefinition of instances the client will be looking for and he will continuously monitor.
         }
       ],
@@ -57,7 +57,7 @@ The example `configuration.json` options are explained:
     "Password": "",
     "Prefix": "umati/v2", // Topic prefix
     "ClientId": "MyCompany/ClientName", // ClientId part of topic structure
-    "Protocol": "tcp", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
+    "Protocol": "wss", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
     "CaCertPath":"", // path to the CA-Cert file, only to be set if advised
     "CaTrustStorePath": "" // path to the CA-Cert file, only to be set if advised
   }
