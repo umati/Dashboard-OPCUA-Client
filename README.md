@@ -1,8 +1,6 @@
 # umati Dashboard OPC UA Client
 
-This is the OPC UA client for the [umati Dashboard](http://umati.app). The client subscribes to the values of one or multiple machine instances in one OPC UA Server and publish them via MQTT in a JSON encoding. All instances are read based on OPC UA ObjectType-definitions.
-Invalid instances (e.g. missing mandatory nodes) are skipped. Additional nodes aside from the specified nodes are also ignored to ensure a uniform output via MQTT.
-
+This is the OPC UA client specifically developed for the umati Dashboard. The client subscribes to values from one or more machine instances on a single OPC UA server and then publishes them using MQTT in a JSON encoding format. All instances are read based on OPC UA ObjectType-definitions. Invalid instances (e.g., those missing mandatory nodes) are skipped. To maintain uniform output via MQTT, additional nodes not specified are also ignored.
 ## Tested Companion Specifications
 
 - Flatglass :waning_gibbous_moon:
@@ -14,6 +12,18 @@ Invalid instances (e.g. missing mandatory nodes) are skipped. Additional nodes a
 - Robotics  :heavy_check_mark:
 - Surface Technology :waning_gibbous_moon:
 - Additive Manufacturing DRAFT :waning_gibbous_moon:
+- MachineVision Part 2 Release Canidate :waning_gibbous_moon:
+- IJT Tightening :waning_gibbous_moon:
+
+## Tested Features
+
+- Typed Objects :heavy_check_mark:
+- Objects with InterfaceType :heavy_check_mark:
+- Custom DataType with TypeDictionary 1.04 :waning_gibbous_moon:
+
+## Upcomming Features
+
+- Custom DataType  based on DataTypeTypeDefinition
 
 ## Usage for connecting a server to the dashboard
 
@@ -35,7 +45,6 @@ Follow these instructions to use the client as a testing tool for your implement
 - [Open62541](https://open62541.org/)
 - [Open62541Cpp](https://github.com/umati/open62541Cpp)
 - [Python](https://www.python.org/)
-
 
 ## Build
 
