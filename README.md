@@ -1,7 +1,10 @@
 # umati Dashboard OPC UA Client
 
 This is the OPC UA client specifically developed for the umati Dashboard. The client subscribes to values from one or more machine instances on a single OPC UA server and then publishes them using MQTT in a JSON encoding format. All instances are read based on OPC UA ObjectType-definitions. Invalid instances (e.g., those missing mandatory nodes) are skipped. To maintain uniform output via MQTT, additional nodes not specified are also ignored.
-## Tested Companion Specifications
+
+## Features
+
+### Tested Companion Specifications
 
 - Flatglass :waning_gibbous_moon:
 - Textil Test Devices :waning_gibbous_moon:
@@ -15,25 +18,37 @@ This is the OPC UA client specifically developed for the umati Dashboard. The cl
 - MachineVision Part 2 Release Canidate :waning_gibbous_moon:
 - IJT Tightening :waning_gibbous_moon:
 
-## Tested Features
+### Tested Features
 
 - Typed Objects :heavy_check_mark:
 - Objects with InterfaceType :heavy_check_mark:
 - Custom DataType with TypeDictionary 1.04 :waning_gibbous_moon:
 
-## Upcomming Features
+### Upcomming Features
 
 - Custom DataType  based on DataTypeTypeDefinition
 
-## Usage for connecting a server to the dashboard
+## Usage
 
-Follow these instructions to use the client to connect your local OPC UA Server to the umati dashboard:
-[usage_for_dashboard.md](doc/usage_for_dashboard.md)
+## Installation and Configuration
 
-## Usage for instance testing
+The Dashboard-OPCUA-Client can be installed either as a standalone application or as a Docker container. To install and configure the client, please follow these instructions:
+
+- [Install as container](doc/Container.md)
+- [Install as standalone](doc/Standalone.md)
+- [Configure your Clinet](doc/Configuration.md)
+
+After installation you can use the client for instance testing oder foor connecting to the umati Dashboard
+
+### Usage for instance testing
 
 Follow these instructions to use the client as a testing tool for your implementation:
-[usage_as_model_test.md](doc/usage_as_model_test.md)
+[Model Testing usage](doc/usage_as_model_test.md)
+
+### Usage for connecting a server to the dashboard
+
+To learn how to use the client in connecting your local OPC UA Server to the umati dashboard, follow the instructions in this link:
+[Umati Dashboard Connection](doc/usage_for_dashboard.md)
 
 ## Dependencies
 

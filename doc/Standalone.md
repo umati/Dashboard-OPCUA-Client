@@ -1,15 +1,15 @@
 # Executing Standalone Dashboard-OPCUA-Client
 
-1. Get OPC UA Client Binaries:
-
-    Two Possibilities:
-    1. Stable version from [Releases](https://github.com/umati/Dashboard-OPCUA-Client/releases)
+1. Obtain the OPC UA Client Binaries:
+There are two options for obtaining the binaries:
+    1. Download the stable version from [Releases](https://github.com/umati/Dashboard-OPCUA-Client/releases)
 
         1. Select `latest` release.
         2. Download artefact for your operating system.
+           - use windows-2022 for most versions of windows 2010 and window 2011 (only older version need windows-2019 (see [#477](https://github.com/umati/Dashboard-OPCUA-Client/issues/477) for details)
         3. If older than 4 weeks use alternative option.
 
-    2. Development version from latest [CI](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml) run
+    2. Download the development version from the latest [CI](https://github.com/umati/Dashboard-OPCUA-Client/actions/workflows/build.yml) run
 
         1. Select newest workflow run.
         2. Download artifact for your operating system.
