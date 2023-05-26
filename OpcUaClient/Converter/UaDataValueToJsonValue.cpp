@@ -165,7 +165,7 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
     }
 
     case UA_DATATYPEKIND_QUALIFIEDNAME: {
-      UA_QualifiedName qualifiedName(*(UA_QualifiedName *) variant.data);
+      UA_QualifiedName qualifiedName(*(UA_QualifiedName *)variant.data);
       (*jsonValue)["namespaceIndex"] = qualifiedName.namespaceIndex;
       (*jsonValue)["name"] = std::string((char *)qualifiedName.name.data, qualifiedName.name.length);
       break;
@@ -368,7 +368,7 @@ void UaDataValueToJsonValue::setValueFromArrayVariant(UA_Variant &variant, nlohm
     SIMPLECASE(LOCALIZEDTEXT, LocalizedText);
     SIMPLECASE(NODEID, NodeId);
     SIMPLECASE(EXTENSIONOBJECT, ExtensionObject);
-    SIMPLECASE(QUALIFIEDNAME,QualifiedName);
+    SIMPLECASE(QUALIFIEDNAME, QualifiedName);
     CASENOTIMPLEMENTED(GUID, Guid);
     CASENOTIMPLEMENTED(BYTESTRING, ByteString);
     CASENOTIMPLEMENTED(XMLELEMENT, XmlElement);
