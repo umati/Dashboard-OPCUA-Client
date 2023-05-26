@@ -4,7 +4,6 @@ The example `configuration.json` options are explained:
 
 ``` JSON
 {
-  "MachineCacheFile": "MachineCache_datahub.json", // Location of the MachineCacheFile used by the client
   "MachinesFilter": [
     {
       "Uri": "http://example.com/BasicMachineTool/",
@@ -52,12 +51,12 @@ The example `configuration.json` options are explained:
   },
   "Mqtt": {
     "Hostname": "localhost", // MQTT Broker
-    "Port": 1883, // Port to conenect to
+    "Port": 443, // Port to connect to the broker 1883 for tcp, 8883 for TLS or 443 for wss
     "Username": "MyCompany/ClientName", 
     "Password": "",
     "Prefix": "umati/v2", // Topic prefix
     "ClientId": "MyCompany/ClientName", // ClientId part of topic structure
-    "Protocol": "tcp", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
+    "Protocol": "wss", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
     "CaCertPath":"", // path to the CA-Cert file, only to be set if advised
     "CaTrustStorePath": "" // path to the CA-Cert file, only to be set if advised
   }

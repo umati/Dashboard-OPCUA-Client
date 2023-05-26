@@ -1,13 +1,69 @@
 # umati Dashboard OPC UA Client
 
-This is the OPC UA client for the [umati Dashboard](http://umati.app). The client subscribes to the values of one or multiple machine instances in one OPC UA Server and publish them via MQTT in a JSON encoding. All instances are read based on OPC UA ObjectType-definitions.
-Invalid instances (e.g. missing mandatory nodes) are skipped. Additional nodes aside from the specified nodes are also ignored to ensure a uniform output via MQTT.
+This is the OPC UA gateway specifically developed for the umati.app Dashboard.
+
+The client subscribes to values from one or more machine instances on a single OPC UA server and then publishes them using MQTT in a JSON encoding format.
+
+All instances are read based on OPC UA ObjectType-definitions.
+
+Invalid instances (e.g., those missing mandatory nodes) are skipped.
+
+To maintain uniform output via MQTT, additional nodes not specified are also ignored.
+
+## Features
+
+### Tested Companion Specifications
+
+- Flatglass :waning_gibbous_moon:
+- Textil Test Devices :waning_gibbous_moon:
+- Geometrical Measuring Systems :heavy_check_mark:
+- MachineTools :heavy_check_mark:
+- PlasticsRubber :heavy_check_mark:
+- WoodWorking :heavy_check_mark:
+- Robotics  :heavy_check_mark:
+- Surface Technology :waning_gibbous_moon:
+- Additive Manufacturing DRAFT :waning_gibbous_moon:
+- MachineVision Part 2 Release Canidate :waning_gibbous_moon:
+- IJT Tightening :waning_gibbous_moon:
+
+### Tested Features
+
+- Typed Objects :heavy_check_mark:
+- Objects with InterfaceType :heavy_check_mark:
+- Custom DataType with TypeDictionary 1.04 :waning_gibbous_moon:
+
+### Upcoming Features
+
+- Custom DataType  based on DataTypeTypeDefinition
+
+## Usage
+
+## Installation and Configuration
+
+The `Dashboard-OPCUA-Client` can be run either as a standalone application or as a container image.
+
+To install and configure the client, please follow these instructions:
+
+- [Use as standalone](doc/Standalone.md)
+- [Use as container](doc/Container.md)
+- [Configure your client](doc/Configuration.md)
+
+You can use the client for instance testing or for connecting to the umati.app Dashboard.
+
+### Usage for instance testing
+
+Follow these instructions to use the client as a testing tool for your implementation: [Model Testing usage](doc/usage_as_model_test.md)
+
+### Usage for connecting a server to the dashboard
+
+Follow these instructions to use the client for connecting your local OPC UA Server to the umati.app Dashboard: [umati Dashboard Connection](doc/usage_for_dashboard.md)
 
 ## Dependencies
 
 - [Easylogging](https://github.com/amrayn/easyloggingpp)
 - [JSON for Modern C++](https://github.com/nlohmann/json)
 - [Eclipse Paho](https://www.eclipse.org/paho/index.php) in [C](https://github.com/eclipse/paho.mqtt.c) and [C++](https://github.com/eclipse/paho.mqtt.cpp)
+- [tinyxml2](https://github.com/leethomason/tinyxml2)
 - [Googletest](https://github.com/google/googletest)
 - [Open62541](https://open62541.org/)
 - [Open62541Cpp](https://github.com/umati/open62541Cpp)
@@ -72,27 +128,6 @@ cmake --build .
 - [OpcUaClient](OpcUaClient) Implementation of an OPC UA client for the Dashboard using Unified Automation C++ SDK
 - [Tests](Tests) Some basic test, mainly for debugging past errors.
 - [Util](Util) General purpose code, e.g. Encoding of machine IDs
-
-## Tested Companion Specifications
-
-- Flatglass :waning_gibbous_moon:
-- Geometrical Measuring Systems :waning_gibbous_moon:
-- MachineTools :heavy_check_mark:
-- PlasticsRubber :heavy_check_mark:
-- WoodWorking :heavy_check_mark:
-- Robotics  :heavy_check_mark:
-- Surface Technology :waning_gibbous_moon:
-- Additive Manufacturing DRAFT :waning_gibbous_moon:
-
-## Usage for connecting a server to the dashboard
-
-Follow these instructions to use the client to connect your local OPC UA Server to the umati dashboard:
-[usage_for_dashboard.md](doc/usage_for_dashboard.md)
-
-## Usage for instance testing
-
-Follow these instructions to use the client as a testing tool for your implementation:
-[usage_as_model_test.md](doc/usage_as_model_test.md)
 
 ## License
 
