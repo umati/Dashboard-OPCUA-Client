@@ -202,10 +202,15 @@ namespace Umati {
                         }
                     }
                     if(machine.TypeDefinition == Umati::Dashboard::NodeId_BaseObjectType) {
+                        LOG(DEBUG) << "machine is a BaseObjectType : " << machine.NodeId.Uri << machine.NodeId.Id << " Search for InterfaceTypes";
                         auto ifs = m_pDataClient->Browse(machine.NodeId,
                             Dashboard::IDashboardDataClient::BrowseContext_t::HasInterface());
-                        machine.TypeDefinition = ifs.front().NodeId;
-                        
+                        if (ifs.empty()){
+                            LOG(WARNING) << "machine is a BaseObjectType without a InterfaceType :" << machine.NodeId.Uri << machine.NodeId.Id;
+                        }
+                        else{
+                            machine.TypeDefinition = ifs.front().NodeId;
+                        }
                     }
 
                     auto typeDefinitionNodeId = m_pOpcUaTypeReader->getIdentificationTypeNodeId(machine.TypeDefinition);
