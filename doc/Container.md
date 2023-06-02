@@ -21,3 +21,7 @@ The `configuration.json` needs to be mounted with a volume mount into the contai
     ```
 
     Replace PATH to `configuration.json` and container version to the desired version as per [Releases](https://github.com/umati/Dashboard-OPCUA-Client/releases).
+
+## Troubleshooting
+
+[see Troubleshooting](./Troubleshooting.md)

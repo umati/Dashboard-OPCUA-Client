@@ -44,7 +44,4 @@ For the Debug version also the DLLs of Debugging are nessasry:
 
 ## Troubleshooting
 
-### Common errors
-
-1. Missing DLLs
-    In case DLLs are missing, those are most likely from the Visual C++ Redistributable package. Those can be downloaded [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
+[see Troubleshooting](./Troubleshooting.md)

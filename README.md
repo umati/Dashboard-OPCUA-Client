@@ -50,9 +50,17 @@ To install and configure the client, please follow these instructions:
 
 You can use the client for instance testing or for connecting to the umati.app Dashboard.
 
+### Troubleshooting
+
+[see Troubleshooting](./Troubleshooting.md)
+
 ### Usage for instance testing
 
 Follow these instructions to use the client as a testing tool for your implementation: [Model Testing usage](doc/usage_as_model_test.md)
+
+ **Local requirements**
+
+For the local instance testing you need to run your own MQTT Broker and a MQTT Client. See [MQTT Doc](doc/MQTT.md) for more information and instructions
 
 ### Usage for connecting a server to the dashboard
 
