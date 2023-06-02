@@ -43,7 +43,7 @@
 
 std::string SERVER_ADDRESS("tcp://localhost:1883");
 std::string CLIENT_ID("paho_cpp_async_subcribe");
-std::string TOPIC("umati/#");
+std::string TOPIC("umati/v2/#");
 
 const int QOS = 1;
 const int N_RETRY_ATTEMPTS = 5;
