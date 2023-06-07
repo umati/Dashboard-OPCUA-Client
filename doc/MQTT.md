@@ -1,5 +1,20 @@
 # Local MQTT requirements
 
+## Installing a MQTT Client on Windows
+
+The MQTT Client is used to read the values on the MQTT Broker. This Example uses MQTTX:
+
+1. [Download MQTTX](https://mqttx.app/) alternatively [MQTT-Explorer](https://github.com/thomasnordquist/MQTT-Explorer) or [mqttMultimeter](https://github.com/chkr1011/mqttMultimeter)
+2. Install and start MQTTX.
+3. Create new connection via + button with these parameters.
+    1. Name: "OPCUA Client"
+    2. Host: "mqtt://" "127.0.0.1"
+    3. Port: 1883
+4. Press Button "Connect".
+5. Press Button "New Subscription".
+    1. Topic: "umati/#"
+    2. Press "Confirm"
+
 ## Installing a MQTT Broker on Windows
 
 Deploying a MQTT Broker locally. Example with Eclipse Mosquitto:
@@ -15,21 +30,6 @@ Deploying a MQTT Broker locally. Example with Eclipse Mosquitto:
 5. Start `mosquitto.exe`.
 
 6. A console windows appears without any output.
-
-## Installing a MQTT Client on Windows
-
-The MQTT Client is used to read the values on the MQTT Broker. This Example uses MQTTX:
-
-1. [Download MQTTX](https://mqttx.app/) alternatively [MQTT-Explorer](https://github.com/thomasnordquist/MQTT-Explorer) or [mqttMultimeter](https://github.com/chkr1011/mqttMultimeter)
-2. Install and start MQTTX.
-3. Create new connection via + button with these parameters.
-    1. Name: "OPCUA Client"
-    2. Host: "mqtt://" "127.0.0.1"
-    3. Port: 1883
-4. Press Button "Connect".
-5. Press Button "New Subscription".
-    1. Topic: "umati/#"
-    2. Press "Confirm"
 
 ## Running a MQTT Broker as a container image
 
