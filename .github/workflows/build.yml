@@ -144,7 +144,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker Release
-        uses: docker/build-push-action@v4.1.0
+        uses: docker/build-push-action@v4.1.1
         with:
           file: "./UmatiDashboardOpcUaClient/Dockerfile"
           context: ./UmatiDashboardOpcUaClient
