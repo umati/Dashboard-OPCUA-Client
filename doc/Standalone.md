@@ -34,6 +34,16 @@ There are two options for obtaining the binaries:
 
     2. After the start up a JSON containing all machine values is published on the MQTT Broker at topic `umati/v2/<CompanyName>/<ClientName>/<SpecificationType>/<EscapedMachineNodeId>` (e.g. `umati/v2/ISW/ClientSampleServer/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382`)
 
+## Automatic restarting on Windows
+
+To monitor and restart the client automatically, please use the provided [restart.ps1](../Tools/restart.ps1).
+You need to modifiy the path to the `DashboardOpcUaClient.exe` to use it.
+
+```shell
+# Add own path to the executable
+$ProcessPath = "C:\work\umati\UmatiDashboardOpcUaClient-Release-windows-2022-amd64\bin"
+```
+
 ## Installing the `debug` version
 
 For the Debug version also the DLLs of Debugging are nessasry:
