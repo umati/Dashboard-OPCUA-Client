@@ -2,17 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * Copyright 2019-2022 (c) Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
- * Copyright 2020 (c) Dominik Basner, Sotec GmbH (for VDW e.V.)
- * Copyright 2021 (c) Marius Dege, basysKom GmbH
- * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
- * Copyright 2023 (c) Sebastian Friedl, FVA GmbH interop4x
+ * Copyright (c) 2019-2022 Christian von Arnim, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright (c) 2020 Dominik Basner, Sotec GmbH (for VDW e.V.)
+ * Copyright (c) 2021 Marius Dege, basysKom GmbH
+ * Copyright (c) 2022 Moritz Walker, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright (c) 2023 Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
+ * Copyright (c) 2023 Sebastian Friedl, FVA GmbH interop4x
  */
 
 #include "SetupSecurity.hpp"
 
 // #include <python3.8/Python.h>
-#include <open62541/architecture_definitions.h>
+#include <open62541/config.h>
 #include <open62541/plugin/create_certificate.h>
 #include <open62541/plugin/log_stdout.h>
 #include <Open62541Cpp/UA_String.hpp>
