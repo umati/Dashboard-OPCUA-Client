@@ -62,7 +62,7 @@ Follow these instructions to use the client as a testing tool for your implement
 
 For the local instance testing you need to run your own MQTT Broker and a MQTT Client. See [MQTT Doc](doc/MQTT.md) for more information and instructions
 
-[Here](example/SampleServer/) is an docker-compose example including a mqtt broker, a umati Sample Server and the gateway. The example contains also the need configuration for the samples. 
+[Here](example/ShowcaseDeployment/) is an docker-compose example including a mqtt broker, a umati Sample Server and the gateway. The example contains also the need configuration for the samples.
 
 ### Usage for connecting a server to the dashboard
 

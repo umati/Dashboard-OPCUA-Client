@@ -1,0 +1,372 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Identification": {
+      "type": "object",
+      "properties": {
+        "Manufacturer": {
+          "type": "object",
+          "properties": {
+            "locale": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "locale",
+            "text"
+          ]
+        },
+        "ProductInstanceUri": {
+          "type": "string"
+        },
+        "SerialNumber": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "Manufacturer",
+        "ProductInstanceUri",
+        "SerialNumber"
+      ]
+    },
+    "Monitoring": {
+      "type": "object",
+      "properties": {
+        "<MonitoredElement>": {
+          "type": "object",
+          "properties": {
+            "Channel 1": {
+              "type": "object",
+              "properties": {
+                "$TypeDefinition": {
+                  "type": "string"
+                },
+                "ChannelMode": {
+                  "type": "integer"
+                },
+                "ChannelState": {
+                  "type": "integer"
+                },
+                "FeedOverride": {
+                  "type": "object",
+                  "properties": {
+                    "properties": {
+                      "type": "object",
+                      "properties": {
+                        "EURange": {
+                          "type": "object",
+                          "properties": {
+                            "High": {
+                              "type": "number"
+                            },
+                            "Low": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "High",
+                            "Low"
+                          ]
+                        },
+                        "EngineeringUnits": {
+                          "type": "object",
+                          "properties": {
+                            "Description": {
+                              "type": "object",
+                              "properties": {
+                                "locale": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "locale",
+                                "text"
+                              ]
+                            },
+                            "DisplayName": {
+                              "type": "object",
+                              "properties": {
+                                "locale": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "locale",
+                                "text"
+                              ]
+                            },
+                            "NamespaceUri": {
+                              "type": "string"
+                            },
+                            "UnitId": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "Description",
+                            "DisplayName",
+                            "NamespaceUri",
+                            "UnitId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "EURange",
+                        "EngineeringUnits"
+                      ]
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "properties",
+                    "value"
+                  ]
+                },
+                "Name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "$TypeDefinition",
+                "ChannelMode",
+                "ChannelState",
+                "FeedOverride",
+                "Name"
+              ]
+            }
+          },
+          "required": [
+            "Channel 1"
+          ]
+        },
+        "MachineTool": {
+          "type": "object",
+          "properties": {
+            "OperationMode": {
+              "type": "integer"
+            },
+            "PowerOnDuration": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "OperationMode",
+            "PowerOnDuration"
+          ]
+        },
+        "Stacklight": {
+          "type": "object",
+          "properties": {
+            "<OrderedObject>": {
+              "type": "object",
+              "properties": {
+                "Light 0": {
+                  "type": "object",
+                  "properties": {
+                    "$TypeDefinition": {
+                      "type": "string"
+                    },
+                    "IsPartOfBase": {
+                      "type": "boolean"
+                    },
+                    "NumberInList": {
+                      "type": "integer"
+                    },
+                    "SignalColor": {
+                      "type": "integer"
+                    },
+                    "SignalMode": {
+                      "type": "integer"
+                    },
+                    "SignalOn": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "$TypeDefinition",
+                    "IsPartOfBase",
+                    "NumberInList",
+                    "SignalColor",
+                    "SignalMode",
+                    "SignalOn"
+                  ]
+                },
+                "Light 1": {
+                  "type": "object",
+                  "properties": {
+                    "$TypeDefinition": {
+                      "type": "string"
+                    },
+                    "IsPartOfBase": {
+                      "type": "boolean"
+                    },
+                    "NumberInList": {
+                      "type": "integer"
+                    },
+                    "SignalColor": {
+                      "type": "integer"
+                    },
+                    "SignalMode": {
+                      "type": "integer"
+                    },
+                    "SignalOn": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "$TypeDefinition",
+                    "IsPartOfBase",
+                    "NumberInList",
+                    "SignalColor",
+                    "SignalMode",
+                    "SignalOn"
+                  ]
+                },
+                "Light 2": {
+                  "type": "object",
+                  "properties": {
+                    "$TypeDefinition": {
+                      "type": "string"
+                    },
+                    "IsPartOfBase": {
+                      "type": "boolean"
+                    },
+                    "NumberInList": {
+                      "type": "integer"
+                    },
+                    "SignalColor": {
+                      "type": "integer"
+                    },
+                    "SignalMode": {
+                      "type": "integer"
+                    },
+                    "SignalOn": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "$TypeDefinition",
+                    "IsPartOfBase",
+                    "NumberInList",
+                    "SignalColor",
+                    "SignalMode",
+                    "SignalOn"
+                  ]
+                }
+              },
+              "required": [
+                "Light 0",
+                "Light 1",
+                "Light 2"
+              ]
+            },
+            "NodeVersion": {
+              "type": "string"
+            },
+            "StacklightMode": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "<OrderedObject>",
+            "NodeVersion",
+            "StacklightMode"
+          ]
+        }
+      },
+      "required": [
+        "<MonitoredElement>",
+        "MachineTool",
+        "Stacklight"
+      ]
+    },
+    "Production": {
+      "type": "object",
+      "properties": {
+        "ActiveProgram": {
+          "type": "object",
+          "properties": {
+            "Name": {
+              "type": "string"
+            },
+            "NumberInList": {
+              "type": "integer"
+            },
+            "State": {
+              "type": "object",
+              "properties": {
+                "CurrentState": {
+                  "type": "object",
+                  "properties": {
+                    "properties": {
+                      "type": "object",
+                      "properties": {
+                        "Id": {
+                          "type": "integer"
+                        },
+                        "Number": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "Id",
+                        "Number"
+                      ]
+                    },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "locale": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "locale",
+                        "text"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "properties",
+                    "value"
+                  ]
+                }
+              },
+              "required": [
+                "CurrentState"
+              ]
+            }
+          },
+          "required": [
+            "Name",
+            "NumberInList",
+            "State"
+          ]
+        }
+      },
+      "required": [
+        "ActiveProgram"
+      ]
+    }
+  },
+  "required": [
+    "Identification",
+    "Monitoring",
+    "Production"
+  ]
+}

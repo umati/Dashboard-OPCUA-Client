@@ -153,4 +153,14 @@
             tags: |
               ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
             provenance: false
+        - name: Run integration test mqtt
+          if: ${{env.IS_NOT_PR == 'true'}}
+          run : |
+            #! /bin/bash
+            python -m pip install --upgrade pip
+            cd ./UmatiDashboardOpcUaClient/Tests/integration/mqtt_test || exit
+            pip install -r requirements.txt
+            docker compose up -d
+            ./waitForContainer.sh
+            python -m unittest discover test_mqtt_sampleserver
   
