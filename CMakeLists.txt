@@ -78,7 +78,7 @@ add_subdirectory(OpcUaClient)
 add_subdirectory(MachineObserver)
 
 message("### opcua_dashboardclient: Adding test directory")
-add_subdirectory(Tests)
+add_subdirectory(Tests/unit)
 
 message("### opcua_dashboardclient: Adding the executable c++ file")
 find_package(Threads)

@@ -1,0 +1,22 @@
+---
+version: '3.1'
+services:
+  mqtt_broker:
+    image: eclipse-mosquitto
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - 1883:1883
+  opcuaserver:
+    image: ghcr.io/umati/sample-server:develop
+    ports:
+      - 4840:4840
+  gateway:
+    depends_on:
+      - mqtt_broker
+      - opcuaserver
+    build:
+      context: "../../"
+      dockerfile: "Dockerfile"
+    volumes:
+      - ./configuration.json:/app/configuration.json

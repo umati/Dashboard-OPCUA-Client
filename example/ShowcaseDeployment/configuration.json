@@ -1,0 +1,334 @@
+{
+  "OpcUa": {
+    "Endpoint": "opc.tcp://opcuaserver:4840",
+    "Username": "",
+    "Password": "",
+    "Security": 1
+  },
+  "Mqtt": {
+    "Hostname": "mqtt_broker",
+    "Port": 1883,
+    "Username": "umati/mqtt_test",
+    "Password": "",
+    "Prefix": "umati/v2",
+    "ClientId": "umati/mqtt_test",
+    "Protocol": "tcp"
+  },
+  "MachineCacheFile": "MachineCache_datahub.json",
+  "MachinesFilter": [  ],
+  "ObjectTypeNamespaces": [
+    "http://opcfoundation.org/UA/",
+    "http://opcfoundation.org/UA/IA/",
+    "http://opcfoundation.org/UA/DI/",
+    "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/Machinery/Result/",
+    "http://opcfoundation.org/UA/MachineTool/",
+	"http://opcfoundation.org/UA/TTD/"
+  ],
+  "NamespaceInformations": [
+    {
+      "Namespace": "http://opcfoundation.org/UA/Robotics/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/Robotics/",
+          "Id": "i=1004",
+          "BaseTypeLevel": 0,
+          "$comment": "MotionDeviceType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/Robotics/",
+          "Id": "i=1003",
+          "BaseTypeLevel": 0,
+          "$comment": "ControllerType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/Robotics/",
+          "Id": "i=1002",
+          "BaseTypeLevel": 0,
+          "$comment": "MotionDeviceSystemType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "BaseTypeLevel": 0,
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/IJT/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/IJT/",
+          "Id": "i=1005",
+          "$comment": "TighteningSystemType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/MachineTool-Prototyping/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/MachineTool-Prototyping/",
+          "Id": "i=1014",
+          "$comment": "MachineToolType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/MachineTool-Prototyping/",
+        "Id": "i=1012",
+        "$comment": "MachineToolIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/MachineTool/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/MachineTool/",
+          "Id": "i=13",
+          "$comment": "MachineToolType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/MachineTool/",
+        "Id": "i=11",
+        "$comment": "MachineToolIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/Woodworking/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/Woodworking/",
+          "Id": "i=2",
+          "$comment": "WwMachineType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/SurfaceTechnology/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1009",
+          "$comment": "SurfaceTechnologCoatingSystemType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1006",
+          "$comment": "SurfaceTecnologyObjectType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1010",
+          "$comment": "SurfaceTechnologyDosingSystemType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1011",
+          "$comment": "SurfaceTechnologyFilterSystemType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1005",
+          "$comment": "SurfaceTechnologyPipeType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1008",
+          "$comment": "SurfaceTechnologyPumpType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1004",
+          "$comment": "SurfaceTechnologyValveType"
+        },
+        {
+          "Uri": "http://opcfoundation.org/UA/SurfaceTechnology/",
+          "Id": "i=1003",
+          "$comment": "SurfaceTechnologyVesselType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/GMS/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/GMS/",
+          "Id": "i=1002",
+          "$comment": "GMSType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/GMS/",
+        "Id": "i=1011",
+        "$comment": "GMSIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/umati/generic/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/umati/generic/",
+          "Id": "i=1002",
+          "$comment": "UmatiPlasticsRubberGenericType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/IMM2MES/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/IMM2MES/",
+          "Id": "i=1007",
+          "$comment": "IMM_MES_InterfaceType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/Extrusion_v2/Extruder/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/Extrusion_v2/Extruder/",
+          "Id": "i=1015",
+          "$comment": "Extruder_InterfaceType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/Extrusion_v2/Corrugator/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/Extrusion_v2/Corrugator/",
+          "Id": "i=1003",
+          "$comment": "Corrugator_InterfaceType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/LDS/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/LDS/",
+          "Id": "i=1007",
+          "$comment": "LDS_InterfaceType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/HotRunner/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/HotRunner/",
+          "Id": "i=1010",
+          "$comment": "HRD_InterfaceType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/TCD/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/TCD/",
+          "Id": "i=1012",
+          "$comment": "TCD_InterfaceType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/PlasticsRubber/umati/OPC40079ForUmati/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/PlasticsRubber/umati/OPC40079ForUmati/",
+          "Id": "i=1003",
+          "$comment": "ImmRobotCellType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1012",
+        "$comment": "MachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/Glass/Flat/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/Glass/Flat/",
+          "Id": "i=1015",
+          "$comment": "GlassMachineType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Glass/Flat/",
+        "Id": "i=1020",
+        "$comment": "GlassMachineIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
+          "Id": "i=1031",
+          "$comment": "AdditiveManufacturingType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
+        "Id": "i=1028",
+        "$comment": "MachineIdentificationAMType"
+      }
+    }
+  ]
+}
