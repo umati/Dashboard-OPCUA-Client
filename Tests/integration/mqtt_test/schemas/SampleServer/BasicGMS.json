@@ -1,0 +1,685 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/Welcome2",
+    "definitions": {
+        "Welcome2": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Equipment": {
+                    "$ref": "#/definitions/Equipment"
+                },
+                "Identification": {
+                    "$ref": "#/definitions/Identification"
+                },
+                "Monitoring": {
+                    "$ref": "#/definitions/Monitoring"
+                },
+                "Notification": {
+                    "$ref": "#/definitions/Notification"
+                },
+                "Production": {
+                    "$ref": "#/definitions/Production"
+                },
+                "ResultManagement": {
+                    "$ref": "#/definitions/ResultManagement"
+                }
+            },
+            "required": [
+                "Equipment",
+                "Identification",
+                "Monitoring",
+                "Notification",
+                "Production",
+                "ResultManagement"
+            ],
+            "title": "Welcome2"
+        },
+        "Equipment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Tools": {
+                    "$ref": "#/definitions/Tools"
+                }
+            },
+            "required": [
+                "Tools"
+            ],
+            "title": "Equipment"
+        },
+        "Tools": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<Tool>": {
+                    "$ref": "#/definitions/Tool"
+                },
+                "NodeVersion": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "<Tool>",
+                "NodeVersion"
+            ],
+            "title": "Tools"
+        },
+        "Tool": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Sensor1": {
+                    "$ref": "#/definitions/Sensor1"
+                }
+            },
+            "required": [
+                "Sensor1"
+            ],
+            "title": "Tool"
+        },
+        "Sensor1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "ControlIdentifier1": {
+                    "type": "integer"
+                },
+                "ControlIdentifierInterpretation": {
+                    "type": "integer"
+                },
+                "Locked": {
+                    "$ref": "#/definitions/Locked"
+                },
+                "Name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "ControlIdentifier1",
+                "ControlIdentifierInterpretation",
+                "Locked",
+                "Name"
+            ],
+            "title": "Sensor1"
+        },
+        "Locked": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/LockedProperties"
+                },
+                "value": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "Locked"
+        },
+        "LockedProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ReasonForLocking": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "ReasonForLocking"
+            ],
+            "title": "LockedProperties"
+        },
+        "Identification": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "DeviceClass": {
+                    "type": "string"
+                },
+                "Location": {
+                    "type": "string"
+                },
+                "Manufacturer": {
+                    "$ref": "#/definitions/Manufacturer"
+                },
+                "Model": {
+                    "$ref": "#/definitions/Manufacturer"
+                },
+                "ProductCode": {
+                    "type": "string"
+                },
+                "ProductInstanceUri": {
+                    "type": "string",
+                    "format": "uri",
+                    "qt-uri-protocols": [
+                        "http"
+                    ]
+                },
+                "SerialNumber": {
+                    "type": "string"
+                },
+                "SoftwareRevision": {
+                    "type": "string"
+                },
+                "YearOfConstruction": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "DeviceClass",
+                "Location",
+                "Manufacturer",
+                "Model",
+                "ProductCode",
+                "ProductInstanceUri",
+                "SerialNumber",
+                "SoftwareRevision",
+                "YearOfConstruction"
+            ],
+            "title": "Identification"
+        },
+        "Manufacturer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "locale": {
+                    "$ref": "#/definitions/Locale"
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "locale",
+                "text"
+            ],
+            "title": "Manufacturer"
+        },
+        "Monitoring": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "MachineTool": {
+                    "$ref": "#/definitions/MachineTool"
+                }
+            },
+            "required": [
+                "MachineTool"
+            ],
+            "title": "Monitoring"
+        },
+        "MachineTool": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "FeedOverride": {
+                    "$ref": "#/definitions/FeedOverride"
+                },
+                "OperationMode": {
+                    "type": "integer"
+                },
+                "PowerOnDuration": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "FeedOverride",
+                "OperationMode",
+                "PowerOnDuration"
+            ],
+            "title": "MachineTool"
+        },
+        "FeedOverride": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/FeedOverrideProperties"
+                },
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "FeedOverride"
+        },
+        "FeedOverrideProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "EURange": {
+                    "$ref": "#/definitions/EURange"
+                },
+                "EngineeringUnits": {
+                    "$ref": "#/definitions/EngineeringUnits"
+                }
+            },
+            "required": [
+                "EURange",
+                "EngineeringUnits"
+            ],
+            "title": "FeedOverrideProperties"
+        },
+        "EURange": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "High": {
+                    "type": "number"
+                },
+                "Low": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "High",
+                "Low"
+            ],
+            "title": "EURange"
+        },
+        "EngineeringUnits": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Description": {
+                    "$ref": "#/definitions/Manufacturer"
+                },
+                "DisplayName": {
+                    "$ref": "#/definitions/Manufacturer"
+                },
+                "NamespaceUri": {
+                    "type": "string",
+                    "qt-uri-protocols": [
+                        "http"
+                    ]
+                },
+                "UnitId": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "Description",
+                "DisplayName",
+                "NamespaceUri",
+                "UnitId"
+            ],
+            "title": "EngineeringUnits"
+        },
+        "Notification": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Prognoses": {
+                    "$ref": "#/definitions/Prognoses"
+                }
+            },
+            "required": [
+                "Prognoses"
+            ],
+            "title": "Notification"
+        },
+        "Prognoses": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<Prognosis>": {
+                    "$ref": "#/definitions/Prognosis"
+                }
+            },
+            "required": [
+                "<Prognosis>"
+            ],
+            "title": "Prognoses"
+        },
+        "Prognosis": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Calibration": {
+                    "$ref": "#/definitions/Calibration"
+                }
+            },
+            "required": [
+                "Calibration"
+            ],
+            "title": "Prognosis"
+        },
+        "Calibration": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Calibrated": {
+                    "type": "boolean"
+                },
+                "CalibrationCertificate": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "uri",
+                        "qt-uri-protocols": [
+                            "https"
+                        ]
+                    }
+                },
+                "CalibrationInterval": {
+                    "type": "number"
+                },
+                "CalibrationPreptime": {
+                    "type": "number"
+                },
+                "DateOfCalibration": {
+                    "type": "string"
+                },
+                "PredictedTime": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "Calibrated",
+                "CalibrationCertificate",
+                "CalibrationInterval",
+                "CalibrationPreptime",
+                "DateOfCalibration",
+                "PredictedTime"
+            ],
+            "title": "Calibration"
+        },
+        "Production": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ActiveProgram": {
+                    "$ref": "#/definitions/ActiveProgram"
+                }
+            },
+            "required": [
+                "ActiveProgram"
+            ],
+            "title": "Production"
+        },
+        "ActiveProgram": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Name": {
+                    "type": "string"
+                },
+                "NumberInList": {
+                    "type": "integer"
+                },
+                "State": {
+                    "$ref": "#/definitions/State"
+                }
+            },
+            "required": [
+                "Name",
+                "NumberInList",
+                "State"
+            ],
+            "title": "ActiveProgram"
+        },
+        "State": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "CurrentState": {
+                    "$ref": "#/definitions/CurrentState"
+                }
+            },
+            "required": [
+                "CurrentState"
+            ],
+            "title": "State"
+        },
+        "CurrentState": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/CurrentStateProperties"
+                },
+                "value": {
+                    "$ref": "#/definitions/Manufacturer"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "CurrentState"
+        },
+        "CurrentStateProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Id": {
+                    "type": "integer"
+                },
+                "Number": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "Id",
+                "Number"
+            ],
+            "title": "CurrentStateProperties"
+        },
+        "ResultManagement": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "CorrectionsFolder": {
+                    "$ref": "#/definitions/CorrectionsFolder"
+                },
+                "Results": {
+                    "$ref": "#/definitions/Results"
+                }
+            },
+            "required": [
+                "CorrectionsFolder",
+                "Results"
+            ],
+            "title": "ResultManagement"
+        },
+        "CorrectionsFolder": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<Corrections>": {
+                    "$ref": "#/definitions/Corrections"
+                }
+            },
+            "required": [
+                "<Corrections>"
+            ],
+            "title": "CorrectionsFolder"
+        },
+        "Corrections": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Corr1": {
+                    "$ref": "#/definitions/Corr"
+                },
+                "Corr2": {
+                    "$ref": "#/definitions/Corr"
+                },
+                "Corr3": {
+                    "$ref": "#/definitions/Corr"
+                }
+            },
+            "required": [
+                "Corr1",
+                "Corr2",
+                "Corr3"
+            ],
+            "title": "Corrections"
+        },
+        "Corr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "CharacteristicIdentfier": {
+                    "type": "string"
+                },
+                "CorrectionValueAbsolute": {
+                    "$ref": "#/definitions/CorrectionValueAbsolute"
+                },
+                "Identifier": {
+                    "type": "string"
+                },
+                "LowerControlLimit": {
+                    "$ref": "#/definitions/CorrectionValueAbsolute"
+                },
+                "UpperControlLimit": {
+                    "$ref": "#/definitions/CorrectionValueAbsolute"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "CharacteristicIdentfier",
+                "CorrectionValueAbsolute",
+                "Identifier",
+                "LowerControlLimit",
+                "UpperControlLimit"
+            ],
+            "title": "Corr"
+        },
+        "CorrectionValueAbsolute": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/CorrectionValueAbsoluteProperties"
+                },
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "CorrectionValueAbsolute"
+        },
+        "CorrectionValueAbsoluteProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "EngineeringUnits": {
+                    "$ref": "#/definitions/EngineeringUnits"
+                }
+            },
+            "required": [
+                "EngineeringUnits"
+            ],
+            "title": "CorrectionValueAbsoluteProperties"
+        },
+        "Results": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<ResultVariable>": {
+                    "$ref": "#/definitions/ResultVariable"
+                }
+            },
+            "required": [
+                "<ResultVariable>"
+            ],
+            "title": "Results"
+        },
+        "ResultVariable": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Result": {
+                    "$ref": "#/definitions/Result"
+                }
+            },
+            "required": [
+                "Result"
+            ],
+            "title": "ResultVariable"
+        },
+        "Result": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "ResultMetaData": {
+                    "$ref": "#/definitions/ResultMetaData"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "ResultMetaData"
+            ],
+            "title": "Result"
+        },
+        "ResultMetaData": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "FileFormat": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ResultId": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "ResultState": {
+                    "type": "integer"
+                },
+                "ResultUri": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "uri",
+                        "qt-uri-protocols": [
+                            "http"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "FileFormat",
+                "ResultId",
+                "ResultState",
+                "ResultUri"
+            ],
+            "title": "ResultMetaData"
+        },
+        "Locale": {
+            "type": "string",
+            "enum": [
+                "",
+                "en"
+            ],
+            "title": "Locale"
+        }
+    }
+}

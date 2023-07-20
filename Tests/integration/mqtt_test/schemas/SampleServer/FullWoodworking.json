@@ -1,0 +1,244 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/Welcome1",
+    "definitions": {
+        "Welcome1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Identification": {
+                    "$ref": "#/definitions/Identification"
+                },
+                "ManufacturerSpecific": {
+                    "$ref": "#/definitions/ManufacturerSpecific"
+                },
+                "State": {
+                    "$ref": "#/definitions/State"
+                }
+            },
+            "required": [
+                "Identification",
+                "ManufacturerSpecific",
+                "State"
+            ],
+            "title": "Welcome1"
+        },
+        "Identification": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "AssetId": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "ComponentName": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "DeviceClass": {
+                    "type": "string"
+                },
+                "HardwareRevision": {
+                    "type": "string"
+                },
+                "InitialOperationDate": {
+                    "type": "string"
+                },
+                "Location": {
+                    "type": "string"
+                },
+                "Manufacturer": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "ManufacturerUri": {
+                    "type": "string",
+                    "format": "uri",
+                    "qt-uri-protocols": [
+                        "https"
+                    ]
+                },
+                "Model": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "MonthOfConstruction": {
+                    "type": "integer"
+                },
+                "ProductCode": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "ProductInstanceUri": {
+                    "type": "string",
+                    "format": "uri",
+                    "qt-uri-protocols": [
+                        "https"
+                    ],
+                    "qt-uri-extensions": [
+                        ".html"
+                    ]
+                },
+                "SerialNumber": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "SoftwareRevision": {
+                    "type": "string"
+                },
+                "YearOfConstruction": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "AssetId",
+                "ComponentName",
+                "DeviceClass",
+                "HardwareRevision",
+                "InitialOperationDate",
+                "Location",
+                "Manufacturer",
+                "ManufacturerUri",
+                "Model",
+                "MonthOfConstruction",
+                "ProductCode",
+                "ProductInstanceUri",
+                "SerialNumber",
+                "SoftwareRevision",
+                "YearOfConstruction"
+            ],
+            "title": "Identification"
+        },
+        "ComponentName": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "locale": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "locale",
+                "text"
+            ],
+            "title": "ComponentName"
+        },
+        "ManufacturerSpecific": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "LastProgramName": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "LastProgramName"
+            ],
+            "title": "ManufacturerSpecific"
+        },
+        "State": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Machine": {
+                    "$ref": "#/definitions/Machine"
+                },
+                "SubUnits": {
+                    "$ref": "#/definitions/SubUnits"
+                }
+            },
+            "required": [
+                "Machine",
+                "SubUnits"
+            ],
+            "title": "State"
+        },
+        "Machine": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Flags": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "boolean"
+                    }
+                },
+                "Overview": {
+                    "$ref": "#/definitions/Overview"
+                },
+                "Values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": [
+                "Flags",
+                "Overview",
+                "Values"
+            ],
+            "title": "Machine"
+        },
+        "Overview": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "CurrentMode": {
+                    "type": "integer"
+                },
+                "CurrentState": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "CurrentMode",
+                "CurrentState"
+            ],
+            "title": "Overview"
+        },
+        "SubUnits": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<SubUnit>": {
+                    "$ref": "#/definitions/SubUnitsSubUnit"
+                }
+            },
+            "required": [
+                "<SubUnit>"
+            ],
+            "title": "SubUnits"
+        },
+        "SubUnitsSubUnit": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<SubUnit>": {
+                    "$ref": "#/definitions/SubUnitSubUnit"
+                }
+            },
+            "required": [
+                "<SubUnit>"
+            ],
+            "title": "SubUnitsSubUnit"
+        },
+        "SubUnitSubUnit": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Overview": {
+                    "$ref": "#/definitions/Overview"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "Overview"
+            ],
+            "title": "SubUnitSubUnit"
+        }
+    }
+}

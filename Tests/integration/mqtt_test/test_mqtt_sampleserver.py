@@ -13,6 +13,7 @@ from typing import Any, Optional
 
 import jsonschema
 import paho.mqtt.client as mqtt
+from parameterized import parameterized
 
 
 class TestMqttSampleServer(unittest.TestCase):
@@ -47,46 +48,62 @@ class TestMqttSampleServer(unittest.TestCase):
         received_msg = self.receive_message("umati/v2/umati/mqtt_test/clientOnline")
         self.assertEqual(received_msg, b"1")
 
-    def test_BaseMachineTool(self) -> None:
+    @parameterized.expand(
+        [
+            (
+                "BaseMachineTool",
+                "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382",
+                "schemas/SampleServer/BaseMachineTool.json",
+            ),
+            (
+                "FullWoodworking",
+                "umati/v2/umati/mqtt_test/WwMachineType/nsu=http:_2F_2Fexample.com_2FFullWoodworking_2F;i=66382",
+                "schemas/SampleServer/FullWoodworking.json",
+            ),
+            (
+                "FullMachineTool",
+                "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382",
+                "schemas/SampleServer/FullMachineTool.json",
+            ),
+            (
+                "BasicGMS",
+                "umati/v2/umati/mqtt_test/GMSType/nsu=http:_2F_2Fwww.isw.uni-stuttgart.de_2FBasicGMS_2F;i=66382",
+                "schemas/SampleServer/BasicGMS.json",
+            ),
+            # Add more entries here for more test cases.
+            # ("test_name","umati/v2/umati/mqtt_test/ObjectType/nodeid")
+        ],
+        name_func=lambda f, n, p: f"{f.__name__}_{p.args[0]}",
+    )
+    def test_message_correctness(self, name: str, topic: str, schema_file: str) -> None:
         """
-        This test function test if the BaseMachineTool is send correct to the mqtt broker
+        This test function tests if the messages sent to the mqtt broker are correct.
+        Add more tests:
+        - start an valid server, dashboardclient, mqtt Broker
+        - copy the json message of the new test machine
+        - create json schem from the copied json (you can use https://codebeautify.org/json-to-json-schema-generator)
+        - save json schema in schemas folder
+        - add a new parameterized (on top of the method) with name, the mqtt topic and json schema path
         """
         # Use the helper method to receive the message as JSON
-        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382"
         json_msg = self.receive_message_as_json(topic)
 
         # Load the JSON schema from a file.
-        with open("schemas/SampleServer/BaseMachineTool.json", "r") as f:
+        with open(schema_file, "r") as f:
             schema = json.load(f)
 
         # Validate the received message against the JSON schema.
-        # In case of validation errors, the jsonschema.validate() function will raise an exception.
+        fail = False
+        fail_message = ""
         try:
             jsonschema.validate(instance=json_msg, schema=schema)
         except jsonschema.exceptions.ValidationError as e:
-            print(e)
-            self.fail(f"Message is of {topic} is not correct!")
-
-    def test_FullMachineTool(self) -> None:
-        """
-        This test function test if the FullMachineTool is send correct to the mqtt broker
-        """
-        # Use the helper method to receive the message as JSON
-        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382"
-        json_msg = self.receive_message_as_json(topic)
-
-        # Load the JSON schema from a file.
-        # you can use https://codebeautify.org/json-to-json-schema-generator to generate a schema from a example json
-        with open("schemas/SampleServer/FullMachineTool.json", "r") as f:
-            schema = json.load(f)
-
-        # Validate the received message against the JSON schema.
-        # In case of validation errors, the jsonschema.validate() function will raise an exception.
-        try:
-            jsonschema.validate(instance=json_msg, schema=schema)
-        except jsonschema.exceptions.ValidationError as e:
-            print(e)
-            self.fail(f"Message is of {topic} is not correct!")
+            fail = True
+            fail_message = str(e)
+        if fail == True:
+            self.fail(
+                f"Message on topic '{topic}' does not match schema: {fail_message}"
+            )
 
     def receive_message(self, topic: str, timeout: int = 10) -> Any:
         """
