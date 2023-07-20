@@ -17,7 +17,7 @@ TEST(OpcUaClient, CaCertificateLinux_SSLCerts) {
   Umati::Util::ConfigureLogger("DashboardOpcUaClient");
   Umati::Util::ConfigurationJsonFile conf("ConfigurationCa.json");
 
-    EXPECT_NO_THROW(Umati::MqttPublisher_Paho::MqttPublisher_Paho publisher(
+  EXPECT_NO_THROW(Umati::MqttPublisher_Paho::MqttPublisher_Paho publisher(
     conf.getMqtt().Protocol,
     conf.getMqtt().Hostname,
     conf.getMqtt().Port,
