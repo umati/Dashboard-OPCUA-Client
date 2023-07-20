@@ -1,0 +1,1211 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/Welcome4",
+    "definitions": {
+        "Welcome4": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Equipment": {
+                    "$ref": "#/definitions/Equipment"
+                },
+                "Identification": {
+                    "$ref": "#/definitions/Identification"
+                },
+                "Monitoring": {
+                    "$ref": "#/definitions/Monitoring"
+                },
+                "Notification": {
+                    "$ref": "#/definitions/Notification"
+                },
+                "Production": {
+                    "$ref": "#/definitions/Production"
+                }
+            },
+            "required": [
+                "Equipment",
+                "Identification",
+                "Monitoring",
+                "Notification",
+                "Production"
+            ],
+            "title": "Welcome4"
+        },
+        "Equipment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Tools": {
+                    "$ref": "#/definitions/Tools"
+                }
+            },
+            "required": [
+                "Tools"
+            ],
+            "title": "Equipment"
+        },
+        "Tools": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<Tool>": {
+                    "$ref": "#/definitions/ToolsTool"
+                },
+                "NodeVersion": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "<Tool>",
+                "NodeVersion"
+            ],
+            "title": "Tools"
+        },
+        "ToolsTool": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Multi 1": {
+                    "$ref": "#/definitions/Multi1"
+                },
+                "Tool1": {
+                    "$ref": "#/definitions/Tool1"
+                }
+            },
+            "required": [
+                "Multi 1",
+                "Tool1"
+            ],
+            "title": "ToolsTool"
+        },
+        "Multi1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "<Tool>": {
+                    "$ref": "#/definitions/Multi1_<Tool"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "<Tool>"
+            ],
+            "title": "Multi1"
+        },
+        "Multi1_<Tool": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "SubTool 0": {
+                    "$ref": "#/definitions/Tool1"
+                },
+                "SubTool 1": {
+                    "$ref": "#/definitions/Tool1"
+                },
+                "SubTool 2": {
+                    "$ref": "#/definitions/Tool1"
+                }
+            },
+            "required": [
+                "SubTool 0",
+                "SubTool 1",
+                "SubTool 2"
+            ],
+            "title": "Multi1_<Tool"
+        },
+        "Tool1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "ControlIdentifier1": {
+                    "type": "integer"
+                },
+                "ControlIdentifierInterpretation": {
+                    "type": "integer"
+                },
+                "Identifier": {
+                    "type": "string"
+                },
+                "Locked": {
+                    "$ref": "#/definitions/Locked"
+                },
+                "ToolLife": {
+                    "$ref": "#/definitions/ToolLife"
+                },
+                "Name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "ControlIdentifier1",
+                "ControlIdentifierInterpretation",
+                "Locked",
+                "ToolLife"
+            ],
+            "title": "Tool1"
+        },
+        "Locked": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/LockedProperties"
+                },
+                "value": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "Locked"
+        },
+        "LockedProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ReasonForLocking": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "ReasonForLocking"
+            ],
+            "title": "LockedProperties"
+        },
+        "ToolLife": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<ToolLifeEntry>": {
+                    "$ref": "#/definitions/ToolLifeEntry"
+                }
+            },
+            "required": [
+                "<ToolLifeEntry>"
+            ],
+            "title": "ToolLife"
+        },
+        "ToolLifeEntry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Rotations": {
+                    "$ref": "#/definitions/Rotations"
+                }
+            },
+            "required": [
+                "Rotations"
+            ],
+            "title": "ToolLifeEntry"
+        },
+        "Rotations": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "properties": {
+                    "$ref": "#/definitions/RotationsProperties"
+                },
+                "value": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "properties",
+                "value"
+            ],
+            "title": "Rotations"
+        },
+        "RotationsProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "EngineeringUnits": {
+                    "$ref": "#/definitions/EngineeringUnits"
+                },
+                "Indication": {
+                    "type": "integer"
+                },
+                "IsCountingUp": {
+                    "type": "boolean"
+                },
+                "LimitValue": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "EngineeringUnits",
+                "Indication",
+                "IsCountingUp",
+                "LimitValue"
+            ],
+            "title": "RotationsProperties"
+        },
+        "EngineeringUnits": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Description": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "DisplayName": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "NamespaceUri": {
+                    "type": "string"
+                },
+                "UnitId": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "Description",
+                "DisplayName",
+                "NamespaceUri",
+                "UnitId"
+            ],
+            "title": "EngineeringUnits"
+        },
+        "ComponentName": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "locale": {
+                    "$ref": "#/definitions/Locale"
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "locale",
+                "text"
+            ],
+            "title": "ComponentName"
+        },
+        "Identification": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ComponentName": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "DeviceClass": {
+                    "type": "string"
+                },
+                "Location": {
+                    "type": "string"
+                },
+                "Manufacturer": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "Model": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "MonthOfConstruction": {
+                    "type": "integer"
+                },
+                "ProductCode": {
+                    "type": "string"
+                },
+                "ProductInstanceUri": {
+                    "type": "string",
+                    "format": "uri",
+                    "qt-uri-protocols": [
+                        "http"
+                    ]
+                },
+                "SerialNumber": {
+                    "type": "string"
+                },
+                "SoftwareIdentification": {
+                    "$ref": "#/definitions/SoftwareIdentification"
+                },
+                "SoftwareRevision": {
+                    "type": "string"
+                },
+                "YearOfConstruction": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "ComponentName",
+                "DeviceClass",
+                "Location",
+                "Manufacturer",
+                "Model",
+                "MonthOfConstruction",
+                "ProductCode",
+                "ProductInstanceUri",
+                "SerialNumber",
+                "SoftwareIdentification",
+                "SoftwareRevision",
+                "YearOfConstruction"
+            ],
+            "title": "Identification"
+        },
+        "SoftwareIdentification": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<SoftwareItem>": {
+                    "$ref": "#/definitions/SoftwareItem"
+                }
+            },
+            "required": [
+                "<SoftwareItem>"
+            ],
+            "title": "SoftwareIdentification"
+        },
+        "SoftwareItem": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "OS": {
+                    "$ref": "#/definitions/OS"
+                }
+            },
+            "required": [
+                "OS"
+            ],
+            "title": "SoftwareItem"
+        },
+        "OS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Identifier": {
+                    "type": "string"
+                },
+                "SoftwareRevision": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "Identifier",
+                "SoftwareRevision"
+            ],
+            "title": "OS"
+        },
+        "Monitoring": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<MonitoredElement>": {
+                    "$ref": "#/definitions/MonitoredElement"
+                },
+                "MachineTool": {
+                    "$ref": "#/definitions/MachineTool"
+                },
+                "Stacklight": {
+                    "$ref": "#/definitions/Stacklight"
+                }
+            },
+            "required": [
+                "<MonitoredElement>",
+                "MachineTool",
+                "Stacklight"
+            ],
+            "title": "Monitoring"
+        },
+        "MonitoredElement": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Channel 1": {
+                    "$ref": "#/definitions/Channel"
+                },
+                "Channel 2": {
+                    "$ref": "#/definitions/Channel"
+                },
+                "Channel 3": {
+                    "$ref": "#/definitions/Channel"
+                },
+                "Channel 4": {
+                    "$ref": "#/definitions/Channel"
+                },
+                "EDM": {
+                    "$ref": "#/definitions/Edm"
+                },
+                "Laser": {
+                    "$ref": "#/definitions/Laser"
+                },
+                "Spindle 1": {
+                    "$ref": "#/definitions/Spindle1"
+                }
+            },
+            "required": [
+                "Channel 1",
+                "Channel 2",
+                "Channel 3",
+                "Channel 4",
+                "EDM",
+                "Laser",
+                "Spindle 1"
+            ],
+            "title": "MonitoredElement"
+        },
+        "Channel": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "ChannelMode": {
+                    "type": "integer"
+                },
+                "ChannelState": {
+                    "type": "integer"
+                },
+                "FeedOverride": {
+                    "$ref": "#/definitions/Override"
+                },
+                "Name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "ChannelMode",
+                "ChannelState",
+                "FeedOverride",
+                "Name"
+            ],
+            "title": "Channel"
+        },
+        "Override": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/FeedOverrideProperties"
+                },
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "Override"
+        },
+        "FeedOverrideProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "EURange": {
+                    "$ref": "#/definitions/EURange"
+                },
+                "EngineeringUnits": {
+                    "$ref": "#/definitions/EngineeringUnits"
+                }
+            },
+            "required": [
+                "EURange",
+                "EngineeringUnits"
+            ],
+            "title": "FeedOverrideProperties"
+        },
+        "EURange": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "High": {
+                    "type": "number"
+                },
+                "Low": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "High",
+                "Low"
+            ],
+            "title": "EURange"
+        },
+        "Edm": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "EDMGeneratorState": {
+                    "type": "integer"
+                },
+                "IsOn": {
+                    "type": "boolean"
+                },
+                "Name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "EDMGeneratorState",
+                "IsOn",
+                "Name"
+            ],
+            "title": "Edm"
+        },
+        "Laser": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "ControllerIsOn": {
+                    "type": "boolean"
+                },
+                "LaserState": {
+                    "type": "integer"
+                },
+                "Name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "ControllerIsOn",
+                "LaserState",
+                "Name"
+            ],
+            "title": "Laser"
+        },
+        "Spindle1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "IsRotating": {
+                    "type": "boolean"
+                },
+                "IsUsedAsAxis": {
+                    "type": "boolean"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "Override": {
+                    "$ref": "#/definitions/Override"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "IsRotating",
+                "IsUsedAsAxis",
+                "Name",
+                "Override"
+            ],
+            "title": "Spindle1"
+        },
+        "MachineTool": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "OperationMode": {
+                    "type": "integer"
+                },
+                "PowerOnDuration": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "OperationMode",
+                "PowerOnDuration"
+            ],
+            "title": "MachineTool"
+        },
+        "Stacklight": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<OrderedObject>": {
+                    "$ref": "#/definitions/StacklightOrderedObject"
+                },
+                "NodeVersion": {
+                    "type": "string"
+                },
+                "StacklightMode": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "<OrderedObject>",
+                "NodeVersion",
+                "StacklightMode"
+            ],
+            "title": "Stacklight"
+        },
+        "StacklightOrderedObject": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Light 0": {
+                    "$ref": "#/definitions/Light"
+                },
+                "Light 1": {
+                    "$ref": "#/definitions/Light"
+                },
+                "Light 2": {
+                    "$ref": "#/definitions/Light"
+                },
+                "Light 3": {
+                    "$ref": "#/definitions/Light"
+                }
+            },
+            "required": [
+                "Light 0",
+                "Light 1",
+                "Light 2",
+                "Light 3"
+            ],
+            "title": "StacklightOrderedObject"
+        },
+        "Light": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "IsPartOfBase": {
+                    "type": "boolean"
+                },
+                "NumberInList": {
+                    "type": "integer"
+                },
+                "SignalColor": {
+                    "type": "integer"
+                },
+                "SignalMode": {
+                    "type": "integer"
+                },
+                "SignalOn": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "IsPartOfBase",
+                "NumberInList",
+                "SignalColor",
+                "SignalMode",
+                "SignalOn"
+            ],
+            "title": "Light"
+        },
+        "Notification": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Prognoses": {
+                    "$ref": "#/definitions/Prognoses"
+                }
+            },
+            "required": [
+                "Prognoses"
+            ],
+            "title": "Notification"
+        },
+        "Prognoses": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<Prognosis>": {
+                    "$ref": "#/definitions/Prognosis"
+                },
+                "NodeVersion": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "<Prognosis>",
+                "NodeVersion"
+            ],
+            "title": "Prognoses"
+        },
+        "Prognosis": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Maintenance": {
+                    "$ref": "#/definitions/Maintenance"
+                },
+                "Manual": {
+                    "$ref": "#/definitions/Maintenance"
+                },
+                "PartLoad": {
+                    "$ref": "#/definitions/Load"
+                },
+                "PartUnLoad": {
+                    "$ref": "#/definitions/Load"
+                },
+                "ProcessChangeover": {
+                    "$ref": "#/definitions/Maintenance"
+                },
+                "ProductionJobEnd": {
+                    "$ref": "#/definitions/ProductionJobEnd"
+                },
+                "ToolChange": {
+                    "$ref": "#/definitions/Maintenance"
+                },
+                "ToolLoad": {
+                    "$ref": "#/definitions/Load"
+                },
+                "ToolUnLoad": {
+                    "$ref": "#/definitions/Load"
+                },
+                "UtilityChange": {
+                    "$ref": "#/definitions/UtilityChange"
+                }
+            },
+            "required": [
+                "Maintenance",
+                "Manual",
+                "PartLoad",
+                "PartUnLoad",
+                "ProcessChangeover",
+                "ProductionJobEnd",
+                "ToolChange",
+                "ToolLoad",
+                "ToolUnLoad",
+                "UtilityChange"
+            ],
+            "title": "Prognosis"
+        },
+        "Maintenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Activity": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "PredictedTime": {
+                    "type": "string"
+                },
+                "Location": {
+                    "$ref": "#/definitions/ComponentName"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "PredictedTime"
+            ],
+            "title": "Maintenance"
+        },
+        "Load": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Location": {
+                    "$ref": "#/definitions/ComponentName"
+                },
+                "PartName": {
+                    "type": "string"
+                },
+                "PredictedTime": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "Location",
+                "PredictedTime"
+            ],
+            "title": "Load"
+        },
+        "ProductionJobEnd": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "PredictedTime": {
+                    "type": "string"
+                },
+                "SourceIdentifier": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "PredictedTime",
+                "SourceIdentifier"
+            ],
+            "title": "ProductionJobEnd"
+        },
+        "UtilityChange": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "PredictedTime": {
+                    "type": "string"
+                },
+                "UtilityName": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "PredictedTime",
+                "UtilityName"
+            ],
+            "title": "UtilityChange"
+        },
+        "Production": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ActiveProgram": {
+                    "$ref": "#/definitions/ActiveProgram"
+                },
+                "ProductionPlan": {
+                    "$ref": "#/definitions/ProductionPlan"
+                }
+            },
+            "required": [
+                "ActiveProgram",
+                "ProductionPlan"
+            ],
+            "title": "Production"
+        },
+        "ActiveProgram": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "JobIdentifier": {
+                    "type": "string"
+                },
+                "JobNodeId": {
+                    "type": "integer"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "NumberInList": {
+                    "type": "integer"
+                },
+                "State": {
+                    "$ref": "#/definitions/State"
+                }
+            },
+            "required": [
+                "JobIdentifier",
+                "JobNodeId",
+                "Name",
+                "NumberInList",
+                "State"
+            ],
+            "title": "ActiveProgram"
+        },
+        "State": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "CurrentState": {
+                    "$ref": "#/definitions/CurrentState"
+                }
+            },
+            "required": [
+                "CurrentState"
+            ],
+            "title": "State"
+        },
+        "CurrentState": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/CurrentStateProperties"
+                },
+                "value": {
+                    "$ref": "#/definitions/ComponentName"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "CurrentState"
+        },
+        "CurrentStateProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Id": {
+                    "type": "integer"
+                },
+                "Number": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "Id",
+                "Number"
+            ],
+            "title": "CurrentStateProperties"
+        },
+        "ProductionPlan": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<OrderedObject>": {
+                    "$ref": "#/definitions/ProductionPlanOrderedObject"
+                },
+                "NodeVersion": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "<OrderedObject>",
+                "NodeVersion"
+            ],
+            "title": "ProductionPlan"
+        },
+        "ProductionPlanOrderedObject": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "MyJob 1": {
+                    "$ref": "#/definitions/MyJob1"
+                }
+            },
+            "required": [
+                "MyJob 1"
+            ],
+            "title": "ProductionPlanOrderedObject"
+        },
+        "MyJob1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Identifier": {
+                    "type": "string"
+                },
+                "NumberInList": {
+                    "type": "integer"
+                },
+                "PartSets": {
+                    "$ref": "#/definitions/PartSets"
+                },
+                "RunsCompleted": {
+                    "type": "integer"
+                },
+                "RunsPlanned": {
+                    "$ref": "#/definitions/RunsPlanned"
+                },
+                "State": {
+                    "$ref": "#/definitions/State"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "Identifier",
+                "NumberInList",
+                "PartSets",
+                "RunsCompleted",
+                "RunsPlanned",
+                "State"
+            ],
+            "title": "MyJob1"
+        },
+        "PartSets": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<PartSet>": {
+                    "$ref": "#/definitions/PartSet"
+                }
+            },
+            "required": [
+                "<PartSet>"
+            ],
+            "title": "PartSets"
+        },
+        "PartSet": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Set1": {
+                    "$ref": "#/definitions/Set1"
+                }
+            },
+            "required": [
+                "Set1"
+            ],
+            "title": "PartSet"
+        },
+        "Set1": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "ContainsMixedParts": {
+                    "type": "boolean"
+                },
+                "PartsCompletedPerRun": {
+                    "type": "integer"
+                },
+                "PartsPerRun": {
+                    "$ref": "#/definitions/PartsPerRun"
+                },
+                "PartsPlannedPerRun": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "ContainsMixedParts",
+                "PartsCompletedPerRun",
+                "PartsPerRun",
+                "PartsPlannedPerRun"
+            ],
+            "title": "Set1"
+        },
+        "PartsPerRun": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<Part>": {
+                    "$ref": "#/definitions/Part"
+                }
+            },
+            "required": [
+                "<Part>"
+            ],
+            "title": "PartsPerRun"
+        },
+        "Part": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "Part 1": {
+                    "$ref": "#/definitions/Part1_Class"
+                },
+                "Part 2": {
+                    "$ref": "#/definitions/Part1_Class"
+                },
+                "Part 3": {
+                    "$ref": "#/definitions/Part1_Class"
+                },
+                "Part 4": {
+                    "$ref": "#/definitions/Part1_Class"
+                },
+                "Part 5": {
+                    "$ref": "#/definitions/Part1_Class"
+                }
+            },
+            "required": [
+                "Part 1",
+                "Part 2",
+                "Part 3",
+                "Part 4",
+                "Part 5"
+            ],
+            "title": "Part"
+        },
+        "Part1_Class": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "$TypeDefinition": {
+                    "type": "string"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "PartQuality": {
+                    "type": "integer"
+                },
+                "ProcessIrregularity": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "$TypeDefinition",
+                "Name",
+                "PartQuality",
+                "ProcessIrregularity"
+            ],
+            "title": "Part1_Class"
+        },
+        "RunsPlanned": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "properties": {
+                    "$ref": "#/definitions/RunsPlannedProperties"
+                },
+                "value": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "properties",
+                "value"
+            ],
+            "title": "RunsPlanned"
+        },
+        "RunsPlannedProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "IsValid": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "IsValid"
+            ],
+            "title": "RunsPlannedProperties"
+        },
+        "Locale": {
+            "type": "string",
+            "enum": [
+                "",
+                "en"
+            ],
+            "title": "Locale"
+        }
+    }
+}
