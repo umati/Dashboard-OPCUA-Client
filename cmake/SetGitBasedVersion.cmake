@@ -8,7 +8,7 @@ function(set_umati_dashboard_client_version)
     # Generate a git-describe version string from Git repository tags
     if(GIT_EXECUTABLE AND NOT DEFINED UMATI_CLIENT_VERSION)
         execute_process(
-            COMMAND ${GIT_EXECUTABLE} describe --always --tags --dirty --match "v*"
+            COMMAND ${GIT_EXECUTABLE} describe --always --tags --match "v*"
             WORKING_DIRECTORY "${VERSION_SRC_DIR}"
             OUTPUT_VARIABLE GIT_DESCRIBE_VERSION
             RESULT_VARIABLE GIT_DESCRIBE_ERROR_CODE
