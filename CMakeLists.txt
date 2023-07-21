@@ -90,6 +90,9 @@ target_link_libraries(DashboardOpcUaClient PUBLIC OpcUaClientLib)
 target_link_libraries(DashboardOpcUaClient PUBLIC MachineObserver)
 target_link_libraries(WssTroubleshooter PUBLIC OpcUaClientLib PahoMqttCpp::paho-mqttpp3-static)
 
+add_executable(TestResultType DashboardOpcUaClient.cpp TestResultType.cpp ${CMAKE_BINARY_DIR}/Util/ClientVersion.cpp)
+target_link_libraries(TestResultType PUBLIC OpcUaClientLib MachineObserver MqttPublisher_Paho)
+
 set(DASHBOARD_PUBLISHER
     "MQTT_PAHO"
     CACHE STRING "Publisher Backend"
