@@ -64,6 +64,7 @@ jobs:
           name: dashboardopcuaclient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}.deb
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/*.deb
+
   build-windows:
     strategy:
       matrix:
@@ -111,6 +112,7 @@ jobs:
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/bin
             ${{ env.CMAKE_INSTALL_PREFIX }}/share/DashboardOpcUaClient
+            
   docker:
     runs-on: ubuntu-22.04
     env:
@@ -148,7 +150,7 @@ jobs:
         with:
           file: "./UmatiDashboardOpcUaClient/Dockerfile"
           context: ./UmatiDashboardOpcUaClient
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm64, linux/arm/v7
           push: ${{env.IS_NOT_PR == 'true'}}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
