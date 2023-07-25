@@ -21,7 +21,7 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -DPAHO_WITH_SSL=1 \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
-    cmake --build .
+    cmake --build . -j 1 --parallel 4
 
 FROM alpine:3.18.2 as runtime
 RUN apk --no-cache add \
