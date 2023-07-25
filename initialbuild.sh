@@ -28,6 +28,6 @@ mkdir -p build
 cd build || exit
 cmake ../.github/ -DCMAKE_INSTALL_PREFIX:PATH="$BASEDIR/install" \
     -DCMAKE_BUILD_TYPE=Debug -DPAHO_WITH_SSL=1 -DBUILD_DEB_PACKAGE:BOOL=1 -DDEB_PACKAGE_LIBCPP_VERSION="$LIBCPP_VERSION"
-cmake --build . -j
+cmake --build . -j 1 --parallel 2
 cd Dashboard-Client-build || exit
 ctest -V -C Debug
