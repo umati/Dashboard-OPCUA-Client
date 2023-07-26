@@ -7,6 +7,7 @@ Copyright 2023 (c) Sebastian Friedl, FVA GmbH / interop4X(for umati and VDW e.V.
 """
 
 import json
+import docker
 import time
 import unittest
 from typing import Any, Optional
@@ -19,21 +20,66 @@ from parameterized import parameterized
 class TestMqttSampleServer(unittest.TestCase):
     client = mqtt.Client()
 
+    # Define the topics and corresponding JSON schema files
+    topic_schema_pairs = [
+        (
+            "BaseMachineTool",
+            "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382",
+            "schemas/SampleServer/BaseMachineTool.json",
+        ),
+        (
+            "FullWoodworking",
+            "umati/v2/umati/mqtt_test/WwMachineType/nsu=http:_2F_2Fexample.com_2FFullWoodworking_2F;i=66382",
+            "schemas/SampleServer/FullWoodworking.json",
+        ),
+        (
+            "FullMachineTool",
+            "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382",
+            "schemas/SampleServer/FullMachineTool.json",
+        ),
+        (
+            "BasicGMS",
+            "umati/v2/umati/mqtt_test/GMSType/nsu=http:_2F_2Fwww.isw.uni-stuttgart.de_2FBasicGMS_2F;i=66382",
+            "schemas/SampleServer/BasicGMS.json",
+        ),
+        # Add more entries here for more test cases.
+    ]
+
+
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls):
         """
-        A class method called before tests in an individual class are run.
-        Here we establish the MQTT client connection.
+        Sets up the MQTT client and ensures the Docker container for each topic is ready.
         """
-        ret = None
-        for i in range(0, 120):
-            try:
-                ret = cls.client.connect("localhost", 1883, 60)
-            except ConnectionRefusedError:
-                print(f"Try to  connect to mqtt broker {i} times")
-                time.sleep(1)
+        cls.setup_mqtt_client()
+
+    @classmethod
+    def setup_mqtt_client(cls):
+        """
+        Set up the MQTT client.
+        """
+        cls.client = mqtt.Client()
+        ret = cls.client.connect("localhost", 1883, 60)
         assert ret == 0
 
+
+    @classmethod
+    def wait_for_topic(cls, container_name, topic, wait_time_limit_sec=10, wait_step_sec=5):
+        """
+        Wait for a single topic to be ready in the Docker container's logs.
+        """
+        docker_client = docker.from_env()
+
+        container = docker_client.containers.get(container_name)
+        next_wait_time =0
+        print(topic)
+        print (container.logs().decode('utf-8').count(topic))
+        while (container.logs().decode('utf-8').count(topic) < 2) and (next_wait_time < wait_time_limit_sec):
+            print(f"Waiting for test container to become ready since {next_wait_time}s...")
+            time.sleep(wait_step_sec)
+            next_wait_time += wait_step_sec
+        time.sleep(wait_step_sec)
+        
     @classmethod
     def tearDownClass(cls) -> None:
         """
@@ -49,30 +95,7 @@ class TestMqttSampleServer(unittest.TestCase):
         self.assertEqual(received_msg, b"1")
 
     @parameterized.expand(
-        [
-            (
-                "BaseMachineTool",
-                "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382",
-                "schemas/SampleServer/BaseMachineTool.json",
-            ),
-            (
-                "FullWoodworking",
-                "umati/v2/umati/mqtt_test/WwMachineType/nsu=http:_2F_2Fexample.com_2FFullWoodworking_2F;i=66382",
-                "schemas/SampleServer/FullWoodworking.json",
-            ),
-            (
-                "FullMachineTool",
-                "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382",
-                "schemas/SampleServer/FullMachineTool.json",
-            ),
-            (
-                "BasicGMS",
-                "umati/v2/umati/mqtt_test/GMSType/nsu=http:_2F_2Fwww.isw.uni-stuttgart.de_2FBasicGMS_2F;i=66382",
-                "schemas/SampleServer/BasicGMS.json",
-            ),
-            # Add more entries here for more test cases.
-            # ("test_name","umati/v2/umati/mqtt_test/ObjectType/nodeid")
-        ],
+        topic_schema_pairs,
         name_func=lambda f, n, p: f"{f.__name__}_{p.args[0]}",
     )
     def test_message_correctness(self, name: str, topic: str, schema_file: str) -> None:
@@ -85,6 +108,9 @@ class TestMqttSampleServer(unittest.TestCase):
         - save json schema in schemas folder
         - add a new parameterized (on top of the method) with name, the mqtt topic and json schema path
         """
+        
+        self.wait_for_topic('mqtt_test-gateway-1', topic)
+        
         # Use the helper method to receive the message as JSON
         json_msg = self.receive_message_as_json(topic)
 
