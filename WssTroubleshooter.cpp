@@ -83,13 +83,21 @@ class callback : public virtual mqtt::callback,
     try {
       cli_.connect(connOpts_, nullptr, *this);
     } catch (const mqtt::exception& exc) {
-      std::cerr << "Error: " << exc.what() << std::endl;
+      std::cerr << "Error-Error-Code: " << exc.what() << std::endl;
+      std::cerr << "Error-Error-String: " << exc.get_error_str() << std::endl;
+      std::cerr << "Error-Reason-Code: " << exc.get_reason_code() << std::endl;
+      std::cerr << "Error-Reason-String: " << exc.get_reason_code_str() << std::endl;
+      std::cerr << "Error-String: " << exc.to_string() << std::endl;
       exit(1);
     }
   }
 
   void on_failure(const mqtt::token& tok) override {
     std::cout << "Connection attempt failed" << std::endl;
+    std::cout << "Error-Reason-Code: " << tok.get_reason_code() << std::endl;
+    std::cout << "Error-Reason-String: " << mqtt::exception::reason_code_str(tok.get_reason_code()) << std::endl;
+    std::cout << "Error-Return-Code: " << tok.get_return_code() << std::endl;
+    std::cout << "Error-Return-String: " << mqtt::exception::error_str(tok.get_return_code()) << std::endl;
     if (++nretry_ > N_RETRY_ATTEMPTS) exit(1);
     reconnect();
   }
