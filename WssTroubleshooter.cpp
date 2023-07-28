@@ -40,6 +40,7 @@
 #include <thread>
 #undef max
 #include <mqtt/async_client.h>
+#include <MQTTAsync.h>
 
 std::string SERVER_ADDRESS("tcp://localhost:1883");
 std::string CLIENT_ID("paho_cpp_async_subcribe");
@@ -48,6 +49,25 @@ std::string TOPIC("umati/v2/#");
 const int QOS = 1;
 const int N_RETRY_ATTEMPTS = 5;
 
+
+struct A_member {
+  typedef MQTTAsync mqtt::async_client::*type;
+  friend type get(A_member);
+};
+
+template<typename Tag, typename Tag::type M>
+struct Rob {
+  friend typename Tag::type get(Tag) {
+    return M;
+  }
+};
+
+template struct Rob<A_member, &mqtt::async_client::cli_>;
+
+void traceCallback(enum MQTTASYNC_TRACE_LEVELS level, char* message) {
+  std::cout << "TRACE(" << level << "): " << message << '\n';
+}
+ 
 class action_listener : public virtual mqtt::iaction_listener {
   std::string name_;
 
@@ -180,8 +200,10 @@ int main(int argc, char* argv[]) {
   try {
     config = std::make_shared<Umati::Util::ConfigurationJsonFile>(configFilename);
     auto mqttConfig = config->getMqtt();
+    MQTTAsync_setTraceLevel(MQTTASYNC_TRACE_LEVELS::MQTTASYNC_TRACE_MAXIMUM);
+    MQTTAsync_setTraceCallback(traceCallback);
     mqtt::async_client cli(getUri(mqttConfig.Protocol, mqttConfig.Hostname, mqttConfig.Port), mqttConfig.ClientId);
-
+    auto mqttasync = &(cli.*get(A_member()));
     mqtt::connect_options connOpts = getOptions(mqttConfig.Username, mqttConfig.Password, mqttConfig.CaCertPath, mqttConfig.CaTrustStorePath);
     connOpts.set_clean_session(false);
 
