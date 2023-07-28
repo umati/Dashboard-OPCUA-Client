@@ -49,25 +49,20 @@ std::string TOPIC("umati/v2/#");
 const int QOS = 1;
 const int N_RETRY_ATTEMPTS = 5;
 
-
 struct A_member {
   typedef MQTTAsync mqtt::async_client::*type;
   friend type get(A_member);
 };
 
-template<typename Tag, typename Tag::type M>
+template <typename Tag, typename Tag::type M>
 struct Rob {
-  friend typename Tag::type get(Tag) {
-    return M;
-  }
+  friend typename Tag::type get(Tag) { return M; }
 };
 
 template struct Rob<A_member, &mqtt::async_client::cli_>;
 
-void traceCallback(enum MQTTASYNC_TRACE_LEVELS level, char* message) {
-  std::cout << "TRACE(" << level << "): " << message << '\n';
-}
- 
+void traceCallback(enum MQTTASYNC_TRACE_LEVELS level, char* message) { std::cout << "TRACE(" << level << "): " << message << '\n'; }
+
 class action_listener : public virtual mqtt::iaction_listener {
   std::string name_;
 
