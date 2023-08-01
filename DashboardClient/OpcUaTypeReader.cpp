@@ -56,6 +56,8 @@
                         std::shared_ptr<ModelOpcUa::StructureBiNode>>>();
             initialize(notFoundObjectTypeNamespaces);
             LOG(INFO) << "Browsing variable types.";
+            this->BaseDataVariableTypes.push_back(NodeId_BaseVariableType);
+            this->BaseDataVariableTypes.push_back(ModelOpcUa::NodeId_t({"", "i=63"}));
             browseObjectOrVariableTypeAndFillBidirectionalTypeMap(NodeId_BaseVariableType, bidirectionalTypeMap, true);
             LOG(INFO) << "Browsing variable types finished, continuing browsing object types";
 
