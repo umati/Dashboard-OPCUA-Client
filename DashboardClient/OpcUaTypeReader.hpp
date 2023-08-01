@@ -38,6 +38,7 @@ namespace Umati
             /// \todo make the following internal structures private and provide access via funcitons
             std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_identificationTypeOfTypeDefinition;
             std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
+            std::vector<ModelOpcUa::NodeId_t> BaseDataVariableTypes;
             std::vector<std::string> m_expectedObjectTypeNamespaces;
             std::vector<std::string> m_expectedObjectTypeNames;
             std::vector<ModelOpcUa::NodeId_t> m_knownMachineTypeDefinitions;
@@ -60,7 +61,7 @@ namespace Umati
                 const ModelOpcUa::NodeId_t &startNodeId,
                 BiDirTypeMap_t bidirectionalTypeMap,
                 bool ofBaseDataVariableType);
-
+            void updateBaseDataVariableTypes(const std::shared_ptr<ModelOpcUa::StructureNode> &node);
             void printTypeMapYaml();
             void updateObjectTypeNames();
             void updateTypeMap();

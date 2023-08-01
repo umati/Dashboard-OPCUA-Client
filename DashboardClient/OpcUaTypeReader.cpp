@@ -85,7 +85,11 @@
                 LOG(WARNING) << "Unable to find namespace " << notFoundObjectTypeNamespace;
             }
 
-            // printTypeMapYaml();
+            for (auto mapIterator = m_typeMap->begin(); mapIterator != m_typeMap->end(); mapIterator++)
+            {   
+               this->updateBaseDataVariableTypes(mapIterator->second);
+            }
+            //printTypeMapYaml();
             updateTypeMap();
             updateObjectTypeNames();
         }
@@ -122,6 +126,20 @@
                ModelOpcUa::StructureNode::printYamlIntern(mapIterator->second, static_cast<std::string>(mapIterator->first), 1, std::cout);
             }
         }
+        void OpcUaTypeReader::updateBaseDataVariableTypes(const std::shared_ptr<ModelOpcUa::StructureNode> &node) {
+            if(std::find(this->BaseDataVariableTypes.begin(), this->BaseDataVariableTypes.end(), node->SpecifiedTypeNodeId) != this->BaseDataVariableTypes.end()) {
+		        node->ofBaseDataVariableType = true;
+            }
+		    if (!node->SpecifiedChildNodes->empty()){
+			    for (auto childNodesIterator = node->SpecifiedChildNodes->begin(); childNodesIterator != node->SpecifiedChildNodes->end(); childNodesIterator++){
+				    updateBaseDataVariableTypes(childNodesIterator.operator*());
+				    if ((childNodesIterator != node->SpecifiedChildNodes->end()) && (childNodesIterator != --node->SpecifiedChildNodes->end())) {
+				    }
+			    }
+		    }
+	    }
+        
+
 
         void OpcUaTypeReader::updateTypeMap()
         {
@@ -292,7 +310,7 @@
             const std::weak_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
             bool ofBaseDataVariableType)
         {
-
+            this->BaseDataVariableTypes.push_back(entry.NodeId);
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
             bool isVariableType = ModelOpcUa::VariableType == entry.NodeClass;
             ModelOpcUa::StructureBiNode node(
