@@ -200,6 +200,14 @@ int main(int argc, char* argv[]) {
     mqtt::async_client cli(getUri(mqttConfig.Protocol, mqttConfig.Hostname, mqttConfig.Port), mqttConfig.ClientId);
     auto mqttasync = &(cli.*get(A_member()));
     mqtt::connect_options connOpts = getOptions(mqttConfig.Username, mqttConfig.Password, mqttConfig.CaCertPath, mqttConfig.CaTrustStorePath);
+
+    if (mqttConfig.HttpProxy.length() != 0) {
+      connOpts.set_http_proxy(mqttConfig.HttpProxy);
+    }
+
+    if (mqttConfig.HttpsProxy.length() != 0) {
+      connOpts.set_https_proxy(mqttConfig.HttpsProxy);
+    }
     connOpts.set_clean_session(false);
 
     // Install the callback(s) before connecting.

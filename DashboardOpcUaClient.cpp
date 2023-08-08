@@ -34,7 +34,9 @@ DashboardOpcUaClient::DashboardOpcUaClient(std::shared_ptr<Umati::Util::Configur
       Umati::MachineObserver::Topics::GwVersion(),
       gitClientVersion,
       configuration->getMqtt().Username,
-      configuration->getMqtt().Password)),
+      configuration->getMqtt().Password,
+      configuration->getMqtt().HttpProxy,
+      configuration->getMqtt().HttpsProxy)),
     m_pOpcUaTypeReader(
       std::make_shared<Umati::Dashboard::OpcUaTypeReader>(m_pClient, configuration->getObjectTypeNamespaces(), configuration->getNamespaceInformations())),
     m_machinesFilter(configuration->getMachinesFilter()) {}
@@ -50,14 +52,12 @@ bool DashboardOpcUaClient::connect(std::atomic_bool &running) {
 }
 
 void DashboardOpcUaClient::ReadTypes() {
-    m_pOpcUaTypeReader->readTypes();
+  m_pOpcUaTypeReader->readTypes();
 
-    auto typeMap = m_pOpcUaTypeReader->m_typeMap;
+  auto typeMap = m_pOpcUaTypeReader->m_typeMap;
 }
 
-void DashboardOpcUaClient::ReadTypeDictionaries() {
-    m_pOpcUaTypeReader->readTypeDictionaries();
-}
+void DashboardOpcUaClient::ReadTypeDictionaries() { m_pOpcUaTypeReader->readTypeDictionaries(); }
 
 void DashboardOpcUaClient::StartMachineObserver() {
   m_pMachineObserver = std::make_shared<Umati::MachineObserver::DashboardMachineObserver>(m_pClient, m_pPublisher, m_pOpcUaTypeReader, m_machinesFilter);

@@ -36,6 +36,8 @@ struct MqttConfig {
   std::string CaCertPath = "./certs";
   std::string CaTrustStorePath = "./certs/cacert.pem";
 #endif
+  std::string HttpProxy = "";
+  std::string HttpsProxy = "";
 };
 
 struct OpcUaConfig {

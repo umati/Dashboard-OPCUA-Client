@@ -12,7 +12,9 @@
     "Password": "",
     "Prefix": "umati/v2",
     "ClientId": "MyCompany/ClientName",
-    "Protocol": "tcp"
+    "Protocol": "tcp",
+    "HttpProxy": "",
+    "HttpsProxy": ""
   },
   "MachinesFilter": [
     {
