@@ -49,7 +49,7 @@ MqttPublisher_Paho::MqttPublisher_Paho(
     mqtt::ssl_options ssl_opts;
     ssl_opts.ca_path(CaCertPath);
     ssl_opts.set_trust_store(CaTrustStorePath);
-    ssl_opts.set_verify(true);
+    ssl_opts.set_verify(false);
     opts_conn.set_ssl(ssl_opts);
   }
 
