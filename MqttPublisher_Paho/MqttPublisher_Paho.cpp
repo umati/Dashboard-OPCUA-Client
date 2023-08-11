@@ -25,7 +25,9 @@ MqttPublisher_Paho::MqttPublisher_Paho(
   const std::string &versionTopic,
   const std::string &gitClientVersion,
   const std::string &username,
-  const std::string &password)
+  const std::string &password,
+  const std::string &httpProxy,
+  const std::string &httpsProxy)
   : m_cli(getUri(protocol, host, port), getClientId(), 0, nullptr),
     m_callbacks(this),
     m_onlineTopic(onlineTopic),
@@ -35,11 +37,19 @@ MqttPublisher_Paho::MqttPublisher_Paho(
 
   mqtt::connect_options opts_conn = getOptions(username, password);
 
+  if (httpsProxy.length() != 0) {
+    opts_conn.set_https_proxy(httpsProxy);
+  }
+
+  if (httpProxy.length() != 0) {
+    opts_conn.set_http_proxy(httpProxy);
+  }
+
   if (protocol == "wss") {
     mqtt::ssl_options ssl_opts;
     ssl_opts.ca_path(CaCertPath);
     ssl_opts.set_trust_store(CaTrustStorePath);
-    ssl_opts.set_verify(true);
+    ssl_opts.set_verify(false);
     opts_conn.set_ssl(ssl_opts);
   }
 
@@ -74,6 +84,7 @@ mqtt::connect_options MqttPublisher_Paho::getOptions(const std::string &username
   if (!password.empty()) {
     opts_conn.set_password(password);
   }
+
   return opts_conn;
 }
 

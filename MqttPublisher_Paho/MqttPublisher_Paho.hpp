@@ -35,7 +35,9 @@ class MqttPublisher_Paho : public Umati::Dashboard::IPublisher {
     const std::string &versionTopic = std::string(),
     const std::string &gitClientVersion = std::string(),
     const std::string &username = std::string(),
-    const std::string &password = std::string());
+    const std::string &password = std::string(),
+    const std::string &httpProxy = std::string(),
+    const std::string &httpsProxy = std::string());
 
   virtual ~MqttPublisher_Paho();
 
