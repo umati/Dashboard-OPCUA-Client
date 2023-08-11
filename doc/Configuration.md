@@ -59,8 +59,71 @@ The example `configuration.json` options are explained:
     "Protocol": "wss", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
     "CaCertPath":"", // path to the CA-Cert file, only to be set if advised
     "CaTrustStorePath": "", // path to the CA-Cert file, only to be set if advised
-    "HttpProxy": "http://<ip>:<port>", // Explicitly configure a proxy for http:// or https://
-    "HttpsProxy": "https://<ip>:<port>"
+    "HttpProxy": "http://<ip>:<port>", // Optional, Explicitly configure a proxy for http:// or https:// or both
+    "HttpsProxy": "https://<ip>:<port>" 
   }
 }
 ```
+
+## HTTPS/HTTP Proxy Working Example
+
+- `configuration.json`:
+
+  ```json
+    "Mqtt": {
+        "Hostname": "umati.app",
+        "Port": 443,
+        "Username": "org/user",
+        "Password": "",
+        "Prefix": "umati/v2",
+        "ClientId": "org/user",
+        "Protocol": "wss",
+        "HttpProxy": "http://proxy.myproxy.net:8082",
+        "HttpsProxy": "http://proxy.myproxy.net:8082"  
+    }
+  ```
+
+- `docker-compose.yaml`:
+
+  ```yaml
+  services:
+  umati-gateway:
+    image: ghcr.io/umati/dashboard-opcua-client:wss-proxy
+    container_name: umati-gateway
+    volumes:
+      - ./config/configuration.json:/app/configuration.json
+    environment:
+      - http_proxy=proxy.myproxy.net:8082
+      - https_proxy=proxy.myproxy.net:8082
+  ```
+
+- `docker run` command:
+  
+  ```sh
+  docker run  \
+    --name client \
+    --rm -it \
+    -v <path>/<to>configuration.json:/app/configuration.json \
+    -e http_proxy=proxy.myproxy.net:8082 \
+    -e https_proxy=proxy.myproxy.net:8082 \
+    ghcr.io/umati/dashboard-opcua-client:wss-proxy
+  ```
+
+- `docker run` command for `WssTroubleshooter`:
+
+  Start container with
+
+  ```sh
+  docker run  \
+    --name client \
+    --rm -it \
+    -v <path>/<to>configuration.json:/app/configuration.json \
+    -e http_proxy=proxy.myproxy.net:8082 \
+    -e https_proxy=proxy.myproxy.net:8082 \
+    --entrypoint "/bin/sh" \
+    ghcr.io/umati/dashboard-opcua-client:wss-proxy
+  ```
+
+  Then run `# ./WssTroubleshooter` inside container.
+  If the connection is working, you should see a connection successful message inside the logs.
+  
