@@ -134,9 +134,7 @@
             }
 		    if (!node->SpecifiedChildNodes->empty()){
 			    for (auto childNodesIterator = node->SpecifiedChildNodes->begin(); childNodesIterator != node->SpecifiedChildNodes->end(); childNodesIterator++){
-				    updateBaseDataVariableTypes(childNodesIterator.operator*());
-				    if ((childNodesIterator != node->SpecifiedChildNodes->end()) && (childNodesIterator != --node->SpecifiedChildNodes->end())) {
-				    }
+				    updateBaseDataVariableTypes(*childNodesIterator);
 			    }
 		    }
 	    }
@@ -312,7 +310,9 @@
             const std::weak_ptr<ModelOpcUa::StructureBiNode> &parent, ModelOpcUa::ModellingRule_t modellingRule,
             bool ofBaseDataVariableType)
         {
-            this->BaseDataVariableTypes.push_back(entry.NodeId);
+            if(ofBaseDataVariableType) {
+                this->BaseDataVariableTypes.push_back(entry.NodeId);
+            }
             bool isObjectType = ModelOpcUa::ObjectType == entry.NodeClass;
             bool isVariableType = ModelOpcUa::VariableType == entry.NodeClass;
             ModelOpcUa::StructureBiNode node(
