@@ -131,13 +131,13 @@ cmake --build .
 
 ## Components
 
-- [ModelOpcUa](ModelOpcUa) An abstration for OPC UA Type Definitions and OPC UA Types (e.g. NodeId and BrowseName)
+- [ModelOpcUa](ModelOpcUa) An abstration for OPC UA Type Definitions and OPC UA Types (e.g. NodeId and BrowseName).
 - [DashboardClient](DashboardClient) Read available OPC UA types and check instances and prepare data for publishing. Defines Interfaces for the [OPC UA client](DashboardClient/IDashboardDataClient.hpp) and the [publisher](DashboardClient/IPublisher.hpp).
-- [MachineObserver](MachineObserver) Looks for new machines and publishes a list of all online machines. Uses the interfaces defined by the DashboardClient
+- [MachineObserver](MachineObserver) Looks for new machines and publishes a list of all online machines. Uses the interfaces defined by the DashboardClient.
 - [MqttPublisher Paho](MqttPublisher_Paho) An implementation of a publisher for MQTT using Eclipse Paho.
-- [OpcUaClient](OpcUaClient) Implementation of an OPC UA client for the Dashboard using Unified Automation C++ SDK
+- [OpcUaClient](OpcUaClient) Implementation of an OPC UA client for the Dashboard using open62541.
 - [Tests](Tests) Some basic test, mainly for debugging past errors.
-- [Util](Util) General purpose code, e.g. Encoding of machine IDs
+- [Util](Util) General purpose code, e.g. Encoding of machine IDs.
 
 ## License
 
