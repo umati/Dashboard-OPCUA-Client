@@ -99,9 +99,7 @@ ModelToJson::ModelToJson(
 
 // TODO use another function to check for i=17570 aka AnalogUnitRangeType and i=2755 aka StateVariableType
 // Set ofBaseDataVariableType somewhere?
-bool ModelToJson::isBaseDataVariableType(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) {
-  return pSimpleNode->ofBaseDataVariableType;
-}
+bool ModelToJson::isBaseDataVariableType(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) { return pSimpleNode->ofBaseDataVariableType; }
 
 std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass) {
   switch (nodeClass) {
