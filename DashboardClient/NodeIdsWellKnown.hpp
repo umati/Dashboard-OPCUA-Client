@@ -18,7 +18,8 @@ namespace Umati
         const ModelOpcUa::NodeId_t NodeId_HasTypeDefinition = {ns0Uri, "i=40"};
         const ModelOpcUa::NodeId_t NodeId_HasInterface = {ns0Uri, "i=17603"};
         const ModelOpcUa::NodeId_t NodeId_Organizes = {ns0Uri, "i=35"};
-        const ModelOpcUa::NodeId_t NodeId_BaseVariableType = {ns0Uri, "i=63"};
+        const ModelOpcUa::NodeId_t NodeId_BaseVariableType = {"", "i=63"};
+        const ModelOpcUa::NodeId_t NodeId_PropertyType = {"", "i=68"};
         const ModelOpcUa::NodeId_t NodeId_BaseDataType {ns0Uri, "i=24"};
         const ModelOpcUa::NodeId_t NodeId_Structure {ns0Uri, "i=22"};
         const ModelOpcUa::NodeId_t NodeId_OPC_Binary {ns0Uri, "i=93"};
