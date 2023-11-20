@@ -62,7 +62,10 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) override;
 
-  void Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandle) override;
+			void Unsubscribe(std::vector<int32_t>monItemIds, std::vector<int32_t> clientHandle) override;
+
+			std::shared_ptr<EventSubscriptionHandle> SubscribeEvent(IDashboardDataClient::eventCallbackFunction_t eccbf) override;
+			void UnsubscribeEvent(std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> eventSubscriptionHandle) override;
 
   std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) override;
 
@@ -74,16 +77,18 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   bool VerifyConnection() override;
 
-  bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType, size_t maxDepth) override;
-
+            bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType,
+                                 size_t maxDepth) override;
+								 
   void buildCustomDataTypes() override;
 
   void readTypeDictionaries() override;
 
   void updateCustomTypes() override;
 
- protected:
-  void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
+
+		protected:
+			void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
 
   bool connect();
 
@@ -168,12 +173,12 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
   /// Map for chaching super types. Key = Type, Value = Supertype
   std::map<open62541Cpp::UA_NodeId, open62541Cpp::UA_NodeId, UaNodeId_Compare> m_superTypes;
 
- public:
-  std::shared_ptr<UA_Client> m_pClient;  // Zugriff aus dem ConnectThread, dem PublisherThread
-  std::recursive_mutex m_clientMutex;
-
- private:
-  void on_connected();
+        public:
+			std::shared_ptr<UA_Client> m_pClient; // Zugriff aus dem ConnectThread, dem PublisherThread
+			std::recursive_mutex* getClientMutex();
+            std::recursive_mutex m_clientMutex;
+		private:
+			void on_connected();
 
   std::vector<nlohmann::json> readValues2(const std::list<ModelOpcUa::NodeId_t> &modelNodeIds);
 

@@ -18,11 +18,11 @@
 #include <IdEncode.hpp>
 #include "PublishMachinesList.hpp"
 
+
 namespace Umati
 {
 	namespace MachineObserver
 	{
-
 		DashboardMachineObserver::DashboardMachineObserver(
 			std::shared_ptr<Dashboard::IDashboardDataClient> pDataClient,
 			std::shared_ptr<Umati::Dashboard::IPublisher> pPublisher,
@@ -41,6 +41,7 @@ namespace Umati
 
 		void DashboardMachineObserver::PublishAll()
 		{
+			LOG(TRACE) << "Publish";
 			{
 				std::unique_lock<decltype(m_dashboardClients_mutex)> ul(m_dashboardClients_mutex);
 				for (const auto &pDashClient : m_dashboardClients)
@@ -133,12 +134,6 @@ namespace Umati
 		{
 			try
 			{
-				if(machine.NodeId == ModelOpcUa::NodeId_t{"10.80.0.113_4840_http://samplemanufacturer.com/umati_OPC40077_sample_instance/","i=5002"} ||
-				   machine.NodeId == ModelOpcUa::NodeId_t{"10.80.0.113_4840_http://samplemanufacturer.com/umati_OPC40077_sample_instance","i=6013"})
-				{
-					LOG(INFO) << "Ignoring Machine: " << machine.BrowseName.Name;
-					return;
-				}
 				LOG(INFO) << "New Machine: " << machine.BrowseName.Name << " NodeId:"
 						  << static_cast<std::string>(machine.NodeId);
 
@@ -173,6 +168,8 @@ namespace Umati
 					p_type,
 					Topics::Machine(p_type, static_cast<std::string>(machine.NodeId)),
 					Topics::OnlineStatus(static_cast<std::string>(machine.NodeId)));
+
+				pDashClient->subscribeEvents();
 
 				LOG(INFO) << "Read model finished";
 

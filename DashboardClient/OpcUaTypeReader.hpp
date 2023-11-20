@@ -48,6 +48,7 @@ namespace Umati
             std::shared_ptr<ModelOpcUa::StructureNode> typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
             std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationTypeStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
             ModelOpcUa::NodeId_t getIdentificationTypeNodeId(const ModelOpcUa::NodeId_t &typeDefinition) const;
+            
         protected:
             /// Map of <TypeName, StructureBiNode>
             typedef std::shared_ptr<std::map<ModelOpcUa::NodeId_t,

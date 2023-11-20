@@ -460,8 +460,9 @@ std::string OpcUaClient::readNodeBrowseName(const ModelOpcUa::NodeId_t &_nodeId)
   return _nodeId.Uri + ";" + resName;
 }
 
-UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId) {
-  checkConnection();
+		UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId)
+		{
+			checkConnection();
 
   UA_NodeClass returnClass;
   UA_NodeClass_init(&returnClass);
@@ -969,10 +970,18 @@ std::shared_ptr<Dashboard::IDashboardDataClient::ValueSubscriptionHandle> OpcUaC
   return nullptr;
 }
 
-void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) {
-  std::lock_guard<std::recursive_mutex> l(m_clientMutex);
-  m_opcUaWrapper->SubscriptionUnsubscribe(m_pClient.get(), monItemIds, clientHandles);
-}
+		void OpcUaClient::Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles){
+
+			std::lock_guard<std::recursive_mutex> l(m_clientMutex);
+			m_opcUaWrapper->SubscriptionUnsubscribe(m_pClient.get(), monItemIds, clientHandles);
+		}
+		std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> OpcUaClient::SubscribeEvent(IDashboardDataClient::eventCallbackFunction_t ecbf) {
+			return m_opcUaWrapper->EventSubscribe(m_pClient.get(), ecbf); 
+		}
+
+		void OpcUaClient::UnsubscribeEvent(std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> eventSubscriptionHandle) {
+			m_opcUaWrapper->EventUnsubscribe(m_pClient.get(), eventSubscriptionHandle);
+		}
 
 std::vector<nlohmann::json> OpcUaClient::ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> modelNodeIds) { return readValues2(modelNodeIds); }
 
@@ -1044,9 +1053,7 @@ bool OpcUaClient::VerifyConnection() {
     LOG(WARNING) << "Getting NodeClass failed. Got NodeClass: " << (status);
     return false;
   }
-
-  return true;
+	return true;
 }
-
 }  // namespace OpcUa
 }  // namespace Umati

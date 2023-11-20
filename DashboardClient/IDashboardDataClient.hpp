@@ -25,7 +25,22 @@ namespace Umati
         class IDashboardDataClient
         {
         public:
+        /// Struct for handling Events
+            struct StructureChangeEvent{
+				ModelOpcUa::NodeId_t refreshNode;
+				bool nodeAdded = false;
+				bool nodeDeleted = false;
+				bool referenceAdded = false;
+				bool referenceDeleted = false;
+				bool dataTypeChanged = false;
+			};
+
+            /*! \brief Callback function for new Value Data Callback.
+            *
+            * This callback is triggered if a the data of an item changes.
+            */
             typedef std::function<void(nlohmann::json value)> newValueCallbackFunction_t;
+            typedef std::function<void(StructureChangeEvent sce)> eventCallbackFunction_t;
 
             virtual ~IDashboardDataClient() = default;
 
@@ -233,15 +248,31 @@ namespace Umati
 
             virtual void buildCustomDataTypes() = 0;
 
+            class EventSubscriptionHandle {
+                public:
+                   inline EventSubscriptionHandle(int32_t clientHandle, int32_t subscriptionId) : m_clientHandle(clientHandle), m_subscriptionId(subscriptionId){};
+                   inline ~EventSubscriptionHandle(){};
+                   inline void unsubscribe() { m_unsubscribed = true; }
+                   inline bool isUnsubscribed() {return m_unsubscribed;}
+                   inline int32_t getClientHandle() { return m_clientHandle;}
+                   inline int32_t getSubscriptionId() { return m_subscriptionId;}
+
+                private:
+                    bool m_unsubscribed = false;
+                    int32_t m_clientHandle;
+                    int32_t m_subscriptionId;
+            };
+
             virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
             /// \todo Extract from interface!
             virtual std::string getTypeName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 
-            virtual std::shared_ptr<ValueSubscriptionHandle>
-            Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
-
+            virtual std::shared_ptr<ValueSubscriptionHandle> Subscribe(ModelOpcUa::NodeId_t nodeId, newValueCallbackFunction_t callback) = 0;
             virtual void Unsubscribe(std::vector<int32_t> monItemIds, std::vector<int32_t> clientHandles) = 0;
+
+            virtual std::shared_ptr<EventSubscriptionHandle> SubscribeEvent(eventCallbackFunction_t ecbf) = 0;
+            virtual void UnsubscribeEvent(std::shared_ptr<Dashboard::IDashboardDataClient::EventSubscriptionHandle> eventSubscriptionHandle) = 0;
 
             virtual std::vector<nlohmann::json> ReadeNodeValues(std::list<ModelOpcUa::NodeId_t> nodeIds) = 0;
 
@@ -249,6 +280,7 @@ namespace Umati
 
             /// Verify that the connection and session are ok
             virtual bool VerifyConnection() = 0;
+
         };
     } // namespace Dashboard
 } // namespace Umati

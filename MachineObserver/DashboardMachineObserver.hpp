@@ -13,6 +13,8 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <open62541/client_subscriptions.h>
+#include <queue>
 
 namespace Umati
 {
@@ -35,11 +37,14 @@ namespace Umati
 			~DashboardMachineObserver() override;
 
 			void PublishAll();
+			void updateAfterModelChangeEvent(UA_ModelChangeStructureDataType* modelChangeStructureDataTypes, size_t nModelChangeStructureDataTypes);		
 
 		protected:
 			void startUpdateMachineThread();
 
 			void stopMachineUpdateThread();
+
+			void AddSubscription();
 
 			void publishMachinesList();
 
@@ -62,9 +67,11 @@ namespace Umati
 				ModelOpcUa::NodeId_t TypeDefinition;
 				ModelOpcUa::NodeId_t Parent;
 			};
+			
 
 			int m_publishMachinesOnline = 0;
-
+			
+			void startEventThread();
 			std::atomic_bool m_running = {false};
 			std::thread m_updateMachineThread;
 
