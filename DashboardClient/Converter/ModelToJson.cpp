@@ -101,7 +101,8 @@ ModelToJson::ModelToJson(
 // TODO use another function to check for i=17570 aka AnalogUnitRangeType and i=2755 aka StateVariableType
 // Set ofBaseDataVariableType somewhere?
 bool ModelToJson::isBaseDataVariableType(const std::shared_ptr<const ModelOpcUa::SimpleNode> &pSimpleNode) {
-  return (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable || pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::VariableType) && !(pSimpleNode->NodeId == Umati::Dashboard::NodeId_PropertyType); 
+  return (pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::Variable || pSimpleNode->NodeClass == ModelOpcUa::NodeClass_t::VariableType) &&
+         !(pSimpleNode->NodeId == Umati::Dashboard::NodeId_PropertyType);
 }
 
 std::string ModelToJson::nodeClassToString(ModelOpcUa::NodeClass_t nodeClass) {
