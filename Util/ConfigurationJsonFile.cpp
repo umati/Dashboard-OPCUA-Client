@@ -28,7 +28,7 @@ ConfigurationJsonFile::ConfigurationJsonFile(const std::string &filename) {
     i >> j;
     from_json(j, *this);
     Verify();
-  } catch (nlohmann::json_abi_v3_11_2::detail::parse_error &ex) {
+  } catch (NLOHMANN_JSON_NAMESPACE::detail::parse_error &ex) {
     std::stringstream ss;
     ss << "Json is not valid: '" << ex.what();
     throw Exception::ConfigurationException(ss.str().c_str());
