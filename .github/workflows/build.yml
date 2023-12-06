@@ -29,6 +29,7 @@ jobs:
         run: |
           #! /bin/bash
           LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')" # yamllint disable-line rule:line-length
+          echo "$LIBCPP_VERSION"
           mkdir -p build
           cd build || exit
           #shellcheck  disable=SC2296
