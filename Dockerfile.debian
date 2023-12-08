@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim as build-env
+FROM debian:bookworm-slim as build-env
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -yy  --no-install-recommends install \
@@ -24,7 +24,7 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
     cmake --build .
 
-FROM debian:bullseye-slim as runtime
+FROM debian:bookworm-slim as runtime
 RUN apt-get update && apt-get -yy install ca-certificates
 
 COPY --from=build-env /install/bin /app
