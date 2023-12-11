@@ -52,7 +52,7 @@ You can use the client for instance testing or for connecting to the umati.app D
 
 ### Troubleshooting
 
-[see Troubleshooting](./Troubleshooting.md)
+[see Troubleshooting](doc/Troubleshooting.md)
 
 ### Usage for instance testing
 
