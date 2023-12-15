@@ -52,14 +52,14 @@ jobs:
           docker-compose up -d
           ./evaluateTest.sh
       - name: Upload Artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/bin
             ${{ env.CMAKE_INSTALL_PREFIX }}/share/DashboardOpcUaClient
       - name: Upload Debian package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dashboardopcuaclient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}.deb
           path: |
@@ -105,7 +105,7 @@ jobs:
           mkdir -p  bin/certs
           curl https://curl.se/ca/cacert.pem -o bin/certs/cacert.pem -s
       - name: Upload Artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
           path: |
