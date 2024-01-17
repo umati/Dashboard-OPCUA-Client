@@ -176,6 +176,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           repo: ${{ github.repository }}
+          commit: ${{github.event.pull_request.head.sha}}
           if_no_artifact_found: fail
           skip_unpack: true
       - name: Checksum
