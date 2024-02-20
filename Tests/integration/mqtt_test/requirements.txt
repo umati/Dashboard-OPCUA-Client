@@ -1,2 +1,2 @@
-jsonschema==4.17.3
+jsonschema==4.21.1
 paho-mqtt==1.6.1
