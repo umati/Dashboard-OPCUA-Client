@@ -16,7 +16,7 @@ import paho.mqtt.client as mqtt
 
 
 class TestMqttSampleServer(unittest.TestCase):
-    client = mqtt.Client()
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
 
     @classmethod
     def setUpClass(cls) -> None:
