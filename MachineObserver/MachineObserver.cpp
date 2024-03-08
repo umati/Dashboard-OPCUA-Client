@@ -46,9 +46,10 @@ void MachineObserver::UpdateMachines() {
   }
   // Remove duplicate machines
   machineList.sort([](const ModelOpcUa::BrowseResult_t &l, const ModelOpcUa::BrowseResult_t &r) -> bool { return l.NodeId < r.NodeId; });
-  std::unique(machineList.begin(), machineList.end(), [](const ModelOpcUa::BrowseResult_t &l, const ModelOpcUa::BrowseResult_t &r) -> bool {
+  auto last = std::unique(machineList.begin(), machineList.end(), [](const ModelOpcUa::BrowseResult_t &l, const ModelOpcUa::BrowseResult_t &r) -> bool {
     return l.NodeId == r.NodeId;
   });
+  machineList.erase(last, machineList.end());
 
   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::BrowseResult_t> machineList_map;
   std::transform(machineList.begin(), machineList.end(), std::inserter(machineList_map, machineList_map.end()), [](const ModelOpcUa::BrowseResult_t &m) {
