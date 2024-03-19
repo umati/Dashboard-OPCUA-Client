@@ -41,7 +41,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(UMATI_CLIENT_VER_MAJOR 2)
 set(UMATI_CLIENT_VER_MINOR 1)
 set(UMATI_CLIENT_VER_PATCH 0)
-set(UMATI_CLIENT_VER_LABEL "-rc2") # like "-rc1" or "-g4538abcd" or "-g4538abcd-dirty"
+set(UMATI_CLIENT_VER_LABEL "-rc3") # like "-rc1" or "-g4538abcd" or "-g4538abcd-dirty"
 set(UMATI_CLIENT_VER_COMMIT "unknown-commit")
 
 # Overwrite the version information based on git if available
