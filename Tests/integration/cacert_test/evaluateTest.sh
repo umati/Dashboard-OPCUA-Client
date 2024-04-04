@@ -7,5 +7,5 @@ do
     sleep 1
     NEXT_WAITTIME=$(($NEXT_WAITTIME+1))
 done
-docker-compose logs
+docker compose logs
 exit "$(docker inspect  cacert_test_test_1 --format='{{.State.ExitCode}}')"
