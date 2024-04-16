@@ -5,7 +5,7 @@ while [[ "$(docker inspect  cacert_test-test-1 --format='{{.State.Status}}')" !=
 do 
     echo "Waiting for test container to become ready since ${NEXT_WAITTIME}s..."
     sleep 1
-    NEXT_WAITTIME=$(($NEXT_WAITTIME+1))
+    NEXT_WAITTIME=$((NEXT_WAITTIME+1))
 done
 docker compose logs
 exit "$(docker inspect  cacert_test-test-1 --format='{{.State.ExitCode}}')"
