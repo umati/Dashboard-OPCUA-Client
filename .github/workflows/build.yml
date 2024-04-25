@@ -24,11 +24,18 @@ jobs:
           path: UmatiDashboardOpcUaClient
           submodules: recursive
           fetch-depth: 0
-      - name: Build UmatiDashboardOpcUaClient with dependencies
+      - name: Downgrade libstdc++6 on ubuntu-22.04
         # yamllint disable rule:line-length
+        if: ${{matrix.os == 'ubuntu-22.04'}}
+        run: |
+          #! /bin/bash
+          dpkg -l libstdc++6
+          sudo apt install libstdc++6=12.3.0-1ubuntu1~22.04 -y --allow-downgrades
+      - name: Build UmatiDashboardOpcUaClient with dependencies
         run: |
           #! /bin/bash
           LIBCPP_VERSION="$(dpkg -s libstdc++6 | grep Version | awk '{match($0,"[0-9]+.[0-9].[0-9]",a)}END{print a[0]}')" # yamllint disable-line rule:line-length
+          echo "libstdc++6 version=$LIBCPP_VERSION"
           mkdir -p build
           cd build || exit
           #shellcheck  disable=SC2296
