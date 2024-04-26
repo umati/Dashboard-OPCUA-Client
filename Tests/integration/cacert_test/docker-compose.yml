@@ -7,7 +7,7 @@ services:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
       - ./certs_server:/mosquitto/certs
   test:
-    image: ubuntu:22.04
+    image: ubuntu:24.04
     depends_on:
       - mqtt
     volumes:
