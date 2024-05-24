@@ -1,4 +1,4 @@
-FROM alpine:3.19.1 as build-env
+FROM alpine:3.20.0 as build-env
 
 RUN apk --no-cache add \
       bash=5.2.21-r0 \
@@ -23,7 +23,7 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
       -DCMAKE_INSTALL_PREFIX:PATH=/install /build &&\
     cmake --build .
 
-FROM alpine:3.19.1 as runtime
+FROM alpine:3.20.0 as runtime
 RUN apk --no-cache add \
       libstdc++=13.2.1_git20231014-r0 \
       ca-certificates=20240226-r0
