@@ -2,4 +2,8 @@ pki/
 *.log
 build/
 install/
-configuration.json
+/configuration.json
+_build/
+_deps/
+_install/
+/.vscode/

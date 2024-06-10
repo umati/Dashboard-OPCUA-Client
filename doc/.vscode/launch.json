@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/Debug/DashboardOpcUaClient",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/.vscode/",
+            "environment": [],
+            "console": "integratedTerminal"
+        }
+
+    ]
+}

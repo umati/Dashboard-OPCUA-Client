@@ -1,0 +1,52 @@
+{
+  "OpcUa": {
+    "Endpoint": "opc.tcp://localhost:4840",
+    "Username": "",
+    "Password": "",
+    "Security": 0
+  },
+  "Mqtt": {
+    "Hostname": "localhost",
+    "Port": 31883,
+    "Username": "MyCompany/ClientName",
+    "Password": "",
+    "Prefix": "umati/v2",
+    "ClientId": "MyCompany/ClientName",
+    "Protocol": "tcp",
+    "HttpProxy": "",
+    "HttpsProxy": ""
+  },
+  "MachinesFilter": [
+    {
+      "Uri": "http://example.com/BasicMachineTool/",
+      "Id": "i=66382",
+      "$comment": "BasicMachineTool"
+    }
+  ],
+  "ObjectTypeNamespaces": [
+    "http://opcfoundation.org/UA/",
+    "http://opcfoundation.org/UA/IA/",
+    "http://opcfoundation.org/UA/DI/",
+    "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/Machinery/ProcessValues/",
+    "http://opcfoundation.org/UA/Machinery/Result/",
+    "http://opcfoundation.org/UA/MachineTool/"
+  ],
+  "NamespaceInformations": [
+    {
+      "Namespace": "http://opcfoundation.org/UA/MachineTool/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/MachineTool/",
+          "Id": "i=13",
+          "$comment": "MachineToolType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/MachineTool/",
+        "Id": "i=11",
+        "$comment": "MachineToolIdentificationType"
+      }
+    }
+  ]
+}
