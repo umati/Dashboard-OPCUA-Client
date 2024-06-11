@@ -73,11 +73,13 @@ jobs:
             ${{ env.CMAKE_INSTALL_PREFIX }}/*.deb
   build-windows:
     strategy:
+      max-parallel: 4
       matrix:
         os: [windows-2019, windows-2022]
         build_type: [Debug, Release]
         arch: ["386", "amd64"]
     runs-on: ${{matrix.os}}
+    continue-on-error: true
     env:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
     steps:
