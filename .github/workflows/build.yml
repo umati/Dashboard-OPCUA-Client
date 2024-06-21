@@ -193,7 +193,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - name: Release
-        uses: softprops/action-gh-release@v2.0.5
+        uses: softprops/action-gh-release@v2.0.6
         with:
           generate_release_notes: true
           fail_on_unmatched_files: true
