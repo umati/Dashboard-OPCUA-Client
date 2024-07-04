@@ -13,31 +13,43 @@ Therefore, the CA certificates of the firewall must be stored to ensure that the
 
 ### Steps to Follow
 
-- **Check if TLS Inspection is Present**
+#### Check if TLS Inspection is Present
 
 First, you should check if TLS Inspection is present. Normally, when you access a TLS page (<https://>) in your Corporate Browser, you should not see the certificate of the page, but that of your firewall with TLS Inspection.
-For the Dashboard viste <https://umati.app>
 
-- **Obtain the CA Certificates**
+#### Obtain the CA Certificates
 
-If TLS Inspection is present, you need to obtain the CA certificates of the firewall. You can then simply download the certificate in the browser.
+If TLS Inspection is present, you need to obtain the CA certificates of the firewall. You can visit e.g. <https://umati.app> and then simply download the certificate in the browser. In Firefox, it's under *address bar → 🔒 → Connection secure → More information → View certificate → Miscellaneous → Download PEM (chain)*.
 
-- **Add the CA Certificates to the `cacert.pem` File or as a Separate File**
+#### Add the CA Certificates to the `cacert.pem` File or as a Separate File
 
 After you have obtained the CA certificates, you have two options:
 
-    - Add the CA certificate as a text block to the `cacert.pem` file in the cert directory.
+- Place the CA certificate separately in a directory as a `.pem` or `.crt` file and explicitly specify the directory in `CaCertPath` in the configuration.
+- Add the certificate as a text block to the `cacert.pem` file (overriding the CA) and add its path to `CaTrustStorePath`.
 
-    - Place the CA certificate separately in a directory as a `.pem` or `.crt` file and explicitly specify the path in `CaCertPath` in the configuration.
+#### Adjust the Configuration
 
-- **Adjust the Configuration**
+If you have placed the certificate separately as a `.pem` or `.crt` file in a directory, you need to adjust the configuration to specify the path to the CA certificate file. Add one of the corresponding fields to the [Configuration](Configuration.md):
 
-If you have placed the certificate separately as a `.pem` or `.crt` file in a directory, you need to adjust the configuration to specify the path to the CA certificate file. Here are the corresponding fields:
-
-    "CaCertPath":"", // Path to the CA certificate file, only to be set if the certificate is placed separately as a `.pem` or `.crt` file in a directory
-    "CaTrustStorePath": "" // Path to the CA certificate file, only to be set if advised
+```jsonc
+  "Mqtt": {
+    "CaCertPath": "/path/to/certs/",
+    "CaTrustStorePath": "/path/to/cacert.pem"
+    ...
+```
 
 Please note that these fields should only be set if explicitly advised.
+
+When running in a container, use the `/app/` directory in the configuration, e.g.
+
+```json
+"CaTrustStorePath": "/app/cacert.pem"
+```
+
+and mount the certificate on startup:
+
+`docker run -it --rm -v /path/to/configuration.json:/app/configuration.json -v /path/to/cacert.pem:/app/cacert.pem --name=dashboard-opcua-client ghcr.io/umati/dashboard-opcua-client`
 
 ### Conclusion
 

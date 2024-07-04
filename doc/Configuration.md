@@ -2,7 +2,7 @@
 
 The example `configuration.json` options are explained:
 
-``` JSON
+```jsonc
 {
   "MachinesFilter": [
     {
@@ -57,7 +57,7 @@ The example `configuration.json` options are explained:
     "Prefix": "umati/v2", // Topic prefix
     "ClientId": "MyCompany/ClientName", // ClientId part of topic structure
     "Protocol": "wss", // tcp: plain; tls: TLS secured; wss: WebSocket TLS secured
-    "CaCertPath":"", // path to the CA-Cert file, only to be set if advised
+    "CaCertPath":"", // path to the CA-Cert directory, only to be set if advised
     "CaTrustStorePath": "", // path to the CA-Cert file, only to be set if advised
     "HttpProxy": "http://<ip>:<port>", // Optional, Explicitly configure a proxy for http:// or https:// or both
     "HttpsProxy": "https://<ip>:<port>" 
