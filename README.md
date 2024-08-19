@@ -58,11 +58,11 @@ You can use the client for instance testing or for connecting to the umati.app D
 
 Follow these instructions to use the client as a testing tool for your implementation: [Model Testing usage](doc/usage_as_model_test.md)
 
- **Local requirements**
+#### Local requirements
 
 For the local instance testing you need to run your own MQTT Broker and a MQTT Client. See [MQTT Doc](doc/MQTT.md) for more information and instructions
 
-[Here](example/ShowcaseDeployment/) is an docker-compose example including a mqtt broker, a umati Sample Server and the gateway. The example contains also the need configuration for the samples.
+[Here](example/ShowcaseDeployment/) is an `docker compose` example including a mqtt broker, a umati Sample Server and the gateway. The example contains also the need configuration for the samples.
 
 ### Usage for connecting a server to the dashboard
 
