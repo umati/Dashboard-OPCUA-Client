@@ -19,6 +19,8 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions: read-all
+
 ###############
 # Set the Job #
 ###############
@@ -49,12 +51,12 @@ jobs:
       - name: Lint Code Base
         uses: super-linter/super-linter@v5.7.2
         env:
-          VALIDATE_CPP: false # Use clang-formt instead 
+          VALIDATE_CPP: false # Use clang-format instead
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# CMake Format
+  # CMake Format
   cmake-format-linter:
     name: Lint Code Base (cmake-format-lint)
     runs-on: ubuntu-22.04

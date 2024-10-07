@@ -1,12 +1,14 @@
 ---
 name: Build
-  
+
 on:
   push:
   pull_request:
     branches: [main, development]
   merge_group:
-  
+
+permissions: read-all
+
 jobs:
   build-linux:
     strategy:
@@ -51,6 +53,7 @@ jobs:
           cd build/Dashboard-Client-build || exit
           ctest -V -C "${{matrix.build_type}}"
       - name: Run integration test cacert_test
+        # yamllint disable rule:line-length
         run: |
           #! /bin/bash
           cd UmatiDashboardOpcUaClient/Tests/integration/cacert_test || exit
@@ -58,9 +61,11 @@ jobs:
           cp "${{ github.workspace }}/build/Dashboard-Client-build/Tests/unit/TestCaCertificate" .
           docker compose up -d
           ./evaluateTest.sh
+        # yamllint enable rule:line-length
       - name: Upload Artefacts
         uses: actions/upload-artifact@v4
         with:
+          # yamllint disable rule:line-length
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/bin
@@ -71,6 +76,7 @@ jobs:
           name: dashboardopcuaclient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}.deb
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/*.deb
+        # yamllint enable rule:line-length
   build-windows:
     strategy:
       matrix:
@@ -114,15 +120,18 @@ jobs:
       - name: Upload Artefacts
         uses: actions/upload-artifact@v4
         with:
+          # yamllint disable rule:line-length
           name: UmatiDashboardOpcUaClient-${{matrix.build_type}}-${{matrix.os}}-${{matrix.arch}}
           path: |
             ${{ env.CMAKE_INSTALL_PREFIX }}/bin
             ${{ env.CMAKE_INSTALL_PREFIX }}/share/DashboardOpcUaClient
+          # yamllint enable rule:line-length
   docker:
     runs-on: ubuntu-22.04
     env:
       # Check if this is not a pull request and GITHUB_TOKEN is set
-      # As all env variables are strings, you need to compaire against "== 'true'" (not "== true")
+      # As all env variables are strings, you need to compare
+      # against "== 'true'" (not "== true")
       IS_NOT_PR: ${{ !github.head_ref && true }}
     steps:
       - name: Checkout Code
