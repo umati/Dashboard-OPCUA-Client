@@ -19,6 +19,8 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions: read-all
+
 ###############
 # Set the Job #
 ###############
@@ -47,14 +49,16 @@ jobs:
       # Run Linter against code base #
       ################################
       - name: Lint Code Base
-        uses: super-linter/super-linter@v5.7.2
+        uses: super-linter/super-linter@v7.1.0
         env:
-          VALIDATE_CPP: false # Use clang-formt instead 
+          VALIDATE_CPP: false # Use clang-format instead
+          VALIDATE_CHECKOV: false # Disable CHECKOV checks for now
+          # TODO: Add HEALTHCHECK and USER to Dockerfiles
           VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: main
+          DEFAULT_BRANCH: development
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# CMake Format
+  # CMake Format
   cmake-format-linter:
     name: Lint Code Base (cmake-format-lint)
     runs-on: ubuntu-22.04

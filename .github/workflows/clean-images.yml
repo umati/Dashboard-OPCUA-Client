@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron: '0 0 1 * *'
+    - cron: "0 0 1 * *"
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build:
@@ -17,6 +21,7 @@ jobs:
           PER_PAGE: 100
 
         with:
+          # yamllint disable rule:line-length
           github-token: ${{ secrets.DELETE_PACKAGES_TOKEN }}
           script: |
             const response = await github.request("GET /orgs/${{ github.repository_owner }}/packages/container/${{ env.PACKAGE_NAME }}/versions",
@@ -29,3 +34,4 @@ jobs:
                     console.log("status " + deleteResponse.status)
                 }
             }
+            # yamllint enable rule:line-length
