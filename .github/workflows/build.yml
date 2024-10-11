@@ -127,6 +127,8 @@ jobs:
             ${{ env.CMAKE_INSTALL_PREFIX }}/share/DashboardOpcUaClient
           # yamllint enable rule:line-length
   docker:
+    permissions:
+      packages: write
     runs-on: ubuntu-22.04
     env:
       # Check if this is not a pull request and GITHUB_TOKEN is set
@@ -181,6 +183,8 @@ jobs:
           python -m unittest discover test_mqtt_sampleserver
 
   release:
+    permissions:
+      contents: write
     runs-on: ubuntu-22.04
     needs: [build-linux, build-windows]
     if: startsWith(github.ref, 'refs/tags/')
