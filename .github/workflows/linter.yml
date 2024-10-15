@@ -29,7 +29,7 @@ jobs:
     # Name the Job
     name: Lint Code Base (super-linter)
     # Set the agent to run on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     ##################
     # Load all steps #
@@ -61,7 +61,7 @@ jobs:
   # CMake Format
   cmake-format-linter:
     name: Lint Code Base (cmake-format-lint)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Format CMake files
