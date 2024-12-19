@@ -25,7 +25,9 @@ RUN cmake /src/DashboardOpcUaClient/.github/ \
     cmake --build .
 
 FROM debian:bookworm-slim as runtime
-RUN apt-get update && apt-get -yy install ca-certificates
+ENV TZ="Europe/Berlin"
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get -yy install ca-certificates tzdata
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
