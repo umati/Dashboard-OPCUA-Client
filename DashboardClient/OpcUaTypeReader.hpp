@@ -30,6 +30,7 @@ class OpcUaTypeReader {
   ~OpcUaTypeReader();
 
   void readTypes();
+  void readTypeDictionaries();
   using NamespaceInformation_t = Util::NamespaceInformation;
 
   /// \todo make the following internal structures private and provide access via functions
@@ -45,15 +46,6 @@ class OpcUaTypeReader {
   std::shared_ptr<ModelOpcUa::StructureNode> typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
   std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationTypeStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
   ModelOpcUa::NodeId_t getIdentificationTypeNodeId(const ModelOpcUa::NodeId_t &typeDefinition) const;
-
- protected:
-  /// Map of <TypeName, StructureBiNode>
-  typedef std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureBiNode>>> BiDirTypeMap_t;
-  std::shared_ptr<Umati::Dashboard::IDashboardDataClient> m_pClient;
-  const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"", ""};
-  void initialize(std::vector<std::string> &notFoundObjectTypeNamespaces);
-  void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(
-    const ModelOpcUa::NodeId_t &startNodeId, BiDirTypeMap_t bidirectionalTypeMap, bool ofBaseDataVariableType);
 
  protected:
   /// Map of <TypeName, StructureBiNode>

@@ -156,18 +156,6 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
       break;
     }
 
-    case UA_DATATYPEKIND_QUALIFIEDNAME: {
-      LOG(ERROR) << "Not implemented conversion to OpcUaType_QualifiedName. ";
-      break;
-    }
-    case UA_DATATYPEKIND_LOCALIZEDTEXT: {
-      UA_LocalizedText localText(*(UA_LocalizedText *)variant.data);
-      *jsonValue = {};
-      (*jsonValue)["locale"] = std::string((char *)localText.locale.data, localText.locale.length);
-      (*jsonValue)["text"] = std::string((char *)localText.text.data, localText.text.length);
-      break;
-    }
-
     case UA_DATATYPEKIND_EXTENSIONOBJECT: {
       UA_ExtensionObject exObj(*(UA_ExtensionObject *)variant.data);
       *jsonValue = {};
@@ -310,92 +298,6 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
       break;
     }
 
-    case UA_DATATYPEKIND_EXTENSIONOBJECT: {
-      UA_ExtensionObject exObj(*(UA_ExtensionObject *)variant.data);
-      switch (exObj.encoding) {
-        case UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_DECODED: {
-          LOG(INFO) << "Known conversion from OpcUaType_ExtensionObject with DataTypeEncodingType: ns=" << exObj.content.encoded.typeId.namespaceIndex
-                    << "; i=" << exObj.content.encoded.typeId.identifier.numeric;
-
-          void *data = exObj.content.decoded.data;
-          for (size_t i = 0; i < exObj.content.decoded.type->membersSize; i++) {
-            UA_DataValue dataVal;
-            UA_DataValue_init(&dataVal);
-            if (exObj.content.decoded.type->members[i].isArray) {
-              size_t arraySize = *((size_t *)data);
-              void **pointerToArrayPointer = (void **)((UA_Byte *)data + sizeof(size_t));
-              void *pointerToArray = *(pointerToArrayPointer);
-
-              if (arraySize > 0) {
-                UA_Variant_setArray(
-                  &dataVal.value,
-                  (UA_Byte *)pointerToArray + exObj.content.decoded.type->members[i].padding,
-                  arraySize,
-                  exObj.content.decoded.type->members[i].memberType);
-                (*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] =
-                  UaDataValueToJsonValue(dataVal, m_pClient, nodeId, serializeStatusInformation).getValue();
-              }
-            } else {
-              void *dataPointer = (UA_Byte *)data + exObj.content.decoded.type->members[i].padding;
-              UA_Variant_setScalar(&dataVal.value, dataPointer, exObj.content.decoded.type->members[i].memberType);
-              auto json = UaDataValueToJsonValue(dataVal, m_pClient, nodeId, serializeStatusInformation).getValue();
-              if (!json.is_null()) {
-                (*jsonValue)[std::string(exObj.content.decoded.type->members[i].memberName)] = json;
-              }
-            }
-            if (exObj.content.decoded.type->members[i].isArray) {
-              data = (UA_Byte *)data + sizeof(void *) + sizeof(size_t);
-            } else if (exObj.content.decoded.type->members[i].isOptional) {
-              data = (UA_Byte *)data + sizeof(void *);
-            } else {
-              data = (UA_Byte *)data + exObj.content.decoded.type->members[i].memberType->memSize;
-            }
-            data = (UA_Byte *)data + exObj.content.decoded.type->members[i].padding;
-          }
-          break;
-        }
-        case UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_ENCODED_NOBODY: {
-          LOG(DEBUG) << "Extension Object has no Body";
-          *jsonValue = std::string("");
-          break;
-        }
-        case UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_DECODED_NODELETE: {
-          LOG(WARNING) << "UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_DECODED_NODELETE";
-        }
-        case UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_ENCODED_BYTESTRING: {
-          LOG(WARNING) << "UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_ENCODED_BYTESTRING";
-        }
-        case UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_ENCODED_XML: {
-          LOG(WARNING) << "UA_ExtensionObjectEncoding::UA_EXTENSIONOBJECT_ENCODED_XML";
-        }
-        default: {
-          LOG(ERROR) << "Unknow conversion from OpcUaType_ExtensionObject with DataTypeEncodingType: ns=" << exObj.content.encoded.typeId.namespaceIndex
-                     << "; i=" << exObj.content.encoded.typeId.identifier.numeric;
-          UA_String tmp;
-          UA_NodeId_print(&nodeId, &tmp);
-          LOG(ERROR) << "The erroc originates from ns=" << tmp.data;
-
-          UA_NodeId dataTypeNodeId;
-          UA_NodeId_init(&dataTypeNodeId);
-          UA_StatusCode ret = UA_Client_readDataTypeAttribute(m_pClient, nodeId, &dataTypeNodeId);
-          if (ret != UA_STATUSCODE_GOOD) {
-            LOG(ERROR) << "could not read DataType Attribute";
-            throw Umati::Exceptions::OpcUaNonGoodStatusCodeException(ret, "Could not read DataType Attribute");
-          }
-
-          UA_Variant v;
-          UA_Variant_init(&v);
-          ret = UA_Client_readValueAttribute(m_pClient, nodeId, &v);
-          if (ret != UA_STATUSCODE_GOOD) {
-            throw Umati::Exceptions::OpcUaNonGoodStatusCodeException(ret, "Could not read Value Attribute");
-            throw ret;
-          }
-          // auto dataType = UA_Client_findDataType(m_pClient, &dataTypeNodeId);
-          auto dataType = v.type;
-          auto clientConfig = UA_Client_getConfig(m_pClient);
-          auto res = UA_decodeBinaryInternal(&exObj.content.encoded.body, NULL, exObj.content.decoded.data, dataType, clientConfig->customDataTypes);
-          LOG(INFO) << "Found the Datatype=" << dataType->typeName << "And the decoding Result was: " << res;
-        } break;
     case UA_DATATYPEKIND_STRUCTURE: {
       if (strcmp(variant.type->typeName, "EUInformation") == 0) {
         UA_EUInformation euInfo(*(UA_EUInformation *)variant.data);
