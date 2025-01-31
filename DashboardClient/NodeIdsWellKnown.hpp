@@ -7,6 +7,7 @@
  */
 
 #include <ModelOpcUa/ModelDefinition.hpp>
+
 namespace Umati {
 namespace Dashboard {
 const std::string ns0UriFull = "http://opcfoundation.org/UA/";

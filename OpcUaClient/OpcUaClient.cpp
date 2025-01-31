@@ -8,7 +8,6 @@
  * Copyright 2023 (c) Marc Fischer, ISW University of Stuttgart (for umati and VDW e.V.)
  */
 
-#include <tinyxml2.h>
 #include "OpcUaClient.hpp"
 #include "ScopeExitGuard.hpp"
 #include "SetupSecurity.hpp"
@@ -22,6 +21,8 @@
 #include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
+#include "Converter/CustomDataTypes/types_machinery_result_generated_handling.h"
+#include "Converter/CustomDataTypes/types_tightening_generated_handling.h"
 
 namespace Umati {
 
@@ -96,6 +97,9 @@ static void stateCallback(UA_Client *client, UA_SecureChannelState channelState,
 
 static void inactivityCallback(UA_Client *client) { LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n"; }
 
+UA_DataTypeArray TighteningSystemTypes = {NULL, 1, UA_TYPES_TIGHTENING};
+static UA_DataTypeArray getMachineryResultTypes() { return {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT}; }
+
 OpcUaClient::OpcUaClient(
   std::string serverURI,
   std::function<void()> issueReset,
@@ -110,10 +114,9 @@ OpcUaClient::OpcUaClient(
     m_username(std::move(Username)),
     m_password(std::move(Password)),
     m_subscr(m_uriToIndexCache, m_indexToUriCache),
-    m_pClient(UA_Client_new(), UA_Client_delete) /*,
-    m_dataTypeArray(getMachineryResultTypes())*/
-{
-  {
+    m_pClient(UA_Client_new(), UA_Client_delete),
+    m_dataTypeArray(getMachineryResultTypes()) {
+  
     std::lock_guard<std::recursive_mutex> l(m_clientMutex);
     UA_ClientConfig *config = UA_Client_getConfig(m_pClient.get());
 
@@ -122,7 +125,7 @@ OpcUaClient::OpcUaClient(
     config->timeout = 2000;
     config->inactivityCallback = inactivityCallback;
     config->stateCallback = stateCallback;
-    // config->customDataTypes = m_dataTypeArray;
+    config->customDataTypes = &m_dataTypeArray;
   }
 
   m_opcUaWrapper = std::move(opcUaWrapper);
@@ -631,7 +634,27 @@ void OpcUaClient::fillNamespaceCache(const std::vector<std::string> &uaNamespace
   }
 }
 
-void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::size_t namespaceIndex) {}
+void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::size_t namespaceIndex) {
+  if (namespaceURI == "http://opcfoundation.org/UA/Machinery/Result/") {
+    uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
+
+    for (size_t j = 0; j < UA_TYPES_MACHINERY_RESULT_COUNT; j++) {
+      UA_TYPES_MACHINERY_RESULT[j].typeId.namespaceIndex = nsIdx;
+      UA_TYPES_MACHINERY_RESULT[j].binaryEncodingId.namespaceIndex = nsIdx;
+    }
+
+    m_dataTypeArray.types = UA_TYPES_MACHINERY_RESULT;
+  }
+
+  if (namespaceURI == "http://opcfoundation.org/UA/IJT/") {
+    uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
+
+    for (size_t j = 0; j < UA_TYPES_TIGHTENING_COUNT; j++) {
+      UA_TYPES_TIGHTENING[j].typeId.namespaceIndex = nsIdx;
+      UA_TYPES_TIGHTENING[j].binaryEncodingId.namespaceIndex = nsIdx;
+    }
+  }
+}
 
 ModelOpcUa::ModellingRule_t OpcUaClient::browseModellingRule(const open62541Cpp::UA_NodeId &uaNodeId) {
   UA_ByteString continuationPoint;
@@ -1007,9 +1030,7 @@ std::vector<nlohmann::json> OpcUaClient::readValues2(const std::list<ModelOpcUa:
     throw Exceptions::OpcUaException(ss.str());
   } else {
     for (int i = 0; i < ret.resultsSize; i++) {
-      UA_NodeId nid;
-      UA_NodeId_init(&nid);
-      auto valu = Converter::UaDataValueToJsonValue(ret.results[i], m_pClient.get(), nid, false);
+      auto valu = Converter::UaDataValueToJsonValue(ret.results[i], false);
       auto val = valu.getValue();
       readValues.push_back(val);
     }

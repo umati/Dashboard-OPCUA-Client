@@ -16,12 +16,6 @@ externalproject_add(
     INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
-ExternalProject_Add(Tinyxml2External
-	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../deps/tinyxml2
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-	INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-)
-
 externalproject_add(
     EasyloggingppExternal
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../deps/easyloggingpp
@@ -117,6 +111,6 @@ externalproject_add(
 		        -DDEB_PACKAGE_LIBCPP_VERSION:String=${DEB_PACKAGE_LIBCPP_VERSION}
 
     INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-    DEPENDS open62541CppExternal EasyloggingppExternal JsonExternal PahoCppExternal Tinyxml2External
+    DEPENDS open62541CppExternal EasyloggingppExternal JsonExternal PahoCppExternal
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/Dashboard-Client-build
 )

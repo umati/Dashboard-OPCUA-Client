@@ -93,20 +93,6 @@ namespace Umati
                     return ret;
                 }
 
-                inline static BrowseContext_t DescriptionOf() {
-                    BrowseContext_t ret;
-                    ret.referenceTypeId = NodeId_HasDescription;
-                    ret.browseDirection = BrowseDirection::BACKWARD;
-                    return ret;
-                }
-
-                inline static BrowseContext_t EncodingOf() {
-                    BrowseContext_t ret;
-                    ret.referenceTypeId = NodeId_HasEncoding;
-                    ret.browseDirection = BrowseDirection::BACKWARD;
-                    return ret;
-                }
-
                 inline static BrowseContext_t OrganizedBy() {
                     BrowseContext_t ret;
                     ret.referenceTypeId = NodeId_Organizes;
@@ -226,12 +212,6 @@ namespace Umati
                 int32_t m_monitoredItemId;
                 ModelOpcUa::NodeId_t m_nodeId;
             };
-
-            virtual void updateCustomTypes() = 0;
-
-            virtual void readTypeDictionaries() = 0;
-
-            virtual void buildCustomDataTypes() = 0;
 
             virtual std::string readNodeBrowseName(const ModelOpcUa::NodeId_t &nodeId) = 0;
 

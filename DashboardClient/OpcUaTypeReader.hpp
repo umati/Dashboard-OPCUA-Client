@@ -14,7 +14,6 @@
 #include <ModelOpcUa/ModelInstance.hpp>
 #include "IDashboardDataClient.hpp"
 #include <Configuration.hpp>
-#include "TypeDictionary/TypeDictionary.hpp"
 #include "../MachineObserver/Exceptions/MachineInvalidException.hpp"
 #include <sstream>
 #include <iostream>
@@ -29,17 +28,16 @@ class OpcUaTypeReader {
     std::vector<Umati::Util::NamespaceInformation> namespaceInformations);
 
   ~OpcUaTypeReader();
-  void readTypeDictionaries();
+
   void readTypes();
   using NamespaceInformation_t = Util::NamespaceInformation;
 
-  /// \todo make the following internal structures private and provide access via funcitons
+  /// \todo make the following internal structures private and provide access via functions
   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_identificationTypeOfTypeDefinition;
   std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
   std::vector<std::string> m_expectedObjectTypeNamespaces;
   std::vector<std::string> m_expectedObjectTypeNames;
   std::vector<ModelOpcUa::NodeId_t> m_knownMachineTypeDefinitions;
-  std::vector<Umati::TypeDictionary::TypeDictionary> m_typeDictionaries;
   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_subTypeDefinitionToKnownMachineTypeDefinition;
   std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap =
     std::make_shared<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>>();
@@ -47,6 +45,15 @@ class OpcUaTypeReader {
   std::shared_ptr<ModelOpcUa::StructureNode> typeDefinitionToStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
   std::shared_ptr<ModelOpcUa::StructureNode> getIdentificationTypeStructureNode(const ModelOpcUa::NodeId_t &typeDefinition) const;
   ModelOpcUa::NodeId_t getIdentificationTypeNodeId(const ModelOpcUa::NodeId_t &typeDefinition) const;
+
+ protected:
+  /// Map of <TypeName, StructureBiNode>
+  typedef std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureBiNode>>> BiDirTypeMap_t;
+  std::shared_ptr<Umati::Dashboard::IDashboardDataClient> m_pClient;
+  const ModelOpcUa::NodeId_t m_emptyId = ModelOpcUa::NodeId_t{"", ""};
+  void initialize(std::vector<std::string> &notFoundObjectTypeNamespaces);
+  void browseObjectOrVariableTypeAndFillBidirectionalTypeMap(
+    const ModelOpcUa::NodeId_t &startNodeId, BiDirTypeMap_t bidirectionalTypeMap, bool ofBaseDataVariableType);
 
  protected:
   /// Map of <TypeName, StructureBiNode>
