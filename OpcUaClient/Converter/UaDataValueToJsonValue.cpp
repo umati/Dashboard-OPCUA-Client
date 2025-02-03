@@ -212,23 +212,24 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
       switch (exObj.content.encoded.typeId.identifierType) {
         case UA_TYPES_RANGE: {
           UA_Range range(*(UA_Range *)exObj.content.decoded.data);
-          (*jsonValue)["low"] = range.low;
-          (*jsonValue)["high"] = range.high;
+          (*jsonValue)["Low"] = range.low;
+          (*jsonValue)["High"] = range.high;
           break;
         }
+
         case UA_TYPES_EUINFORMATION: {
           UA_EUInformation euInfo(*(UA_EUInformation *)variant.data);
-          (*jsonValue)["namespaceUri"] = std::string((char *)euInfo.namespaceUri.data, euInfo.namespaceUri.length);
-          (*jsonValue)["unitId"] = euInfo.unitId;
+          (*jsonValue)["NamespaceUri"] = std::string((char *)euInfo.namespaceUri.data, euInfo.namespaceUri.length);
+          (*jsonValue)["UnitId"] = euInfo.unitId;
           UA_DataValue dataVal;
           UA_DataValue_init(&dataVal);
           {
             UA_Variant_setScalar(&dataVal.value, &euInfo.displayName, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
-            (*jsonValue)["displayName"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+            (*jsonValue)["DisplayName"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
           {
             UA_Variant_setScalar(&dataVal.value, &euInfo.description, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
-            (*jsonValue)["description"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+            (*jsonValue)["Description"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
           break;
         }
@@ -301,23 +302,23 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
     case UA_DATATYPEKIND_STRUCTURE: {
       if (strcmp(variant.type->typeName, "EUInformation") == 0) {
         UA_EUInformation euInfo(*(UA_EUInformation *)variant.data);
-        (*jsonValue)["namespaceUri"] = std::string((char *)euInfo.namespaceUri.data, euInfo.namespaceUri.length);
-        (*jsonValue)["unitId"] = euInfo.unitId;
+        (*jsonValue)["NamespaceUri"] = std::string((char *)euInfo.namespaceUri.data, euInfo.namespaceUri.length);
+        (*jsonValue)["UnitId"] = euInfo.unitId;
         UA_DataValue dataVal;
         UA_DataValue_init(&dataVal);
         {
           UA_Variant_setScalar(&dataVal.value, &euInfo.displayName, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
-          (*jsonValue)["displayName"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+          (*jsonValue)["DisplayName"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
         }
         {
           UA_Variant_setScalar(&dataVal.value, &euInfo.description, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
-          (*jsonValue)["description"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+          (*jsonValue)["Description"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
         }
         break;
       } else if (strcmp(variant.type->typeName, "Range") == 0) {
         UA_Range range(*(UA_Range *)variant.data);
-        (*jsonValue)["low"] = range.low;
-        (*jsonValue)["high"] = range.high;
+        (*jsonValue)["Low"] = range.low;
+        (*jsonValue)["High"] = range.high;
         break;
       } else if (strcmp(variant.type->typeName, "TimeZoneDataType") == 0) {
         UA_TimeZoneDataType tz(*(UA_TimeZoneDataType *)variant.data);

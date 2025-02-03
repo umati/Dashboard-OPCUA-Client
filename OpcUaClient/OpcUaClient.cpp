@@ -98,7 +98,9 @@ static void stateCallback(UA_Client *client, UA_SecureChannelState channelState,
 static void inactivityCallback(UA_Client *client) { LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n"; }
 
 UA_DataTypeArray TighteningSystemTypes = {NULL, 1, UA_TYPES_TIGHTENING};
-static UA_DataTypeArray getMachineryResultTypes() { return {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT}; }
+UA_DataTypeArray MachineryResultTypes = {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT};
+
+static UA_DataTypeArray getMachineryResultTypes() { return MachineryResultTypes; }
 
 OpcUaClient::OpcUaClient(
   std::string serverURI,
