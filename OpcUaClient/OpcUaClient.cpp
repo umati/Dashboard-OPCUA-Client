@@ -21,6 +21,7 @@
 #include "Converter/UaQualifiedNameToModelQualifiedName.hpp"
 #include "Converter/UaNodeClassToModelNodeClass.hpp"
 #include "Converter/UaDataValueToJsonValue.hpp"
+#include "Converter/CustomDataTypes/types_gms_generated_handling.h"
 #include "Converter/CustomDataTypes/types_machinery_result_generated_handling.h"
 #include "Converter/CustomDataTypes/types_tightening_generated_handling.h"
 
@@ -97,7 +98,8 @@ static void stateCallback(UA_Client *client, UA_SecureChannelState channelState,
 
 static void inactivityCallback(UA_Client *client) { LOG(ERROR) << "\n\n\nINACTIVITYCALLBACK\n\n\n"; }
 
-UA_DataTypeArray TighteningSystemTypes = {NULL, 1, UA_TYPES_TIGHTENING};
+UA_DataTypeArray GmsTypes = {NULL, 6, UA_TYPES_GMS};
+UA_DataTypeArray TighteningSystemTypes = {&GmsTypes, 1, UA_TYPES_TIGHTENING};
 UA_DataTypeArray MachineryResultTypes = {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT};
 
 static UA_DataTypeArray getMachineryResultTypes() { return MachineryResultTypes; }
@@ -386,6 +388,15 @@ void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::
     for (size_t j = 0; j < UA_TYPES_TIGHTENING_COUNT; j++) {
       UA_TYPES_TIGHTENING[j].typeId.namespaceIndex = nsIdx;
       UA_TYPES_TIGHTENING[j].binaryEncodingId.namespaceIndex = nsIdx;
+    }
+  }
+
+  if (namespaceURI == "http://opcfoundation.org/UA/GMS/") {
+    uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
+
+    for (size_t j = 0; j < UA_TYPES_GMS_COUNT; j++) {
+      UA_TYPES_GMS[j].typeId.namespaceIndex = nsIdx;
+      UA_TYPES_GMS[j].binaryEncodingId.namespaceIndex = nsIdx;
     }
   }
 }

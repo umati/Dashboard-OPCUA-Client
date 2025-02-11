@@ -13,10 +13,7 @@
 
 #endif
 
-
-
 _UA_BEGIN_DECLS
-
 
 /**
  * Every type is assigned an index in an array containing the type descriptions.
@@ -28,16 +25,16 @@ extern UA_EXPORT UA_DataType UA_TYPES_TIGHTENING[UA_TYPES_TIGHTENING_COUNT];
 /**
  * ProcessingTimesDataType
  * ^^^^^^^^^^^^^^^^^^^^^^^
- * This structure contains measured times that were generated during the execution of a joining process. These measured values provide information about the duration required by the various sub-functions. */
+ * This structure contains measured times that were generated during the execution of a joining process. These measured values provide information about the
+ * duration required by the various sub-functions. */
 typedef struct {
-    UA_DateTime startTime;
-    UA_DateTime endTime;
-    UA_Double *acquisitionDuration;
-    UA_Double *processingDuration;
+  UA_DateTime startTime;
+  UA_DateTime endTime;
+  UA_Double *acquisitionDuration;
+  UA_Double *processingDuration;
 } UA_IJT_ProcessingTimesDataType;
 
 #define UA_TYPES_TIGHTENING_PROCESSINGTIMESDATATYPE 0
-
 
 _UA_END_DECLS
 

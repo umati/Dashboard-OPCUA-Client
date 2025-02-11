@@ -6,46 +6,47 @@
 
 /* ProcessingTimesDataType */
 static UA_DataTypeMember ProcessingTimesDataType_members[4] = {
-{
-    UA_TYPENAME("StartTime") /* .memberName */
-    &UA_TYPES[UA_TYPES_DATETIME], /* .memberType */
-    0, /* .padding */
-    false, /* .isArray */
-    false  /* .isOptional */
-},
-{
-    UA_TYPENAME("EndTime") /* .memberName */
-    &UA_TYPES[UA_TYPES_DATETIME], /* .memberType */
+  {
+    UA_TYPENAME("StartTime")         /* .memberName */
+      & UA_TYPES[UA_TYPES_DATETIME], /* .memberType */
+    0,                               /* .padding */
+    false,                           /* .isArray */
+    false                            /* .isOptional */
+  },
+  {
+    UA_TYPENAME("EndTime")                                                                                                         /* .memberName */
+      & UA_TYPES[UA_TYPES_DATETIME],                                                                                               /* .memberType */
     offsetof(UA_IJT_ProcessingTimesDataType, endTime) - offsetof(UA_IJT_ProcessingTimesDataType, startTime) - sizeof(UA_DateTime), /* .padding */
-    false, /* .isArray */
-    false  /* .isOptional */
-},
-{
-    UA_TYPENAME("AcquisitionDuration") /* .memberName */
-    &UA_TYPES[UA_TYPES_DOUBLE], /* .memberType */
+    false,                                                                                                                         /* .isArray */
+    false                                                                                                                          /* .isOptional */
+  },
+  {
+    UA_TYPENAME("AcquisitionDuration")                                                                                                       /* .memberName */
+      & UA_TYPES[UA_TYPES_DOUBLE],                                                                                                           /* .memberType */
     offsetof(UA_IJT_ProcessingTimesDataType, acquisitionDuration) - offsetof(UA_IJT_ProcessingTimesDataType, endTime) - sizeof(UA_DateTime), /* .padding */
-    false, /* .isArray */
-    true  /* .isOptional */
-},
-{
+    false,                                                                                                                                   /* .isArray */
+    true                                                                                                                                     /* .isOptional */
+  },
+  {
     UA_TYPENAME("ProcessingDuration") /* .memberName */
-    &UA_TYPES[UA_TYPES_DOUBLE], /* .memberType */
-    offsetof(UA_IJT_ProcessingTimesDataType, processingDuration) - offsetof(UA_IJT_ProcessingTimesDataType, acquisitionDuration) - sizeof(void *), /* .padding */
-    false, /* .isArray */
-    true  /* .isOptional */
-},};
-UA_DataType UA_TYPES_TIGHTENING[UA_TYPES_TIGHTENING_COUNT] = {
-/* ProcessingTimesDataType */
-{
-    UA_TYPENAME("ProcessingTimesDataType") /* .typeName */
-    {11, UA_NODEIDTYPE_NUMERIC, {3002LU}}, /* .typeId */
-    {11, UA_NODEIDTYPE_NUMERIC, {5001LU}}, /* .binaryEncodingId */
-    sizeof(UA_IJT_ProcessingTimesDataType), /* .memSize */
-    UA_DATATYPEKIND_OPTSTRUCT, /* .typeKind */
-    false, /* .pointerFree */
-    false, /* .overlayable */
-    4, /* .membersSize */
-    ProcessingTimesDataType_members  /* .members */
-},
+      & UA_TYPES[UA_TYPES_DOUBLE],    /* .memberType */
+    offsetof(UA_IJT_ProcessingTimesDataType, processingDuration) - offsetof(UA_IJT_ProcessingTimesDataType, acquisitionDuration) -
+      sizeof(void *), /* .padding */
+    false,            /* .isArray */
+    true              /* .isOptional */
+  },
 };
-
+UA_DataType UA_TYPES_TIGHTENING[UA_TYPES_TIGHTENING_COUNT] = {
+  /* ProcessingTimesDataType */
+  {
+    UA_TYPENAME("ProcessingTimesDataType")  /* .typeName */
+    {11, UA_NODEIDTYPE_NUMERIC, {3002LU}},  /* .typeId */
+    {11, UA_NODEIDTYPE_NUMERIC, {5001LU}},  /* .binaryEncodingId */
+    sizeof(UA_IJT_ProcessingTimesDataType), /* .memSize */
+    UA_DATATYPEKIND_OPTSTRUCT,              /* .typeKind */
+    false,                                  /* .pointerFree */
+    false,                                  /* .overlayable */
+    4,                                      /* .membersSize */
+    ProcessingTimesDataType_members         /* .members */
+  },
+};

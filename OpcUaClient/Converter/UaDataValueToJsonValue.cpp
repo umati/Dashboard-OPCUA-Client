@@ -160,32 +160,33 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
       UA_ExtensionObject exObj(*(UA_ExtensionObject *)variant.data);
       *jsonValue = {};
       if (exObj.content.encoded.typeId.namespaceIndex != 0) {
-        if (exObj.content.encoded.typeId.identifier.numeric == 5008) {
-          size_t offset = 0;
-          UA_ResultDataType result;
+        if (exObj.content.encoded.typeId.identifier.numeric == 3008) {
+          LOG(INFO) << 'he';
+        } else if (exObj.content.encoded.typeId.identifier.numeric == 5008) {
+          LOG(INFO) << 'he';
+        } else if (exObj.content.encoded.typeId.identifier.numeric == 5005) {
+          UA_ResultMetaDataType resultMetaData;
           UA_StatusCode retval =
-            UA_decodeBinaryInternal(&exObj.content.encoded.body, &offset, &result, &UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTDATATYPE], NULL);
-
+            UA_decodeBinary(&exObj.content.encoded.body, &resultMetaData, &UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTMETADATATYPE], NULL);
           UA_DataValue dataVal;
           UA_DataValue_init(&dataVal);
-          nlohmann::json resultMetaDataJson = {};
           {
-            UA_Variant_setScalar(&dataVal.value, &result.resultMetaData.resultId, &UA_TYPES[UA_TYPES_STRING]);
-            resultMetaDataJson["ResultId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+            UA_Variant_setScalar(&dataVal.value, &resultMetaData.resultId, &UA_TYPES[UA_TYPES_STRING]);
+            (*jsonValue)["ResultId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
-          if (result.resultMetaData.resultState) {
-            UA_Variant_setScalar(&dataVal.value, result.resultMetaData.resultState, &UA_TYPES[UA_TYPES_INT32]);
-            resultMetaDataJson["ResultState"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+          if (resultMetaData.resultState) {
+            UA_Variant_setScalar(&dataVal.value, resultMetaData.resultState, &UA_TYPES[UA_TYPES_INT32]);
+            (*jsonValue)["ResultState"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
-          if (result.resultMetaData.resultUri) {
-            UA_Variant_setArray(&dataVal.value, result.resultMetaData.resultUri, result.resultMetaData.resultUriSize, &UA_TYPES[UA_TYPES_STRING]);
-            resultMetaDataJson["ResultUri"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+          if (resultMetaData.resultUri) {
+            UA_Variant_setArray(&dataVal.value, resultMetaData.resultUri, resultMetaData.resultUriSize, &UA_TYPES[UA_TYPES_STRING]);
+            (*jsonValue)["ResultUri"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
-          if (result.resultMetaData.fileFormat) {
-            UA_Variant_setArray(&dataVal.value, result.resultMetaData.fileFormat, result.resultMetaData.fileFormatSize, &UA_TYPES[UA_TYPES_STRING]);
-            resultMetaDataJson["FileFormat"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+          if (resultMetaData.fileFormat) {
+            UA_Variant_setArray(&dataVal.value, resultMetaData.fileFormat, resultMetaData.fileFormatSize, &UA_TYPES[UA_TYPES_STRING]);
+            (*jsonValue)["FileFormat"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
-          (*jsonValue)["ResultMetaData"] = resultMetaDataJson;
+
         } else if (exObj.content.encoded.typeId.identifier.numeric == 5001 /* Encoding of ProcessingTimesDataType */) {
           size_t offset = 0;
           UA_IJT_ProcessingTimesDataType ptime;
@@ -344,28 +345,6 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
 
         UA_Variant_setScalar(&dataVal.value, &ptime.endTime, &UA_TYPES[UA_TYPES_DATETIME]);
         (*jsonValue)["EndTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
-      } else if (strcmp(variant.type->typeName, UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTDATATYPE].typeName) == 0) {
-        UA_ResultDataType result(*(UA_ResultDataType *)variant.data);
-        UA_DataValue dataVal;
-        UA_DataValue_init(&dataVal);
-        nlohmann::json resultMetaDataJson = {};
-        {
-          UA_Variant_setScalar(&dataVal.value, &result.resultMetaData.resultId, &UA_TYPES[UA_TYPES_STRING]);
-          resultMetaDataJson["ResultId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
-        }
-        if (result.resultMetaData.resultState) {
-          UA_Variant_setScalar(&dataVal.value, result.resultMetaData.resultState, &UA_TYPES[UA_TYPES_INT32]);
-          resultMetaDataJson["ResultState"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
-        }
-        if (result.resultMetaData.resultUri) {
-          UA_Variant_setArray(&dataVal.value, result.resultMetaData.resultUri, result.resultMetaData.resultUriSize, &UA_TYPES[UA_TYPES_STRING]);
-          resultMetaDataJson["ResultUri"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
-        }
-        if (result.resultMetaData.fileFormat) {
-          UA_Variant_setArray(&dataVal.value, result.resultMetaData.fileFormat, result.resultMetaData.fileFormatSize, &UA_TYPES[UA_TYPES_STRING]);
-          resultMetaDataJson["FileFormat"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
-        }
-        (*jsonValue)["ResultMetaData"] = resultMetaDataJson;
       } else {
         LOG(ERROR) << "Unknown data type. ";
       }
