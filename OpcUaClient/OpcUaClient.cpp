@@ -693,7 +693,7 @@ ModelOpcUa::NodeId_t OpcUaClient::TranslateBrowsePathToNodeId(ModelOpcUa::NodeId
   if (uaBrowsePathResults.targetsSize != 1) {
     LOG(ERROR) << "Expect 1 browseResult, got " << uaBrowsePathResults.targetsSize << " for node: '" << static_cast<std::string>(startNode) << "' with "
                << uaResult << "(BrowsePath: " << static_cast<std::string>(browseName) << ")";
-    throw Exceptions::UmatiException("BrowseResult length mismatch.");
+    // throw Exceptions::UmatiException("BrowseResult length mismatch.");
   }
 
   UA_StatusCode uaResultElement(uaBrowsePathResults.statusCode);
