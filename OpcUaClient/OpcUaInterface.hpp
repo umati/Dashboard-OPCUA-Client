@@ -141,9 +141,13 @@ class OpcUaWrapper : public OpcUaInterface {
     request.nodesToReadSize = 1;
     UA_ReadResponse response = UA_Client_Service_read(client, request);
 
-    UA_String *ns = (UA_String *)response.results[0].value.data;
-    for (size_t i = 0; i < response.results[0].value.arrayLength; ++i) {
-      namespaceArray.push_back(std::string(ns[i].data, ns[i].data + ns[i].length));
+    if (response.results != nullptr) {
+      UA_String *ns = (UA_String *)response.results[0].value.data;
+      for (size_t i = 0; i < response.results[0].value.arrayLength; ++i) {
+        namespaceArray.push_back(std::string(ns[i].data, ns[i].data + ns[i].length));
+      }
+    } else {
+      LOG(INFO) << "Error updating namespace table.";
     }
     UA_ReadRequest_clear(&request);
     UA_ReadResponse_clear(&response);

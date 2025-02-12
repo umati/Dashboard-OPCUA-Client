@@ -33,6 +33,9 @@
 #include <ConfigureLogger.hpp>
 #include <ConfigurationJsonFile.hpp>
 #include <Exceptions/ConfigurationException.hpp>
+#include <Exceptions/OpcUaNonGoodStatusCodeException.hpp>
+#include <Exceptions/ClientNotConnected.hpp>
+
 #include <chrono>
 #include <iomanip>
 
@@ -87,9 +90,19 @@ int main(int argc, char *argv[]) {
       LOG(INFO) << "Connection not established, exiting.";
       return -1;
     }
+    for (;;) {
+      try {
+        dashboardClient.ReadTypes();
+        break;
+      } catch (Umati::Exceptions::ClientNotConnected e) {
+        LOG(INFO) << "Client disconnected while browsing types. Trying again.";
+      } catch (Umati::Exceptions::OpcUaNonGoodStatusCodeException e) {
+        LOG(INFO) << "Client no good while browsing types. Trying again.";
+      }
+    }
 
-    dashboardClient.ReadTypes();
     dashboardClient.StartMachineObserver();
+
     while (running && !reset) {
       dashboardClient.Iterate();
     }
