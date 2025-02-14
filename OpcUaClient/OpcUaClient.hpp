@@ -89,7 +89,7 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
   // Max search depth
   bool isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth = 100);
 
-  void updateCustomTypes(); 
+  void updateCustomTypes();
 
   double m_maxAgeRead_ms = 100.0;
 

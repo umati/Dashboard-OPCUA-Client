@@ -124,6 +124,17 @@ std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeId
   ModelOpcUa::NodeId_t startNode, const std::shared_ptr<ModelOpcUa::StructureNode> &pTypeDefinition) {
   auto ret = browsedNodes.insert(startNode);
   std::list<std::shared_ptr<const ModelOpcUa::Node>> foundChildNodes;
+#ifdef FIX_FOR_OLD_IJT_2
+  if (startNode == ModelOpcUa::NodeId_t{"urn:AtlasCopco:IJT:Tightening:Server/", "s=TighteningSystem/ResultManagement"}) {
+    LOG(INFO) << "Here";
+    auto ptr = pTypeDefinition->SpecifiedChildNodes->back()->SpecifiedChildNodes;
+    auto pTypeDefAlt = *pTypeDefinition->SpecifiedChildNodes->front();
+    auto newChild = std::make_shared<ModelOpcUa::StructureNode>(&pTypeDefAlt, ModelOpcUa::QualifiedName_t{"urn:AtlasCopco:IJT:Tightening:Server/", "Results"});
+    pTypeDefinition.get()->SpecifiedChildNodes.get()->pop_back();
+    newChild.get()->SpecifiedChildNodes = ptr;
+    pTypeDefinition.get()->SpecifiedChildNodes.get()->push_back(newChild);
+  }
+#endif
   if (ret.second == true) {
     for (auto &pChild : *pTypeDefinition->SpecifiedChildNodes) {
       switch (pChild->ModellingRule) {
@@ -153,6 +164,36 @@ std::shared_ptr<const ModelOpcUa::SimpleNode> DashboardClient::TransformToNodeId
           break;
       }
     }
+    browsedNodesChildNodes[startNode] = foundChildNodes;
+  } else {
+#ifdef REDUNDANT_FOR_IJT
+    if (startNode == ModelOpcUa::NodeId_t{"urn:AtlasCopco:IJT:Tightening:Server/", "s=/ObjectsFolder/TighteningSystem/Identification"}) {
+      foundChildNodes = browsedNodesChildNodes[startNode];
+    }
+    if (startNode == ModelOpcUa::NodeId_t{"urn:AtlasCopco:IJT:Tightening:Server/", "s=TighteningSystem/ResultManagement"}) {
+      foundChildNodes = browsedNodesChildNodes[startNode];
+    }
+    if (
+      startNode == ModelOpcUa::NodeId_t{
+                     "urn:AtlasCopco:IJT:Tightening:Server/", "s=TighteningSystem/AssetManagement/Assets/Controllers/TighteningController/Identification"}) {
+      foundChildNodes = browsedNodesChildNodes[startNode];
+    }
+    if (
+      startNode == ModelOpcUa::NodeId_t{
+                     "urn:AtlasCopco:IJT:Tightening:Server/", "s=TighteningSystem/AssetManagement/Assets/Controllers/TighteningController/OperationCounters"}) {
+      foundChildNodes = browsedNodesChildNodes[startNode];
+    }
+    if (
+      startNode ==
+      ModelOpcUa::NodeId_t{"urn:AtlasCopco:IJT:Tightening:Server/", "s=TighteningSystem/AssetManagement/Assets/Tools/TighteningTool/OperationCounters"}) {
+      foundChildNodes = browsedNodesChildNodes[startNode];
+    }
+    if (
+      startNode ==
+      ModelOpcUa::NodeId_t{"urn:AtlasCopco:IJT:Tightening:Server/", "s=TighteningSystem/AssetManagement/Assets/Tools/TighteningTool/Identification"}) {
+      foundChildNodes = browsedNodesChildNodes[startNode];
+    }
+#endif
   }
   auto pNode = std::make_shared<ModelOpcUa::SimpleNode>(startNode, pTypeDefinition->SpecifiedTypeNodeId, *pTypeDefinition, foundChildNodes);
 

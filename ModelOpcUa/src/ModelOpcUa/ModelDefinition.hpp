@@ -41,7 +41,17 @@ struct NodeId_t {
     return ss.str();
   }
 
-  bool operator==(const NodeId_t &other) const { return this->Uri == other.Uri && this->Id == other.Id; }
+  bool operator==(const NodeId_t &other) const {
+    auto cmpUri1 = this->Uri;
+    if (cmpUri1 == "") {
+      cmpUri1 = "http://opcfoundation.org/UA/";
+    }
+    auto cmpUri2 = other.Uri;
+    if (cmpUri2 == "") {
+      cmpUri2 = "http://opcfoundation.org/UA/";
+    }
+    return cmpUri1 == cmpUri2 && this->Id == other.Id;
+  }
 
   bool operator<(const NodeId_t &other) const {
     if (this->Uri != other.Uri) {
@@ -159,7 +169,7 @@ class NodeDefinition {
  public:
   NodeDefinition(
     NodeClass_t nodeClass, ModellingRule_t modellingRule, NodeId_t referenceType, NodeId_t specifiedTypeNodeId, QualifiedName_t specifiedBrowseName);
-
+  NodeDefinition(const NodeDefinition nd, const QualifiedName_t specifiedBrowseName);
   const ModellingRule_t ModellingRule;
   const NodeClass_t NodeClass;
 
@@ -197,6 +207,8 @@ class StructureNode : public NodeDefinition {
     std::shared_ptr<std::list<std::shared_ptr<StructureNode>>> childNodes = std::make_shared<std::list<std::shared_ptr<StructureNode>>>()
 
   );
+
+  StructureNode(const StructureNode *structureNode, const QualifiedName_t SpecifiedBrowseName);
 
   StructureNode(
     const BrowseResult_t &browseResult,

@@ -20,6 +20,7 @@ set(CLIENT_SRC
     "Converter/CustomDataTypes/types_machinery_result_generated.c"
     "Converter/CustomDataTypes/types_tightening_generated.c"
     "Converter/CustomDataTypes/types_gms_generated.c"
+    "Converter/CustomDataTypes/types_ijt_base_generated.c"
     "Exceptions/OpcUaNonGoodStatusCodeException.cpp"
 )
 message("### opcua_dashboardclient/OpcUaClient: collecting source file list for library: ${CLIENT_SRC}")

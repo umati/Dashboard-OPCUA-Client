@@ -15,6 +15,7 @@
 #include <iomanip>
 #include "CustomDataTypes/types_machinery_result_generated_handling.h"
 #include "CustomDataTypes/types_tightening_generated_handling.h"
+#include "CustomDataTypes/types_ijt_base_generated.h"
 #include "../deps/open62541/src/ua_types_encoding_binary.h"
 
 namespace Umati {
@@ -25,6 +26,239 @@ UaDataValueToJsonValue::UaDataValueToJsonValue(const UA_DataValue &dataValue, bo
   setValueFromDataValue(dataValue, serializeStatusInformation);
   if (serializeStatusInformation) {
     setStatusCodeFromDataValue(dataValue);
+  }
+}
+
+void decodeJoiningResultMetaDataType(nlohmann::json *jsonValue, UA_JoiningResultMetaDataType *joiningResult, bool serializeStatusInformation) {
+  UA_DataValue dataVal;
+  UA_DataValue_init(&dataVal);
+  if (joiningResult->assemblyType != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->assemblyType, &UA_TYPES[UA_TYPES_BYTE]);
+    (*jsonValue)["ResultId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->associatedEntities != nullptr) {
+    UA_Variant_setArray(
+      &dataVal.value, joiningResult->associatedEntities, joiningResult->associatedEntitiesSize, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_ENTITYDATATYPE]);
+    (*jsonValue)["AssociatedEntities"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->classification != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->classification, &UA_TYPES[UA_TYPES_BYTE]);
+    (*jsonValue)["Classification"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->creationTime != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->creationTime, &UA_TYPES[UA_TYPES_DATETIME]);
+    (*jsonValue)["CreationTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->description != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->description, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+    (*jsonValue)["Description"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->extendedMetaData != nullptr) {
+    UA_Variant_setArray(
+      &dataVal.value, joiningResult->extendedMetaData, joiningResult->extendedMetaDataSize, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_KEYVALUEDATATYPE]);
+    (*jsonValue)["ExtendedMetaData"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->externalConfigurationId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->externalConfigurationId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ExternalConfigurationId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->externalRecipeId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->externalRecipeId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ExternalRecipeId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->fileFormat != nullptr) {
+    UA_Variant_setArray(&dataVal.value, joiningResult->fileFormat, joiningResult->fileFormatSize, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["FileFormat"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+}
+
+void decodeJoiningResultDataType(nlohmann::json *jsonValue, UA_JoiningResultDataType *joiningResult, bool serializeStatusInformation) {
+  UA_DataValue dataVal;
+  UA_DataValue_init(&dataVal);
+  if (joiningResult->errors != nullptr) {
+    UA_Variant_setArray(
+      &dataVal.value, joiningResult->errors, joiningResult->errorsSize, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_ERRORINFORMATIONDATATYPE]);
+    (*jsonValue)["Errors"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->failingStepResultId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->failingStepResultId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["FailingStepResultId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->failureReason != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, joiningResult->failureReason, &UA_TYPES[UA_TYPES_BYTE]);
+    (*jsonValue)["FailureReason"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->overallResultValues != nullptr) {
+    UA_Variant_setArray(
+      &dataVal.value,
+      joiningResult->overallResultValues,
+      joiningResult->overallResultValuesSize,
+      &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_RESULTVALUEDATATYPE]);
+    (*jsonValue)["OverallResultValues"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (joiningResult->stepResults != nullptr) {
+    UA_Variant_setArray(
+      &dataVal.value, joiningResult->stepResults, joiningResult->stepResultsSize, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_STEPRESULTDATATYPE]);
+    (*jsonValue)["StepResults"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+}
+
+void decodeEntityDataType(nlohmann::json *jsonValue, UA_EntityDataType &entity) {
+  (*jsonValue)["EntityId"] = std::string((char *)entity.entityId.data, entity.entityId.length);
+  (*jsonValue)["EntityType"] = entity.entityType;
+
+  if (entity.description != nullptr) {
+    (*jsonValue)["Description"] = std::string((char *)entity.description->data, entity.description->length);
+  }
+  if (entity.entityOriginId != nullptr) {
+    (*jsonValue)["Description"] = std::string((char *)entity.entityOriginId->data, entity.entityOriginId->length);
+  }
+  if (entity.name != nullptr) {
+    (*jsonValue)["Name"] = std::string((char *)entity.name->data, entity.name->length);
+  }
+  if (entity.isExternal != nullptr) {
+    (*jsonValue)["Description"] = *(bool *)entity.isExternal;
+  }
+}
+
+void decodeResultDataType(nlohmann::json *jsonValue, UA_ResultDataType *rd, bool serializeStatusInformation) {
+  UA_DataValue dataVal;
+  UA_DataValue_init(&dataVal);
+  {
+    UA_Variant_setScalar(&dataVal.value, &rd->resultMetaData, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    (*jsonValue)["ResultMetaData"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->resultContent != nullptr) {
+    UA_Variant_setArray(&dataVal.value, rd->resultContent, rd->resultContentSize, &UA_TYPES[UA_TYPES_VARIANT]);
+    (*jsonValue)["ResultContent"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+}
+
+void decodeResultEvaluationEnum(nlohmann::json *jsonValue, UA_ResultEvaluationEnum *rd, bool serializeStatusInformation) {
+  switch (*rd) {
+    case UA_RESULTEVALUATIONENUM_UNDEFINED: {
+      (*jsonValue) = "UA_RESULTEVALUATIONENUM_UNDEFINED";
+      break;
+    }
+    case UA_RESULTEVALUATIONENUM_OK: {
+      (*jsonValue) = "UA_RESULTEVALUATIONENUM_OK";
+      break;
+    }
+    case UA_RESULTEVALUATIONENUM_NOTOK: {
+      (*jsonValue) = "UA_RESULTEVALUATIONENUM_NOTOK";
+      break;
+    }
+    case UA_RESULTEVALUATIONENUM_NOTDECIDABLE: {
+      (*jsonValue) = "UA_RESULTEVALUATIONENUM_NOTDECIDABLE";
+      break;
+    }
+  }
+}
+
+void decodeStepResultDataType(nlohmann::json *jsonValue, UA_StepResultDataType *rd, bool serializeStatusInformation) {
+  UA_DataValue dataVal;
+  UA_DataValue_init(&dataVal);
+  if (rd->name != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->name, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["Name"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->programStep != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->programStep, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ProgramStep"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->programStepId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->programStepId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ProgramStepId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->resultEvaluation != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->resultEvaluation, &UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTEVALUATIONENUM]);
+    (*jsonValue)["ResultEvaluation"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->startTimeOffset != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->startTimeOffset, &UA_TYPES[UA_TYPES_DOUBLE]);
+    (*jsonValue)["StartTimeOffset"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  {
+    UA_Variant_setScalar(&dataVal.value, &rd->stepResultId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["StepResultId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->stepResultValues != nullptr) {
+    UA_Variant_setArray(&dataVal.value, rd->stepResultValues, rd->stepResultValuesSize, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_RESULTVALUEDATATYPE]);
+    (*jsonValue)["StepResultValues"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->stepTraceId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->stepTraceId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["StepTraceId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+}
+
+void decodeResultValueDataType(nlohmann::json *jsonValue, UA_ResultValueDataType *rd, bool serializeStatusInformation) {
+  UA_DataValue dataVal;
+  UA_DataValue_init(&dataVal);
+  if (rd->engineeringUnits != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->engineeringUnits, &UA_TYPES[UA_TYPES_EUINFORMATION]);
+    (*jsonValue)["EngineeringUnits"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->highLimit != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->highLimit, &UA_TYPES[UA_TYPES_DOUBLE]);
+    (*jsonValue)["HighLimit"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->lowLimit != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->lowLimit, &UA_TYPES[UA_TYPES_DOUBLE]);
+    (*jsonValue)["LowLimit"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  { (*jsonValue)["MeasuredValue"] = (double)rd->measuredValue; }
+  if (rd->name != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->name, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["Name"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->parameterIdList != nullptr) {
+    UA_Variant_setArray(&dataVal.value, rd->parameterIdList, rd->parameterIdListSize, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ParameterIdList"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->physicalQuantity != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->physicalQuantity, &UA_TYPES[UA_TYPES_BYTE]);
+    (*jsonValue)["PhysicalQuantity"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->resultEvaluation != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->resultEvaluation, &UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTEVALUATIONENUM]);
+    (*jsonValue)["ResultEvaluation"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->resultStep != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->resultStep, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ResultStep"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->sensorId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->sensorId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["SensorId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->targetValue != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->targetValue, &UA_TYPES[UA_TYPES_DOUBLE]);
+    (*jsonValue)["TargetValue"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->tracePointIndex != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->tracePointIndex, &UA_TYPES[UA_TYPES_INT32]);
+    (*jsonValue)["TracePointIndex"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->tracePointTimeOffset != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->tracePointTimeOffset, &UA_TYPES[UA_TYPES_DOUBLE]);
+    (*jsonValue)["TracePointTimeOffset"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->valueId != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->valueId, &UA_TYPES[UA_TYPES_STRING]);
+    (*jsonValue)["ValueId"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->valueTag != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->valueTag, &UA_TYPES[UA_TYPES_INT16]);
+    (*jsonValue)["ValueTag"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->violationConsequence != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->violationConsequence, &UA_TYPES[UA_TYPES_BYTE]);
+    (*jsonValue)["ViolationConsequence"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+  }
+  if (rd->violationType != nullptr) {
+    UA_Variant_setScalar(&dataVal.value, rd->violationType, &UA_TYPES[UA_TYPES_BYTE]);
+    (*jsonValue)["ViolationType"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
   }
 }
 
@@ -187,21 +421,24 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
             (*jsonValue)["FileFormat"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
           }
 
-        } else if (exObj.content.encoded.typeId.identifier.numeric == 5001 /* Encoding of ProcessingTimesDataType */) {
+        } else if (exObj.content.encoded.typeId.identifier.numeric == 5079 /* Encoding of EntityDataType */) {
           size_t offset = 0;
-          UA_IJT_ProcessingTimesDataType ptime;
+          UA_EntityDataType entity;
           UA_StatusCode retval =
-            UA_decodeBinaryInternal(&exObj.content.encoded.body, &offset, &ptime, &UA_TYPES_TIGHTENING[UA_TYPES_TIGHTENING_PROCESSINGTIMESDATATYPE], NULL);
-          UA_DataValue dataVal;
-          UA_DataValue_init(&dataVal);
-          if (ptime.acquisitionDuration) (*jsonValue)["AcquisitionDuration"] = *ptime.acquisitionDuration;
-          if (ptime.processingDuration) (*jsonValue)["ProcessingDuration"] = *ptime.processingDuration;
-
-          UA_Variant_setScalar(&dataVal.value, &ptime.startTime, &UA_TYPES[UA_TYPES_DATETIME]);
-          (*jsonValue)["StartTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
-
-          UA_Variant_setScalar(&dataVal.value, &ptime.endTime, &UA_TYPES[UA_TYPES_DATETIME]);
-          (*jsonValue)["EndTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+            UA_decodeBinaryInternal(&exObj.content.encoded.body, &offset, &entity, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_ENTITYDATATYPE], NULL);
+          decodeEntityDataType(jsonValue, entity);
+        } else if (exObj.content.encoded.typeId.identifier.numeric == 5046 /* Encoding of JoiningResultMetaDataType */) {
+          size_t offset = 0;
+          UA_JoiningResultMetaDataType joiningResult;
+          UA_StatusCode retval = UA_decodeBinaryInternal(
+            &exObj.content.encoded.body, &offset, &joiningResult, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_JOININGRESULTMETADATATYPE], NULL);
+          decodeJoiningResultMetaDataType(jsonValue, &joiningResult, serializeStatusInformation);
+        } else if (exObj.content.encoded.typeId.identifier.numeric == 5049 /* Encoding of JoiningResultDataType */) {
+          size_t offset = 0;
+          UA_JoiningResultDataType joiningResult;
+          UA_StatusCode retval = UA_decodeBinaryInternal(
+            &exObj.content.encoded.body, &offset, &joiningResult, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_JOININGRESULTDATATYPE], NULL);
+          decodeJoiningResultDataType(jsonValue, &joiningResult, serializeStatusInformation);
         } else {
           LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type: "
                      << "ns=" << exObj.content.encoded.typeId.namespaceIndex << "i=" << exObj.content.encoded.typeId.identifier.numeric;
@@ -267,7 +504,11 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
     }
 
     case UA_DATATYPEKIND_VARIANT: {
-      LOG(ERROR) << "Not implemented conversion to OpcUaType_Variant. ";
+      UA_Variant var = *(UA_Variant *)variant.data;
+      UA_DataValue dataVal;
+      UA_DataValue_init(&dataVal);
+      dataVal.value = var;
+      { (*jsonValue) = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue(); }
       break;
     }
 
@@ -326,6 +567,39 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
         (*jsonValue)["daylightSavingInOffset"] = tz.daylightSavingInOffset;
         (*jsonValue)["offset"] = tz.offset;
         break;
+      } else if (strcmp(variant.type->typeName, "KeyValueDataType") == 0) {
+        UA_KeyValueDataType kv(*(UA_KeyValueDataType *)variant.data);
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        (*jsonValue)["Key"] = std::string((char *)kv.key.data, kv.key.length);
+        {
+          UA_Variant_setScalar(&dataVal.value, &kv.value, &UA_TYPES[UA_TYPES_VARIANT]);
+          (*jsonValue)["Value"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+        }
+        break;
+      } else if (strcmp(variant.type->typeName, "ProcessingTimesDataType") == 0) {
+        UA_ProcessingTimesDataType tz(*(UA_ProcessingTimesDataType *)variant.data);
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        if (tz.acquisitionDuration) {
+          (*jsonValue)["acquisitionDuration"] = *(double *)tz.acquisitionDuration;
+        }
+        {
+          UA_Variant_setScalar(&dataVal.value, &tz.endTime, &UA_TYPES[UA_TYPES_DATETIME]);
+          (*jsonValue)["EndTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+        }
+        if (tz.processingDuration) {
+          (*jsonValue)["ProcessingDuration"] = *(double *)tz.processingDuration;
+        }
+        {
+          UA_Variant_setScalar(&dataVal.value, &tz.startTime, &UA_TYPES[UA_TYPES_DATETIME]);
+          (*jsonValue)["StartTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+        }
+        break;
+      } else if (strcmp(variant.type->typeName, "ResultDataType") == 0) {
+        UA_ResultDataType rd(*(UA_ResultDataType *)variant.data);
+        decodeResultDataType(jsonValue, &rd, serializeStatusInformation);
+
       } else {
         LOG(ERROR) << "Unknown data type. ";
         break;
@@ -345,6 +619,31 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
 
         UA_Variant_setScalar(&dataVal.value, &ptime.endTime, &UA_TYPES[UA_TYPES_DATETIME]);
         (*jsonValue)["EndTime"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
+      } else if (strcmp(variant.type->typeName, UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_ENTITYDATATYPE].typeName) == 0) {
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        UA_EntityDataType entity = *(UA_EntityDataType *)variant.data;
+        decodeEntityDataType(jsonValue, entity);
+      } else if (strcmp(variant.type->typeName, UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTDATATYPE].typeName) == 0) {
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        UA_ResultDataType entity = *(UA_ResultDataType *)variant.data;
+        decodeResultDataType(jsonValue, &entity, serializeStatusInformation);
+      } else if (strcmp(variant.type->typeName, UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_RESULTVALUEDATATYPE].typeName) == 0) {
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        UA_ResultValueDataType entity = *(UA_ResultValueDataType *)variant.data;
+        decodeResultValueDataType(jsonValue, &entity, serializeStatusInformation);
+      } else if (strcmp(variant.type->typeName, UA_TYPES_MACHINERY_RESULT[UA_TYPES_MACHINERY_RESULT_RESULTEVALUATIONENUM].typeName) == 0) {
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        UA_ResultEvaluationEnum entity = *(UA_ResultEvaluationEnum *)variant.data;
+        decodeResultEvaluationEnum(jsonValue, &entity, serializeStatusInformation);
+      } else if (strcmp(variant.type->typeName, UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_STEPRESULTDATATYPE].typeName) == 0) {
+        UA_DataValue dataVal;
+        UA_DataValue_init(&dataVal);
+        UA_StepResultDataType entity = *(UA_StepResultDataType *)variant.data;
+        decodeStepResultDataType(jsonValue, &entity, serializeStatusInformation);
       } else {
         LOG(ERROR) << "Unknown data type. ";
       }
@@ -419,13 +718,13 @@ void UaDataValueToJsonValue::setValueFromArrayVariant(UA_Variant &variant, nlohm
     SIMPLECASE(NODEID, NodeId);
     SIMPLECASE(EXTENSIONOBJECT, ExtensionObject);
     SIMPLECASE(QUALIFIEDNAME, QualifiedName);
+    SIMPLECASE(VARIANT, Variant);
     CASENOTIMPLEMENTED(GUID, Guid);
     CASENOTIMPLEMENTED(BYTESTRING, ByteString);
     CASENOTIMPLEMENTED(XMLELEMENT, XmlElement);
     CASENOTIMPLEMENTED(EXPANDEDNODEID, ExpandedNodeId);
     CASENOTIMPLEMENTED(STATUSCODE, StatusCode);
     CASENOTIMPLEMENTED(DATAVALUE, DataValue);
-    CASENOTIMPLEMENTED(VARIANT, Variant);
     CASENOTIMPLEMENTED(DIAGNOSTICINFO, DiagnosticInfo);
 
     case UA_DATATYPEKIND_STRUCTURE: {
@@ -435,10 +734,33 @@ void UaDataValueToJsonValue::setValueFromArrayVariant(UA_Variant &variant, nlohm
       } else if (strcmp(variant.type->typeName, "Range") == 0) {
         VALUEFROMDATAARRAY(RANGE, Range);
         break;
+      } else if (strcmp(variant.type->typeName, "KeyValueDataType") == 0) {
+        VALUEFROMDATAARRAY(KEYVALUEDATATYPE, KeyValueDataType);
+        break;
       } else {
         LOG(ERROR) << "Unknown data type. ";
         break;
       }
+    }
+
+    case UA_DATATYPEKIND_OPTSTRUCT: {
+      if (strcmp(variant.type->typeName, "EntityDataType") == 0) {
+        VALUEFROMDATAARRAY(ENTITYDATATYPE, EntityDataType);
+        break;
+      } else if (strcmp(variant.type->typeName, "ResultDataType") == 0) {
+        VALUEFROMDATAARRAY(RESULTDATATYPE, ResultDataType);
+        break;
+      } else if (strcmp(variant.type->typeName, "ResultValueDataType") == 0) {
+        VALUEFROMDATAARRAY(RESULTVALUEDATATYPE, ResultValueDataType);
+        break;
+      } else if (strcmp(variant.type->typeName, "StepResultDataType") == 0) {
+        VALUEFROMDATAARRAY(STEPRESULTDATATYPE, StepResultDataType);
+        break;
+      } else {
+        LOG(ERROR) << "Unknown OptStruct. ";
+        break;
+      }
+      break;
     }
 
     default: {

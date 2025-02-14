@@ -24,6 +24,7 @@
 #include "Converter/CustomDataTypes/types_gms_generated_handling.h"
 #include "Converter/CustomDataTypes/types_machinery_result_generated_handling.h"
 #include "Converter/CustomDataTypes/types_tightening_generated_handling.h"
+#include "Converter/CustomDataTypes/types_ijt_base_generated.h"
 
 namespace Umati {
 
@@ -101,6 +102,7 @@ static void inactivityCallback(UA_Client *client) { LOG(ERROR) << "\n\n\nINACTIV
 UA_DataTypeArray GmsTypes = {NULL, 6, UA_TYPES_GMS};
 UA_DataTypeArray TighteningSystemTypes = {&GmsTypes, 1, UA_TYPES_TIGHTENING};
 UA_DataTypeArray MachineryResultTypes = {&TighteningSystemTypes, 5, UA_TYPES_MACHINERY_RESULT};
+UA_DataTypeArray IJTBaseTypes = {&MachineryResultTypes, UA_TYPES_IJT_GENERATED_COUNT, UA_TYPES_IJT_GENERATED};
 
 static UA_DataTypeArray getMachineryResultTypes() { return MachineryResultTypes; }
 
@@ -208,11 +210,19 @@ UA_NodeClass OpcUaClient::readNodeClass(const open62541Cpp::UA_NodeId &nodeId) {
     std::lock_guard<std::recursive_mutex> l(m_clientMutex);
     auto uaResult = UA_Client_readNodeClassAttribute(m_pClient.get(), *nodeId.NodeId, &returnClass);
     if (UA_StatusCode_isBad(uaResult)) {
-      LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data << "' with " << UA_StatusCode_name(uaResult);
+      if (nodeId.NodeId->identifier.string.data != nullptr) {
+        LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data << "' with " << UA_StatusCode_name(uaResult);
+      } else {
+        LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.numeric << "' with " << UA_StatusCode_name(uaResult);
+      }
       throw Exceptions::OpcUaNonGoodStatusCodeException(uaResult);
     }
   } catch (...) {
-    LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data;
+    if (nodeId.NodeId->identifier.string.data != nullptr) {
+      LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.string.data;
+    } else {
+      LOG(ERROR) << "readNodeClass failed for node: '" << nodeId.NodeId->identifier.numeric;
+    }
   }
   return returnClass;
 }
@@ -397,6 +407,15 @@ void OpcUaClient::updateCustomDataTypesNamespace(std::string namespaceURI, std::
     for (size_t j = 0; j < UA_TYPES_GMS_COUNT; j++) {
       UA_TYPES_GMS[j].typeId.namespaceIndex = nsIdx;
       UA_TYPES_GMS[j].binaryEncodingId.namespaceIndex = nsIdx;
+    }
+  }
+
+  if (namespaceURI == "http://opcfoundation.org/UA/IJT/Base/") {
+    uint16_t nsIdx = static_cast<uint16_t>(namespaceIndex);
+
+    for (size_t j = 0; j < UA_TYPES_IJT_GENERATED_COUNT; j++) {
+      UA_TYPES_IJT_GENERATED[j].typeId.namespaceIndex = nsIdx;
+      UA_TYPES_IJT_GENERATED[j].binaryEncodingId.namespaceIndex = nsIdx;
     }
   }
 }

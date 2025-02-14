@@ -28,6 +28,7 @@ const ModelOpcUa::NodeId_t NodeId_HasDescription{ns0Uri, "i=39"};
 const ModelOpcUa::NodeId_t NodeId_HasEncoding{ns0Uri, "i=38"};
 const ModelOpcUa::NodeId_t NodeId_BaseObjectType = {ns0Uri, "i=58"};
 const ModelOpcUa::NodeId_t NodeId_Folder = {ns0Uri, "i=61"};
+const ModelOpcUa::NodeId_t NodeId_FunctionalGroup = {"http://opcfoundation.org/UA/DI/", "i=1005"};
 const ModelOpcUa::NodeId_t NodeId_UndefinedType = {ns0Uri, "i=0"};
 const ModelOpcUa::NodeId_t NodeId_MissingType = {"", "i=0"};
 const std::string nsUriMachinery = "http://opcfoundation.org/UA/Machinery/";
