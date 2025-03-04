@@ -94,10 +94,10 @@ int main(int argc, char *argv[]) {
       try {
         dashboardClient.ReadTypes();
         break;
-      } catch (Umati::Exceptions::ClientNotConnected e) {
-        LOG(INFO) << "Client disconnected while browsing types. Trying again.";
-      } catch (Umati::Exceptions::OpcUaNonGoodStatusCodeException e) {
-        LOG(INFO) << "Client no good while browsing types. Trying again.";
+      } catch (const Umati::Exceptions::ClientNotConnected &e) {
+        LOG(INFO) << "Client disconnected while browsing types. Trying again: " << e.what();
+      } catch (const Umati::Exceptions::OpcUaNonGoodStatusCodeException &e) {
+        LOG(INFO) << "Client no good while browsing types. Trying again: " << e.what();
       }
     }
 
