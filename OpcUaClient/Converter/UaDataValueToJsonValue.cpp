@@ -207,7 +207,7 @@ void decodeResultValueDataType(nlohmann::json *jsonValue, UA_ResultValueDataType
     UA_Variant_setScalar(&dataVal.value, rd->lowLimit, &UA_TYPES[UA_TYPES_DOUBLE]);
     (*jsonValue)["LowLimit"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
   }
-  { (*jsonValue)["MeasuredValue"] = (double)rd->measuredValue; }
+  (*jsonValue)["MeasuredValue"] = (double)rd->measuredValue;
   if (rd->name != nullptr) {
     UA_Variant_setScalar(&dataVal.value, rd->name, &UA_TYPES[UA_TYPES_STRING]);
     (*jsonValue)["Name"] = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
@@ -440,8 +440,8 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
             &exObj.content.encoded.body, &offset, &joiningResult, &UA_TYPES_IJT_GENERATED[UA_TYPES_IJT_GENERATED_JOININGRESULTDATATYPE], NULL);
           decodeJoiningResultDataType(jsonValue, &joiningResult, serializeStatusInformation);
         } else {
-          LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type: " << "ns="
-                     << exObj.content.encoded.typeId.namespaceIndex << "i=" << exObj.content.encoded.typeId.identifier.numeric;
+          LOG(ERROR) << "Not implemented conversion from OpcUaType_ExtensionObject with custom structured data type: "
+                     << "ns=" << exObj.content.encoded.typeId.namespaceIndex << "i=" << exObj.content.encoded.typeId.identifier.numeric;
         }
 
         break;
@@ -508,7 +508,7 @@ void UaDataValueToJsonValue::setValueFromScalarVariant(UA_Variant &variant, nloh
       UA_DataValue dataVal;
       UA_DataValue_init(&dataVal);
       dataVal.value = var;
-      { (*jsonValue) = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue(); }
+      (*jsonValue) = UaDataValueToJsonValue(dataVal, serializeStatusInformation).getValue();
       break;
     }
 
