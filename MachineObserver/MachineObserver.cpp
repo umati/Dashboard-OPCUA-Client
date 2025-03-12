@@ -117,8 +117,7 @@ bool MachineObserver::ignoreInvalidMachinesTemporarily(const ModelOpcUa::NodeId_
 
 bool MachineObserver::canBrowseMachineList(std::list<ModelOpcUa::BrowseResult_t> &machineList) {
   try {
-    LOG(INFO) << "Searching for machines";
-    machineList.empty();
+    LOG(INFO) << "Searching for machines " << machineList.empty();
     std::function<bool(ModelOpcUa::NodeId_t)> filter;
     if (m_machinesFilter.size()) {
       filter = [&](ModelOpcUa::NodeId_t machine) { return m_machinesFilter.find(machine) != m_machinesFilter.end(); };
@@ -142,6 +141,7 @@ std::list<ModelOpcUa::BrowseResult_t> MachineObserver::findComponentsFolder(Mode
       newMachines = browseForMachines(componentFolder, nodeid);
     }
   } catch (const Umati::Exceptions::OpcUaException &ex) {
+    LOG(INFO) << "Exception browsing components folder: " << ex.what();
   }
   return newMachines;
 }

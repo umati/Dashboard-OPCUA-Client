@@ -18,7 +18,6 @@
 #include <Open62541Cpp/UA_String.hpp>
 #include <Open62541Cpp/UA_QualifiedName.hpp>
 #include <Open62541Cpp/UA_Variant.hpp>
-#include "TypeDictionary/TypeDictionary.hpp"
 #include <string>
 #include <memory>
 #include <vector>
@@ -76,12 +75,6 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   bool isSameOrSubtype(const ModelOpcUa::NodeId_t &expectedType, const ModelOpcUa::NodeId_t &checkType, size_t maxDepth) override;
 
-  void buildCustomDataTypes() override;
-
-  void readTypeDictionaries() override;
-
-  void updateCustomTypes() override;
-
  protected:
   void connectionStatusChanged(UA_Int32 clientConnectionId, UA_ServerState serverStatus);
 
@@ -95,6 +88,8 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
 
   // Max search depth
   bool isSameOrSubtype(const open62541Cpp::UA_NodeId &expectedType, const open62541Cpp::UA_NodeId &checkType, std::size_t maxDepth = 100);
+
+  void updateCustomTypes();
 
   double m_maxAgeRead_ms = 100.0;
 
@@ -110,8 +105,7 @@ class OpcUaClient : public Dashboard::IDashboardDataClient {
   std::string m_serverUri;
   std::string m_username;
   std::string m_password;
-  UA_DataTypeArray *m_dataTypeArray;
-  std::vector<TypeDictionary::TypeDictionary> m_ptdv;
+  UA_DataTypeArray m_dataTypeArray;
 
   std::shared_ptr<std::thread> m_connectThread;
   std::shared_ptr<OpcUaInterface> m_opcUaWrapper;

@@ -14,7 +14,6 @@
 #include <ModelOpcUa/ModelInstance.hpp>
 #include "IDashboardDataClient.hpp"
 #include <Configuration.hpp>
-#include "TypeDictionary/TypeDictionary.hpp"
 #include "../MachineObserver/Exceptions/MachineInvalidException.hpp"
 #include <sstream>
 #include <iostream>
@@ -29,17 +28,17 @@ class OpcUaTypeReader {
     std::vector<Umati::Util::NamespaceInformation> namespaceInformations);
 
   ~OpcUaTypeReader();
-  void readTypeDictionaries();
+
   void readTypes();
+  void readTypeDictionaries();
   using NamespaceInformation_t = Util::NamespaceInformation;
 
-  /// \todo make the following internal structures private and provide access via funcitons
+  /// \todo make the following internal structures private and provide access via functions
   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_identificationTypeOfTypeDefinition;
   std::map<std::string, NamespaceInformation_t> m_availableObjectTypeNamespaces;
   std::vector<std::string> m_expectedObjectTypeNamespaces;
   std::vector<std::string> m_expectedObjectTypeNames;
   std::vector<ModelOpcUa::NodeId_t> m_knownMachineTypeDefinitions;
-  std::vector<Umati::TypeDictionary::TypeDictionary> m_typeDictionaries;
   std::map<ModelOpcUa::NodeId_t, ModelOpcUa::NodeId_t> m_subTypeDefinitionToKnownMachineTypeDefinition;
   std::shared_ptr<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>> m_typeMap =
     std::make_shared<std::map<ModelOpcUa::NodeId_t, std::shared_ptr<ModelOpcUa::StructureNode>>>();

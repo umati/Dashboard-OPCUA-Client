@@ -22,9 +22,6 @@ ModelToJson::ModelToJson(
   bool serializeNodeInformation,
   bool nestAsChildren,
   bool publishNullValues) {
-  // if (serializeNodeInformation) {
-  //     m_json["nodeClass"] = nodeClassToString(pNode->NodeClass);
-  // }
   switch (pNode->ModellingRule) {
     case ModelOpcUa::ModellingRule_t::Mandatory:
     case ModelOpcUa::ModellingRule_t::Optional: {
@@ -48,8 +45,13 @@ ModelToJson::ModelToJson(
       }
 
       nlohmann::json children;
-
+      std::list<ModelOpcUa::QualifiedName_t> visited_child_nodes = {};
       for (const auto &pChild : pSimpleNode->ChildNodes) {
+        auto iter = std::find(visited_child_nodes.begin(), visited_child_nodes.end(), pChild->SpecifiedBrowseName);
+        if (iter != visited_child_nodes.end()) {
+          continue;
+        }
+        visited_child_nodes.push_back(pChild->SpecifiedBrowseName);
         auto json = (ModelToJson(pChild, getValue, serializeNodeInformation, nestAsChildren, publishNullValues).getJson());
         if (publishNullValues || json.dump(0) != "null") {
           children[pChild->SpecifiedBrowseName.Name] = json;

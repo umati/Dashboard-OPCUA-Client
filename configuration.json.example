@@ -43,7 +43,8 @@
     "http://opcfoundation.org/UA/SurfaceTechnology/Example/Pretreatment",
     "http://opcfoundation.org/UA/Woodworking/",
     "http://opcfoundation.org/UA/Robotics/",
-    "http://opcfoundation.org/UA/IJT/",
+    "http://opcfoundation.org/UA/IJT/Tightening/",
+    "http://opcfoundation.org/UA/IJT/Base/",
     "http://opcfoundation.org/GMS/",
     "http://opcfoundation.org/UA/PlasticsRubber/GeneralTypes/",
     "http://opcfoundation.org/UA/PlasticsRubber/IMM2MES/",
@@ -363,6 +364,36 @@
         "Uri": "http://opcfoundation.org/UA/AdditiveManufacturing/NodeSet2/",
         "Id": "i=1028",
         "$comment": "MachineIdentificationAMType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/IJT/Base/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/IJT/Base/",
+          "Id": "i=1005",
+          "$comment": "JoiningSystemType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/IJT/Base/",
+        "Id": "i=1029",
+        "$comment": "JoiningSystemIdentificationType"
+      }
+    },
+    {
+      "Namespace": "http://opcfoundation.org/UA/IJT/Base/",
+      "Types": [
+        {
+          "Uri": "http://opcfoundation.org/UA/IJT/Base/",
+          "Id": "i=1004",
+          "$comment": "IToolType"
+        }
+      ],
+      "IdentificationType": {
+        "Uri": "http://opcfoundation.org/UA/Machinery/",
+        "Id": "i=1004",
+        "$comment": "MachineryItemIdentificationType"
       }
     }
   ]
