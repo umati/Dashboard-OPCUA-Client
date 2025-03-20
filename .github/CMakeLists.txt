@@ -58,8 +58,6 @@ externalproject_add(
                -DLIBRESSL_ROOT_DIR:PATH=${CMAKE_INSTALL_PREFIX}/
                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     DEPENDS libreSSLExternal
-    PATCH_COMMAND "${Patch_EXECUTABLE}" -p1 --forward -d ${CMAKE_CURRENT_SOURCE_DIR}/../deps/paho.mqtt.c <
-                  ${CMAKE_CURRENT_SOURCE_DIR}/ciPatches/paho.mqtt.c.patch || echo "Patch returned non-zero"
     INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
