@@ -1,5 +1,10 @@
 # umati Dashboard OPC UA Client
 
+> [!CAUTION]
+> This gateway is replaced by [umati/umatiGateway](https://github.com/umati/umatiGateway) and will no longer be maintained.
+
+---
+
 This is the OPC UA gateway specifically developed for the umati.app Dashboard.
 
 The client subscribes to values from one or more machine instances on a single OPC UA server and then publishes them using MQTT in a JSON encoding format.
@@ -20,7 +25,7 @@ To maintain uniform output via MQTT, additional nodes not specified are also ign
 - MachineTools :heavy_check_mark:
 - PlasticsRubber :heavy_check_mark:
 - WoodWorking :heavy_check_mark:
-- Robotics  :heavy_check_mark:
+- Robotics :heavy_check_mark:
 - Surface Technology :waning_gibbous_moon:
 - Additive Manufacturing DRAFT :waning_gibbous_moon:
 - MachineVision Part 2 Release Canidate :waning_gibbous_moon:
@@ -34,7 +39,7 @@ To maintain uniform output via MQTT, additional nodes not specified are also ign
 
 ### Upcoming Features
 
-- Custom DataType  based on DataTypeTypeDefinition
+- Custom DataType based on DataTypeTypeDefinition
 
 ## Usage
 
@@ -87,7 +92,7 @@ This project uses [cmake](https://cmake.org/) for building.
 
 The following packages are necessary for building:
 
-- git
+- Git
 - build-essential
 - gcc
 - g++
