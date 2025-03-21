@@ -16,6 +16,7 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04]
         build_type: [Debug, Release]
         arch: ["386", "amd64"]
+      fail-fast: false
     runs-on: ${{matrix.os}}
     env:
       CMAKE_INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -84,6 +85,7 @@ jobs:
         os: [windows-2019, windows-2022]
         build_type: [Debug, Release]
         arch: ["386", "amd64"]
+      fail-fast: false
     runs-on: ${{matrix.os}}
     continue-on-error: true
     env:
