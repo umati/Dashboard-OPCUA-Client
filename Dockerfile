@@ -27,7 +27,7 @@ FROM alpine:3.21.3 AS runtime
 RUN apk --no-cache add \
       libstdc++=14.2.0-r4 \
       ca-certificates=20241121-r1 \
-      tzdata=2025a-r0
+      tzdata=2025b-r0
 
 COPY --from=build-env /install/bin /app
 COPY --from=build-env /install/lib /usr/lib
