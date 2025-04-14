@@ -55,6 +55,7 @@ externalproject_add(
                -DPAHO_BUILD_SHARED:BOOL=0
                -DPAHO_BUILD_STATIC:BOOL=1
                -DPAHO_ENABLE_TESTING:BOOL=1 
+               -DPAHO_WITH_LIBRESSL:bool=1
                -DLIBRESSL_ROOT_DIR:PATH=${CMAKE_INSTALL_PREFIX}/
                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     DEPENDS libreSSLExternal
